@@ -1,0 +1,1842 @@
+H++ Compiler (R) by Harold L. Marzan Version 1.0.0.2006 (Alpha) 
+Copyright    (C) Harold L. Marzan 2003-2006. All rights reserved.
+
+Compiling...
+Page 1   TestSource\UnitTesting1.hpp   Sun Feb 04 18:39:05 2007
+
+
+   1: 0: import "TestSource\stdhpp\stdapi.hcc";
+importing: Page 1   C:\HCC\HCC\TestSource\stdhpp\stdapi.hcc   Sun Feb 04 18:39:05 2007
+
+
+   1: 0: 
+   2: 0: /*
+   3: 0: 	Standard H++ header file that imports the principal functions
+   4: 0: 	used in any H++ console program.
+   5: 0: 	Harold L. Marzan
+   6: 0: */
+   7: 0: class System
+   8: 0: {
+   9: 0: 	typename enum __ShowOptions
+  10: 0: 	{
+  11: 0: 		Hide		= 0,
+  12: 0: 		Show		= 1,
+  13: 0: 		Maximize	= 3,
+  14: 0: 		Minimize	= 6,
+  15: 0: 		Restore		= 9,		
+  16: 0: 	}ShowOptions;	
+  17: 0: 	
+  18: 0: 	public extern "hcclib32" static void Exit(int exitCode);
+  19: 0: 	public extern "hcclib32" static long LastError();
+  20: 0: 	public extern "hcclib32" static string CommandLineArgs();
+  21: 0: 	public extern "hcclib32" static bool Execute(string cmd, ShowOptions option);
+  22: 0: 
+  23: 0: 	public extern "hcclib32" static int GetTickCount();
+  24: 0: 	public extern "hcclib32" static void Sleep(long Miliseconds);
+  25: 0: 
+  26: 0: 	class Debug
+  27: 0: 	{
+  28: 0: 	public extern "hcclib32" static void OutputString(string message);
+  29: 0: 	public extern "hcclib32" static void BreakPoint(void);
+  30: 0: 	public extern "hcclib32" static bool IsDebuggerPresent(void);
+  31: 0: 	};
+  32: 0: 	
+  33: 0: 	typename enum __MessageType
+  34: 0: 	{
+  35: 0: 		IconError		= 0x00000010,
+  36: 0: 		IconQuestion	= 0x00000020,
+  37: 0: 		IconWarning		= 0x00000030,
+  38: 0: 		IconInformation	= 0x00000040,
+  39: 0: 		UserIcon		= 0x00000080,		
+  40: 0: 	}MessageType;
+  41: 0: 	
+  42: 0: 	public extern "hcclib32" static bool ShowMessage(string message, string title, MessageType type);
+
+  43: 0: 		
+  44: 0: 	class Memory
+  45: 0: 	{	
+  46: 0: 		typename long Handle;
+  47: 0: 		typename long Pointer;
+  48: 0: 		typename long HeapSize;
+  49: 0: 	
+  50: 0: 		//heap specific
+Page 2   C:\HCC\HCC\TestSource\stdhpp\stdapi.hcc   Sun Feb 04 18:39:05 
+
+  51: 0: 		public extern "hcclib32" static Handle GetProcessHeap();
+  52: 0: 		public extern "hcclib32" static Pointer Alloc(Handle hHeap, long nBytes);
+  53: 0: 		public extern "hcclib32" static bool	Free(Handle hHeap, Pointer mem_ptr);
+  54: 0: 		public extern "hcclib32" static HeapSize Size(Handle hHeap, Pointer mem_ptr);
+  55: 0: 		
+  56: 0: 		public extern "hcclib32" static Pointer New(long nBytes);	
+  57: 0: 		public extern "hcclib32" static bool	Destroy(Pointer mem_ptr);
+  58: 0: 		public extern "hcclib32" static HeapSize SizeFor(Pointer mem_ptr);
+  59: 0: 		
+  60: 0: 		public extern "hcclib32" static long Memset(Pointer mem_ptr, int nVal, int nBytes);
+
+  61: 0: 	};
+  62: 0: 	
+  63: 0: 	
+  64: 0: 	class Directory{}; //TODO
+  65: 0: };
+  66: 0: 
+  67: 0: class Console
+  68: 0: {
+  69: 0: 	public extern "hcclib32" static string ReadString();
+  70: 0: 	public extern "hcclib32" static char ReadChar();
+  71: 0: 
+  72: 0: 	public extern "hcclib32" static void WriteString(string line, int length);
+  73: 0: 	public extern "hcclib32" static void WriteCrlf();
+  74: 0: 	public extern "hcclib32" static void WriteChar(char val);
+  75: 0: 
+  76: 0: 	public extern "hcclib32" static bool SetCursorPos(short X, short Y);
+  77: 0: 	public extern "hcclib32" static bool SetTitle(string title);
+  78: 0: 	public extern "hcclib32" static string GetTitle();
+  79: 0: 	
+  80: 0: 	public extern "hcclib32" static double ReadDouble();				
+  81: 0: 	public extern "hcclib32" static void WriteDouble(double expr);		
+  82: 0: 	public extern "hcclib32" static void WriteInteger64(Int64 expr);
+  83: 0: 	
+  84: 0: 	public extern "hcclib32" static int ReadInteger();
+  85: 0: 	public extern "hcclib32" static void WriteInteger(int expr);
+  86: 0: 	public extern "hcclib32" static void WriteBinary(int expr);
+  87: 0: 	public extern "hcclib32" static void WriteHex(int expr);
+  88: 0: 	public extern "hcclib32" static void WriteOctal(int expr);	
+  89: 0: 	
+  90: 0: 	//COMPILER BUILD-IN
+  91: 0: 	/*
+  92: 0: 	public extern "hcclib32" static void Write(...);
+  93: 0: 	public extern "hcclib32" static void WriteLn(...);	
+  94: 0: 	*/
+  95: 0: 
+  96: 0: 	typename enum __Color
+  97: 0: 	{
+  98: 0: 	//-----------------------------------
+  99: 0: 	// Standard 4-bit color definitions
+ 100: 0: 	//-----------------------------------
+Page 3   C:\HCC\HCC\TestSource\stdhpp\stdapi.hcc   Sun Feb 04 18:39:05 
+
+ 101: 0: 		black        = 0, //0000b
+ 102: 0: 		blue         = 1, //0001b
+ 103: 0: 		green        = 2, //0010b
+ 104: 0: 		cyan         = 3, //0011b
+ 105: 0: 		red          = 4, //0100b
+ 106: 0: 		magenta      = 5, //0101b
+ 107: 0: 		brown        = 6, //0110b
+ 108: 0: 		lightGray    = 7, //0111b
+ 109: 0: 		gray         = 8, //1000b
+ 110: 0: 		lightBlue    = 9, //1001b
+ 111: 0: 		lightGreen   = 10, //1010b
+ 112: 0: 		lightCyan    = 11, //1011b
+ 113: 0: 		lightRed     = 12, //1100b
+ 114: 0: 		lightMagenta = 13, //1101b
+ 115: 0: 		yellow       = 14, //1110b
+ 116: 0: 		white        = 15, //1111b	
+ 117: 0: 	}Color;
+ 118: 0: 
+ 119: 0: 	public extern "hcclib32" static bool SetTextColor(Color color);
+ 120: 0: 	public extern "hcclib32" static bool SetConsoleSize(short X, short Y);
+ 121: 0: 	public extern "hcclib32" static bool MoveWindow(short Left, short Top, short Right, short Bottom);
+
+ 122: 0: 	public extern "hcclib32" static void ClearScreen(void);
+ 123: 0: };
+ 124: 0: 
+ 125: 0: 
+ 126: 0: class File
+ 127: 0: {
+ 128: 0: 	typename enum __FileFormat
+ 129: 0: 	{
+ 130: 0: 		PlainTextFile = 1,
+ 131: 0: 		BinaryFile,
+ 132: 0: 	}FileFormat;
+ 133: 0: 	
+ 134: 0: 	typename enum __FileMode
+ 135: 0: 	{
+ 136: 0: 		CreateNew			= 1,
+ 137: 0: 		CreateAlways		= 2,			
+ 138: 0: 		OpenExisting		= 3,
+ 139: 0: 		OpenOrCreate		= 4,
+ 140: 0: 		TruncateExisting	= 5,
+ 141: 0: 	}FileMode;
+ 142: 0: 	
+ 143: 0: 	typename enum __FileAccess
+ 144: 0: 	{
+ 145: 0: 		FileReadOnly	= 0x80000000h,				//2147483648
+ 146: 0: 		FileWrite		= 0x40000000h,				//1073741824
+ 147: 0: 		FileReadWrite	= 0xC0000000h, //FileReadOnly | FileWrite, //0xC0000000h == 3221225472
+
+ 148: 0: 	}FileAccess;
+ 149: 0: 	
+ 150: 0: 	typename enum __FileSharing
+Page 4   C:\HCC\HCC\TestSource\stdhpp\stdapi.hcc   Sun Feb 04 18:39:05 
+
+ 151: 0: 	{
+ 152: 0: 		SharedRead	=1,
+ 153: 0: 		SharedWrite	=2,
+ 154: 0: 		Exclusive	=4,
+ 155: 0: 	}FileSharing;
+ 156: 0: 	
+ 157: 0: 	typename enum __SeekType
+ 158: 0: 	{
+ 159: 0: 		SeekBegin	= 0,
+ 160: 0: 		SeekCurrent,
+ 161: 0: 		SeekEnd,
+ 162: 0: 	}SeekType;
+ 163: 0: 	
+ 164: 0: 	typename long FileHandle;
+ 165: 0: 	
+ 166: 0: 	public const int INVALID_HANDLE_VALUE = -1;
+ 167: 0: 	public const int INVALID_SET_FILE_POINTER = INVALID_HANDLE_VALUE;
+ 168: 0: 	
+ 169: 0: 	public extern "hcclib32" static FileHandle Open(string filePath, 
+ 170: 0: 														FileMode mode, 
+ 171: 0: 														FileAccess access,
+ 172: 0: 														FileSharing sharing);
+ 173: 0: 											  
+ 174: 0: 	public extern "hcclib32" static bool Close(FileHandle handle);
+ 175: 0: 
+ 176: 0: 	public extern "hcclib32" static long Read(FileHandle handle, char [] buffer, long nBytesToRead);
+
+ 177: 0: 	public extern "hcclib32" static long Write(FileHandle handle, char [] buffer, long nBytesToWrite);
+
+ 178: 0: 	public extern "hcclib32" static long Seek(FileHandle handle, SeekType moveType, long offset);
+
+ 179: 0: 	public extern "hcclib32" static long FileSize(FileHandle handle);
+ 180: 0: 
+ 181: 0: };
+ 182: 0: 
+ 183: 0: //string handling functions
+ 184: 0: class StringHandling
+ 185: 0: {
+ 186: 0: 	public extern "hcclib32" static int StringLength(const string source);
+ 187: 0: 	public extern "hcclib32" static int StringCopy(string ref target, string source, int length);
+
+ 188: 0: 	public extern "hcclib32" static int StringCompare(const string target, const string source, int length);
+
+ 189: 0: 	
+ 190: 0: 	public extern "hcclib32" static void StringUCase(string source, int length);
+ 191: 0: 	public extern "hcclib32" static void StringLCase(string source, int length);
+ 192: 0: 	
+ 193: 0: 	public extern "hcclib32" static string StringTrim(string source);						//TODO
+ 194: 0: 	public extern "hcclib32" static string StringLTrim(string source);						//TODO
+ 195: 0: 	public extern "hcclib32" static string StringRTrim(string source);						//TODO
+ 196: 0: };
+ 197: 0: 
+ 198: 0: class Integer
+ 199: 0: {
+ 200: 0: 	public extern "hcclib32" static Int32 fromString(string value);
+Page 5   C:\HCC\HCC\TestSource\stdhpp\stdapi.hcc   Sun Feb 04 18:39:05 
+
+ 201: 0: 	public extern "hcclib32" static short toStringEx(Int32 expr, short radix, char [] result);
+
+ 202: 0: 	//returns a string in dynamic memory: user must free it with 'destroy'.
+ 203: 0: 	public extern "hcclib32" static string toString(Int32 expr);
+ 204: 0: };
+ 205: 0: 
+ 206: 0: class FloatingPoint
+ 207: 0: {
+ 208: 0: 	public extern "hcclib32" static int Compare(double X, double Y);
+ 209: 0: 	public extern "hcclib32" static int CompareToInteger(double X, int Y);			
+ 210: 0: 	public extern "hcclib32" static int ToInt(double expr);
+ 211: 0: 	public extern "hcclib32" static Int64 ToInt64(double expr);
+ 212: 0: 	
+ 213: 0: 	public extern "hcclib32" static double FromInt(Int32 expr);
+ 214: 0: 	public extern "hcclib32" static double FromInt64(Int64 expr);
+ 215: 0: 	
+ 216: 0: 	//returns a string in dynamic memory: user must free it with 'destroy'.
+ 217: 0: 	public extern "hcclib32" static string toString(double expr);
+ 218: 0: 	public extern "hcclib32" static void toStringEx(double expr, char [] result);
+ 219: 0: 	
+ 220: 0: 	public extern "hcclib32" static double fromString(string value);
+ 221: 0: };
+ 222: 0: 
+ 223: 0: //BEGIN - A L I A S E S
+ 224: 0: //H++ Aliases to use short names for the conversion classes static members, to behave like C standard functions
+
+ 225: 0: 
+ 226: 0: using itoa		= Integer::toStringEx;
+ 227: 0: using atoi		= Integer::fromString;
+ 228: 0: 
+ 229: 0: using ftoa		= FloatingPoint::toStringEx;
+ 230: 0: using atof		= FloatingPoint::fromString;
+ 231: 0: 
+ 232: 0: using itof		= FloatingPoint::FromInt;
+ 233: 0: using i64tof	= FloatingPoint::FromInt64;
+ 234: 0: 
+ 235: 0: using ftoi		= FloatingPoint::ToInt;
+ 236: 0: using ftoi64	= FloatingPoint::ToInt64;
+ 237: 0: 
+ 238: 0: using fpcmp		= FloatingPoint::Compare;
+ 239: 0: using fpcmpi	= FloatingPoint::CompareToInteger;
+ 240: 0: 
+ 241: 0: //STRING 
+ 242: 0: 
+ 243: 0: using strlen	= StringHandling::StringLength;
+ 244: 0: using strncpy	= StringHandling::StringCopy;
+ 245: 0: using strncmp	= StringHandling::StringCompare;
+ 246: 0: 
+ 247: 0: //MEMORY 
+ 248: 0: 
+ 249: 0: using memset		= System::Memory::Memset;
+ 250: 0: using heap_sizeof	= System::Memory::SizeFor;
+Page 6   C:\HCC\HCC\TestSource\stdhpp\stdapi.hcc   Sun Feb 04 18:39:05 
+
+ 251: 0: 
+ 252: 0: //FILE
+ 253: 0: 
+ 254: 0: using fopen		= File::Open;
+ 255: 0: using fclose	= File::Close;
+ 256: 0: using fread		= File::Read;
+ 257: 0: using fwrite	= File::Write;
+ 258: 0: using fseek		= File::Seek;
+ 259: 0: using ftell		= File::FileSize;
+ 260: 0: 
+ 261: 0: //END - A L I A S E S
+ 262: 0: 
+ 263: 0: class Math
+ 264: 0: {
+ 265: 0: 	public extern "hcclib32" static void Init(void);
+ 266: 0: 	public extern "hcclib32" static double Gcd(int a, int b);
+ 267: 0: 	public extern "hcclib32" static double Abs(double expr);	
+ 268: 0: 	public extern "hcclib32" static double ChangeSign(double expr);					
+ 269: 0: 	public extern "hcclib32" static double Modulus(double Dividend, double Divisor);
+
+ 270: 0: 	public extern "hcclib32" static double IEEEModulus(double Dividend, double Divisor);
+
+ 271: 0: 	public extern "hcclib32" static double ModulusTruncateDivisor(double Dividend, double Divisor);
+
+ 272: 0: 	public extern "hcclib32" static double MantissaOf(double number, int ref exponent);
+
+ 273: 0: 	public extern "hcclib32" static double GetNumberFrom(double mantissa, int exponent);
+
+ 274: 0: 	public extern "hcclib32" static double Max(double X, double Y);
+ 275: 0: 	public extern "hcclib32" static double Min(double X, double Y);
+ 276: 0: 	public extern "hcclib32" static double Sign(double X);		
+ 277: 0: 	
+ 278: 0: 				//based on the formula: log_b(x) <-- (log_2(b))^–1 * log_2(x)
+ 279: 0: 	public extern "hcclib32" static double Ln(double expr);
+ 280: 0: 	public extern "hcclib32" static double log10(double expr);	//ln(x)/ln(10)
+ 281: 0: 	public extern "hcclib32" static double log2(double expr);	//ln(x)/ln(2)
+ 282: 0: 	public extern "hcclib32" static double LogN_base(double N, int b); //ln(N)/ln(b)
+
+ 283: 0: 	
+ 284: 0: 
+ 285: 0: 	//constant values from Intel FPU
+ 286: 0: 	public extern "hcclib32" static double pi(void);
+ 287: 0: 	public extern "hcclib32" static double log_10_base2(void);						
+ 288: 0: 	public extern "hcclib32" static double log_e_base2(void);						
+ 289: 0: 	public extern "hcclib32" static double log_2_base10(void);						
+ 290: 0: 	public extern "hcclib32" static double log_2_base_e(void);						
+ 291: 0: 
+ 292: 0: 	public extern "hcclib32" static int Round(double expr);
+ 293: 0: 	public extern "hcclib32" static Int64 Round64(double expr);
+ 294: 0: 
+ 295: 0: 	public extern "hcclib32" static double Sin(double angle);						
+ 296: 0: 	public extern "hcclib32" static double Cos(double angle);						
+ 297: 0: 	public extern "hcclib32" static double Tan(double angle);	
+ 298: 0: 	public extern "hcclib32" static double Sec(double expr);
+ 299: 0: 	public extern "hcclib32" static double Cosec(double expr);						
+ 300: 0: 	public extern "hcclib32" static double Cotan(double angle);						
+Page 7   C:\HCC\HCC\TestSource\stdhpp\stdapi.hcc   Sun Feb 04 18:39:05 
+
+ 301: 0: 	public extern "hcclib32" static double ArcTan(double X, double Y);				
+ 302: 0: 
+ 303: 0: 	public extern "hcclib32" static double Sqr(double expr);						
+ 304: 0: 	public extern "hcclib32" static double Sqrt(double expr);						
+ 305: 0: 
+ 306: 0: 			//Recursive Power of x by y
+ 307: 0: 	public extern "hcclib32" static double Pow2(double x, int exp);			//x^y
+ 308: 0: 			//Supports floating point exponents for scientific computations
+ 309: 0: 	public extern "hcclib32" static double Pow(double x, double exp);		//x^y
+ 310: 0: 	public extern "hcclib32" static double Exp(double expr);				//e^x	
+ 311: 0: 	
+ 312: 0: 	public extern "hcclib32" static bool Odd(int val);								
+ 313: 0: 	public extern "hcclib32" static bool Even(int val);								
+ 314: 0: 	public extern "hcclib32" static double Trunc(double expr);	
+ 315: 0: 
+ 316: 0: 	public  static double RadiansToDegrees(double rad)
+ 317: 0: 	{
+ 318: 0: 		return (180 / pi()) * rad;
+ 319: 0: 	}
+ 320: 0: 	
+ 321: 0: 	public  static double DegreesToRadians(double deg)
+ 322: 0: 	{
+ 323: 0: 		return (deg * pi()) / 180;
+ 324: 0: 	}
+ 325: 0: 
+ 326: 0: /*
+ 327: 0: 	**N O N - I N T R I N S I C   M A T H   F U N C T I O N S**
+ 328: 0: //-------------------------------------------------------------------------------------------	
+
+ 329: 0: (DONE)Logarithm to base N 									LogN(X) = Log(X) / Log(N) 	
+ 330: 0: 
+ 331: 0: (DONE)Secant												Sec(X) = 1 / Cos(X) 
+ 332: 0: (DONE)Cosecant 												Cosec(X) = 1 / Sin(X)
+ 333: 0: (DONE)Cotangent 											Cotan(X) = 1 / Tan(X) 
+ 334: 0: 
+ 335: 0: (DONE)Inverse Sine 											Arcsin(X) = Atn(X / Sqr(-X * X + 1)) 
+ 336: 0: (DONE)Inverse Cosine 										Arccos(X) = Atn(-X / Sqr(-X * X + 1)) + 2 * Atn(1) 
+
+ 337: 0: 
+ 338: 0: (DONE)Inverse Secant 										Arcsec(X)	= Atn(X / Sqr(X * X - 1)) + Sgn(X-1) * (2 * Atn(1)) 
+
+ 339: 0: (DONE)Inverse Cosecant 										Arccosec(X) = Atn(X / Sqr(X * X - 1)) + (Sgn(X) - 1) * (2 * Atn(1)) 
+
+ 340: 0: 
+ 341: 0: (DONE)Inverse Cotangent 									Arccotan(X) = Atn(X) + 2 * Atn(1)
+ 342: 0: 
+ 343: 0: //------------------------------------------------------------------------------------------- 
+
+ 344: 0: */
+ 345: 0: 
+ 346: 0: 	class Inverse
+ 347: 0: 	{
+ 348: 0: 		public extern "hcclib32" static double Arcsin(double X);
+ 349: 0: 		public extern "hcclib32" static double Arccos(double X);
+ 350: 0: 		
+Page 8   C:\HCC\HCC\TestSource\stdhpp\stdapi.hcc   Sun Feb 04 18:39:05 
+
+ 351: 0: 		public extern "hcclib32" static double Arcsec(double X);
+ 352: 0: 		public extern "hcclib32" static double Arccosec(double X);
+ 353: 0: 		
+ 354: 0: 		public extern "hcclib32" static double Arccotan(double X);
+ 355: 0: 	};
+ 356: 0: 
+ 357: 0: /*
+ 358: 0: 	**N O N - I N T R I N S I C   M A T H   F U N C T I O N S**
+ 359: 0: //-------------------------------------------------------------------------------------------
+
+ 360: 0: 
+ 361: 0: (DONE)Hyperbolic Sine 										HSin(X) = (Exp(X) - Exp(-X)) / 2  
+ 362: 0: (DONE)Hyperbolic Cosine 									HCos(X) = (Exp(X) + Exp(-X)) / 2 
+ 363: 0: (DONE)Hyperbolic Tangent 									HTan(X) = (Exp(X) - Exp(-X)) / (Exp(X) + Exp(-X)) 
+
+ 364: 0: (DONE)Hyperbolic Secant 									HSec(X) = 2 / (Exp(X) + Exp(-X)) 
+ 365: 0: (DONE)Hyperbolic Cosecant 									HCosec(X) = 2 / (Exp(X) - Exp(-X)) 
+ 366: 0: (DONE)Hyperbolic Cotangent 									HCotan(X) = (Exp(X) + Exp(-X)) / (Exp(X) - Exp(-X)) 
+
+ 367: 0: 
+ 368: 0: (DONE)Inverse Hyperbolic Sine 								HArcsin(X) = Log(X + Sqr(X * X + 1)) 
+ 369: 0: (DONE)Inverse Hyperbolic Cosine 							HArccos(X) = Log(X + Sqr(X * X - 1)) 
+ 370: 0: (DONE)Inverse Hyperbolic Tangent 							HArctan(X) = Log((1 + X) / (1 - X)) / 2 
+
+ 371: 0: (DONE)Inverse Hyperbolic Secant 							HArcsec(X) = Log((Sqr(-X * X + 1) + 1) / X) 
+
+ 372: 0: (DONE)Inverse Hyperbolic Cosecant 							HArccosec(X) = Log((Sgn(X) * Sqr(X * X + 1) +1) / X) 
+
+ 373: 0: (DONE)Inverse Hyperbolic Cotangent 							HArccotan(X) = Log((X + 1) / (X - 1)) / 2 
+
+ 374: 0: 
+ 375: 0: //-------------------------------------------------------------------------------------------
+
+ 376: 0: */	
+ 377: 0: 	class Hyperbolic
+ 378: 0: 	{
+ 379: 0: 		
+ 380: 0: 		public  static double HSin(double X)
+ 381: 0: 		{
+ 382: 0: 			return (Math::Exp(X) - Math::Exp(-X)) / 2;
+ 383: 0: 		}
+ 384: 0: 		public  static double HCos(double X)
+ 385: 0: 		{
+ 386: 0: 			return (Math::Exp(X) + Math::Exp(-X)) / 2;
+ 387: 0: 		}
+ 388: 0: 		public  static double HTan(double X)
+ 389: 0: 		{
+ 390: 0: 			return (Math::Exp(X) - Math::Exp(-X)) / (Math::Exp(X) + Math::Exp(-X));
+ 391: 0: 		}		
+ 392: 0: 		public  static double HSec(double X)
+ 393: 0: 		{
+ 394: 0: 			return 2 / (Math::Exp(X) + Math::Exp(-X));
+ 395: 0: 		}
+ 396: 0: 		public  static double HCosec(double X)
+ 397: 0: 		{
+ 398: 0: 			return 2 / (Math::Exp(X) - Math::Exp(-X));
+ 399: 0: 		}
+ 400: 0: 		public  static double HCotan(double X)
+Page 9   C:\HCC\HCC\TestSource\stdhpp\stdapi.hcc   Sun Feb 04 18:39:05 
+
+ 401: 0: 		{
+ 402: 0: 			return (Math::Exp(X) + Math::Exp(-X)) / (Math::Exp(X) - Math::Exp(-X));
+ 403: 0: 		}
+ 404: 0: 		
+ 405: 0: 		class Inverse
+ 406: 0: 		{
+ 407: 0: 			public  static double HArcsin(double X)
+ 408: 0: 			{
+ 409: 0: 				return Math::log10(X + Math::Sqrt(X * X + 1));
+ 410: 0: 			}
+ 411: 0: 			public  static double HArccos(double X)
+ 412: 0: 			{
+ 413: 0: 				return Math::log10(X + Math::Sqrt(X * X - 1));
+ 414: 0: 			}
+ 415: 0: 			public  static double HArctan(double X)
+ 416: 0: 			{
+ 417: 0: 				return Math::log10((1 + X) / (1 - X)) / 2;
+ 418: 0: 			}
+ 419: 0: 			public  static double HArcsec(double X)
+ 420: 0: 			{
+ 421: 0: 				return Math::log10((Math::Sqrt(-X * X + 1) + 1) / X);
+ 422: 0: 			}
+ 423: 0: 			public  static double HArccosec(double X)
+ 424: 0: 			{
+ 425: 0: 				return Math::log10((Math::Sign(X) * Math::Sqrt(X * X + 1) +1) / X);
+ 426: 0: 			}
+ 427: 0: 			public  static double HArccotan(double X)
+ 428: 0: 			{
+ 429: 0: 				return Math::log10((X + 1) / (X - 1)) / 2;
+ 430: 0: 			}
+ 431: 0: 		};
+ 432: 0: 	};
+ 433: 0: }
+                 433 source lines.
+                   0 syntax errors.
+>UnitTesting1.hpp:
+   2: 0: import "TestSource\stdhpp\TestVirtuals.hpp";
+importing: Page 1   C:\HCC\HCC\TestSource\stdhpp\TestVirtuals.hpp   Sun Feb 04 18:39:05 2007
+
+
+   1: 0: import "TestSource\stdhpp\stdapi.hcc";
+   2: 0: 
+   3: 0: namespace UnitTesting //TestVirtuals.hpp
+   4: 0: {
+   5: 0: 	class Rnd
+   6: 0: 	{
+   7: 0: 		private static long seed = 1;
+   8: 0: 		public static long a = 16807;
+   9: 0: 		public static long m = 2147483647;
+  10: 0: 		public static long q = 127773;
+  11: 0: 		public static long r = 2836;
+  12: 0: 
+  13: 0: 		public Rnd(int seedx)
+  14: 0: 		{
+  15: 0: 			UnitTesting::Rnd::seed = seedx;
+  16: 0: 		}
+  17: 0: 
+  18: 0: 		public void setSeed(long s)
+  19: 0: 		{
+  20: 0: 			//using the fully qualified name...
+  21: 0: 			UnitTesting::Rnd::seed = s;
+  22: 0: 		}
+  23: 0: 
+  24: 0: 		public static double NextDblEx()
+  25: 0: 		{			
+  26: 0: 			Rnd::seed = Math::Round(Rnd::a * (Rnd::seed % Rnd::q) - Rnd::r * (Rnd::seed * Rnd::q));
+
+  27: 0: 
+  28: 0: 			Rnd::seed += (seed < 0 ? Rnd::m : 0);
+  29: 0: 
+  30: 0: 			return Rnd::seed / Rnd::m;
+  31: 0: 		}
+  32: 0: 
+  33: 0: 		public static double NextIntEx()
+  34: 0: 		{			
+  35: 0: 			//Rnd::seed = Math::Round(a * (seed % q) - r * (seed * q));
+  36: 0: 			Rnd::seed = a * (seed % q) - r * (seed * q);
+  37: 0: 
+  38: 0: 			Rnd::seed += (seed < 0 ? Rnd::m : 0);
+  39: 0: 
+  40: 0: 			return UnitTesting::Rnd::seed % Rnd::m;
+  41: 0: 		}
+  42: 0: 
+  43: 0: 		public double NextDbl()
+  44: 0: 		{
+  45: 0: 			return Rnd::NextDblEx();
+  46: 0: 		}
+  47: 0: 
+  48: 0: 		public double NextInt()
+  49: 0: 		{
+  50: 0: 			return Rnd::NextIntEx();
+Page 2   C:\HCC\HCC\TestSource\stdhpp\TestVirtuals.hpp   Sun Feb 04 18:39:05 
+
+  51: 0: 		}
+  52: 0: 	};
+  53: 0: 
+  54: 0: 	namespace TestVirtuals
+  55: 0: 	{
+  56: 0: 		//the base class
+  57: 0: 		class RandomVariable
+  58: 0: 		{
+  59: 0: 			public virtual abstract double Sample();
+  60: 0: 			public virtual string Name()
+  61: 0: 			{
+  62: 0: 				return "(none)";
+  63: 0: 			}
+  64: 0: 		};
+  65: 0: 
+  66: 0: 		class SimpleRV : RandomVariable
+  67: 0: 		{
+  68: 0: 			public virtual double Sample()
+  69: 0: 			{
+  70: 0: 				return Rnd::NextDblEx();
+  71: 0: 			}
+  72: 0: 
+  73: 0: 			public virtual string Name()
+  74: 0: 			{
+  75: 0: 				return "A simple variable";
+  76: 0: 			}
+  77: 0: 		};
+  78: 0: 
+  79: 0: 		class UniformRV: RandomVariable
+  80: 0: 		{
+  81: 0: 			private double u;
+  82: 0: 			private double v;
+  83: 0: 
+  84: 0: 		public double get:U()
+  85: 0: 		{
+  86: 0: 			return u;
+  87: 0: 		}
+  88: 0: 
+  89: 0: 		private void put:U(double value)
+  90: 0: 		{
+  91: 0: 			u = value;
+  92: 0: 		}
+  93: 0: 
+  94: 0: 		public double get:V()
+  95: 0: 		{
+  96: 0: 			return v;
+  97: 0: 		}
+  98: 0: 
+  99: 0: 		private void put:V(double value)
+ 100: 0: 		{
+Page 3   C:\HCC\HCC\TestSource\stdhpp\TestVirtuals.hpp   Sun Feb 04 18:39:05 
+
+ 101: 0: 			v = value;
+ 102: 0: 		}
+ 103: 0: 
+ 104: 0: 			public UniformRV(double _u, double _v)
+ 105: 0: 			{
+ 106: 0: 				U = _u; V = _v;
+ 107: 0: 			}
+ 108: 0: 
+ 109: 0: 			public double Sample()
+ 110: 0: 			{
+ 111: 0: 				return u + (v - u) * Rnd::NextDblEx();
+ 112: 0: 			}
+ 113: 0: 			public virtual string Name()
+ 114: 0: 			{
+ 115: 0: 				return "An uniform variable";
+ 116: 0: 			}
+ 117: 0: 		};
+ 118: 0: 
+ 119: 0: 		class ExponentialRV : RandomVariable
+ 120: 0: 		{
+ 121: 0: 			private double mu;
+ 122: 0: 
+ 123: 0: 		public double get:MU()
+ 124: 0: 		{
+ 125: 0: 			return mu;
+ 126: 0: 		}
+ 127: 0: 
+ 128: 0: 		public ExponentialRV(double _mu)
+ 129: 0: 		{
+ 130: 0: 			mu = _mu;
+ 131: 0: 		}
+ 132: 0: 			public virtual double Sample()
+ 133: 0: 			{
+ 134: 0: 				return -MU * Math::log10(Rnd::NextDblEx());
+ 135: 0: 			}
+ 136: 0: 			public string Name()
+ 137: 0: 			{
+ 138: 0: 				return "An exponential variable";
+ 139: 0: 			}
+ 140: 0: 
+ 141: 0: 		};
+ 142: 0: 	}
+ 143: 0: }
+                 143 source lines.
+                   0 syntax errors.
+>UnitTesting1.hpp:
+   3: 0: import "TestSource\stdhpp\TestFunctionParams.hpp";
+importing: Page 1   C:\HCC\HCC\TestSource\stdhpp\TestFunctionParams.hpp   Sun Feb 04 18:39:05 2007
+
+
+   1: 0: import "TestSource\stdhpp\stdapi.hcc";
+   2: 0: 
+   3: 0: 
+   4: 0: namespace UnitTesting
+   5: 0: {
+   6: 0: 	class SummationSeries
+   7: 0: 	{
+   8: 0: 		// Sigma[1==1, n](i);
+   9: 0: 		public static unsigned int SimpleSum(unsigned int n)
+  10: 0: 		{
+  11: 0: 			unsigned int result = 0;			
+  12: 0: 			for(unsigned int i = 1; i<=n; ++i) 
+  13: 0: 				result += i;
+  14: 0: 
+  15: 0: 			return result;
+  16: 0: 		}
+  17: 0: 
+  18: 0: 		//Sigma[i==0, n](x^i);
+  19: 0: 		public static int GeometricSeriesSum(int x, unsigned int n)
+  20: 0: 		{
+  21: 0: 			int nx = 3.145464654;
+                                                    ^
+error: Invalid assignment : Cannot convert from 'double' to 'int'. (must have the same type as l-value).
+  22: 0: 			//this is a good test for H++ Code Generator: nested loops
+  23: 0: 			int sum = 0;			
+  24: 0: 			for(unsigned int i = 0; i<=n; ++i)
+  25: 0: 			{
+  26: 0: 				int prod = 1;				
+  27: 0: 				for(unsigned int j = 0; j< i; ++j)
+  28: 0: 					prod *= x;
+  29: 0: 				sum += prod;
+  30: 0: 			}
+  31: 0: 			return sum;
+  32: 0: 		}
+  33: 0: 
+  34: 0: 		class Horner
+  35: 0: 		{
+  36: 0: 			//Sigma[i==0, n](a[i] * x^i);
+  37: 0: 			public static int Horner(int []a, unsigned int n, int x)
+  38: 0: 			{
+  39: 0: 				killer;
+                                              ^
+error: Undeclared identifier 'killer@'.
+  40: 0: 				int result = a[n];
+  41: 0: 
+  42: 0: 				for(int i = n -1; i >=0; --i)
+  43: 0: 					result *= x + a[i];
+  44: 0: 				return result;
+  45: 0: 			}
+  46: 0: 
+  47: 0: 			//Sigma[i==0, n](x^i); using Horner's rule
+  48: 0: 			public static int GeometricSeriesSum(int x, unsigned int n)
+  49: 0: 			{
+  50: 0: 				int sum = 0;				
+Page 2   C:\HCC\HCC\TestSource\stdhpp\TestFunctionParams.hpp   Sun Feb 04 18:39:05 
+
+  51: 0: 				for(unsigned int i = 0; i<=n; ++i)
+  52: 0: 					sum = sum * x + 1;
+  53: 0: 
+  54: 0: 				return sum;
+  55: 0: 			}
+  56: 0: 
+  57: 0: 		};
+  58: 0: 
+  59: 0: 		//Sigma[i==0, n](x^i); using the closed-form expression
+  60: 0: 		public static int GeometricSeriesClosedSum(int x, unsigned int n)
+  61: 0: 		{
+  62: 0: 			//the fastest one calculating arithmetic series summations
+  63: 0: 			return ftoi((Math::Pow(x, n + 1) - 1) / (x - 1));
+  64: 0: 		}
+  65: 0: 
+  66: 0: 		//Computes the 'y' : the Euler's constant
+  67: 0: 		public static void ComputeRenderGamma(void)
+  68: 0: 		{
+  69: 0: 			double result = 0;	
+  70: 0: 			for(unsigned long i = 1; i<=500000; ++i)
+  71: 0: 				result += 1.0 / i - Math::log2( (i + 1.0) / i );
+  72: 0: 
+  73: 0: 			Console::WriteLn("Gamma y = ", result);
+  74: 0: 		}
+  75: 0: 
+  76: 0: 		public static int Ackermman(int m, int n)
+  77: 0: 		{
+  78: 0: 			if(m==0 and n >=0)
+  79: 0: 				return n + 1;
+  80: 0: 			else if(m>=1 && n==0)
+  81: 0: 				return Ackermman(m-1, 1);
+  82: 0: 			else	
+  83: 0: 				return Ackermman(m-1, Ackermman(m, n-1)); //for all other cases where: m,n >=1
+
+  84: 0: 		}
+  85: 0: 	};
+  86: 0: 
+  87: 0: 	class Integers_Inline
+  88: 0: 	{
+  89: 0: 		public static void Test(void)
+  90: 0: 		{
+  91: 0: 			int a = 5, b = 4;
+  92: 0: 
+  93: 0: 			Console::WriteLn("The values: a = ", a, ", and b = ", b);
+  94: 0: 
+  95: 0: 			int c = max(a, b);
+  96: 0: 
+  97: 0: 			Console::WriteLn("The max value is = ", c);
+  98: 0: 
+  99: 0: 			int d = min(a, b);
+ 100: 0: 
+Page 3   C:\HCC\HCC\TestSource\stdhpp\TestFunctionParams.hpp   Sun Feb 04 18:39:05 
+
+ 101: 0: 			Console::WriteLn("The min value is = ", d);
+ 102: 0: 		}
+ 103: 0: 	};
+ 104: 0: }
+                 104 source lines.
+                   2 syntax errors.
+>UnitTesting1.hpp:
+   4: 0: import "TestSource\TestSwitch.hpp";
+importing: Page 1   C:\HCC\HCC\TestSource\TestSwitch.hpp   Sun Feb 04 18:39:05 2007
+
+
+   1: 0: import "TestSource\stdhpp\stdapi.hcc";
+   2: 0: 
+   3: 0: namespace UnitTesting //TestSwitch.hpp
+   4: 0: {
+   5: 0: 	class TestSwitch
+   6: 0: 	{
+   7: 0: 		public const int open  = 1;
+   8: 0: 		public const int close = 2;
+   9: 0: 		public const int write = 3, 
+  10: 0: 						 read = 4;
+  11: 0: 
+  12: 0: 		public static void RunTest(int option)
+  13: 0: 		{	
+  14: 0: 			switch(option)
+  15: 0: 			{
+  16: 0: 			case open:
+  17: 0: 				Console::WriteLn("Opening file...");
+  18: 0: 				break;
+  19: 0: 			case close:
+  20: 0: 				Console::WriteLn("Closing file...");
+  21: 0: 				break;
+  22: 0: 			case write:
+  23: 0: 				Console::WriteLn("Do Write to file...");
+  24: 0: 				break;
+  25: 0: 			case read:
+  26: 0: 				Console::WriteLn("Do Read from file...");
+  27: 0: 				break;
+  28: 0: 			case 5:
+  29: 0: 				Console::WriteLn("Do for 5 and follow to 6");
+  30: 0: 			case 6:
+  31: 0: 				{
+  32: 0: 				Console::WriteLn("Do 6, then finish");
+  33: 0: 				}
+  34: 0: 				break;
+  35: 0: 			default:
+  36: 0: 				Console::WriteLn("Invalid Option : ", option);
+  37: 0: 			};
+  38: 0: 		}
+  39: 0: 	};
+  40: 0: 
+  41: 0: 	typename enum ShapeType
+  42: 0: 	{
+  43: 0: 		stCircle = 1,
+  44: 0: 		stSquare,
+  45: 0: 		stTriangle,
+  46: 0: 	}ShapeType;
+  47: 0: 
+  48: 0: 	class Shape
+  49: 0: 	{		
+  50: 0: 		public virtual abstract double ComputeArea();		
+Page 2   C:\HCC\HCC\TestSource\TestSwitch.hpp   Sun Feb 04 18:39:05 
+
+  51: 0: 	};
+  52: 0: 
+  53: 0: 	class Circle: Shape
+  54: 0: 	{
+  55: 0: 		private double radius = 0.0;
+  56: 0: 
+  57: 0: 	public double get:Radius()
+  58: 0: 	{
+  59: 0: 		return radius;
+  60: 0: 	}
+  61: 0: 
+  62: 0: 	public void put:Radius(double value)
+  63: 0: 	{
+  64: 0: 		radius = value;
+  65: 0: 	}
+  66: 0: 
+  67: 0: 	protected double Circumference()
+  68: 0: 	{
+  69: 0: 		return Math::pi() * Radius;
+  70: 0: 	}
+  71: 0: 
+  72: 0: 		public virtual double ComputeArea()
+  73: 0: 		{
+  74: 0: 			return 2 * Circumference();
+  75: 0: 		}
+  76: 0: 	};
+  77: 0: 
+  78: 0: 	class Square: Shape
+  79: 0: 	{
+  80: 0: 		private double dWidth = 0.0;
+  81: 0: 		private double dHeight = 0.0;
+  82: 0: 
+  83: 0: 	public double get:Width()
+  84: 0: 	{
+  85: 0: 		return dWidth;
+  86: 0: 	}
+  87: 0: 
+  88: 0: 	public void put:Width(double value)
+  89: 0: 	{
+  90: 0: 		dWidth = value;
+  91: 0: 	}
+  92: 0: 
+  93: 0: 	public double get:Height()
+  94: 0: 	{
+  95: 0: 		return dHeight;
+  96: 0: 	}
+  97: 0: 
+  98: 0: 	public void put:Height(double value)
+  99: 0: 	{
+ 100: 0: 		dHeight = value;
+Page 3   C:\HCC\HCC\TestSource\TestSwitch.hpp   Sun Feb 04 18:39:05 
+
+ 101: 0: 	}
+ 102: 0: 
+ 103: 0: 	public virtual double ComputeArea()
+ 104: 0: 	{
+ 105: 0: 		return Width * Height;
+ 106: 0: 	}
+ 107: 0: 
+ 108: 0: 	};
+ 109: 0: 
+ 110: 0: 	class Triangle: Shape
+ 111: 0: 	{
+ 112: 0: 		private double dBase = 0.0;
+ 113: 0: 		private double dHigh = 0.0;
+ 114: 0: 
+ 115: 0: 	public double get:Base()
+ 116: 0: 	{
+ 117: 0: 		return dBase;
+ 118: 0: 	}
+ 119: 0: 
+ 120: 0: 	public void put:Base(double value)
+ 121: 0: 	{
+ 122: 0: 		dBase = value;
+ 123: 0: 	}
+ 124: 0: 
+ 125: 0: 	public double get:High()
+ 126: 0: 	{
+ 127: 0: 		return dHigh;
+ 128: 0: 	}
+ 129: 0: 
+ 130: 0: 	public void put:High(double value)
+ 131: 0: 	{
+ 132: 0: 		dHigh = value;
+ 133: 0: 	}
+ 134: 0: 
+ 135: 0: 
+ 136: 0: 	public virtual double ComputeArea()
+ 137: 0: 	{
+ 138: 0: 		return Base * High / 2;
+ 139: 0: 	}
+ 140: 0: 	};
+ 141: 0: }
+                 141 source lines.
+                   0 syntax errors.
+>UnitTesting1.hpp:
+   5: 0: 
+   6: 0: 
+   7: 0: namespace UnitTesting
+   8: 0: {
+   9: 0: 	class HelloWorld
+  10: 0: 	{
+  11: 0: 		public HelloWorld()
+  12: 0: 		{
+  13: 0: 			Console::WriteLn("The HelloWorld constructor");
+Page 4   C:\HCC\HCC\TestSource\TestSwitch.hpp   Sun Feb 04 18:39:05 
+
+  14: 0: 		}
+  15: 0: 
+  16: 0: 		public void SayHello(string text)
+  17: 0: 		{
+  18: 0: 			Console::WriteLn("this is what I have to say for the first time in H++ :", text);
+
+  19: 0: 		}
+  20: 0: 
+  21: 0: 		public void ShowHello(string text)
+  22: 0: 		{
+  23: 0: 			System::ShowMessage(text, "H++ First program", System::IconInformation);
+  24: 0: 		}
+  25: 0: 
+  26: 0: 		public void Destructor()
+  27: 0: 		{
+  28: 0: 			Console::WriteLn("The HelloWorld destructor");
+  29: 0: 		}
+  30: 0: 	};
+  31: 0: //const definitions in H++
+  32: 0: 
+  33: 0: 	const int ten = 10;
+  34: 0: 	
+  35: 0: 	const Int16 minusten = -ten;
+  36: 0: 	const int hundred = 100;	
+  37: 0: 	const Int32 max_length = 80;	
+  38: 0: 	const Int64 max_64 = 42545234; //just a test
+  39: 0: 	
+  40: 0: 	const Int64 max_64_neg = -max_64;
+  41: 0: 		
+  42: 0: 	namespace misc1
+  43: 0: 	{
+  44: 0: 		double array[10];
+  45: 0: 
+  46: 0: 		const double pi = 3.1415927;	
+  47: 0: 		const float e = 2.2114;
+  48: 0: 		
+  49: 0: 		const int ten_plus = -UnitTesting::minusten;	
+  50: 0: 		const char ch1 = 'a', ch2 = 'z';	
+  51: 0: 		const string hello = "hello, world.";
+  52: 0: 		
+  53: 0: 		const string hell = "human", boy = "mistakes";
+  54: 0: 		
+  55: 0: 		const double dX = 4.99, dY = 9.4567;
+  56: 0: 			
+  57: 0: 		enum greek { alpha, beta, gamma };
+  58: 0: 		
+  59: 0: 		enum days_of_week { monday = 1, 
+  60: 0: 							tuesday,
+  61: 0: 							wednesday,
+  62: 0: 							thursday,
+  63: 0: 							friday,
+Page 5   C:\HCC\HCC\TestSource\TestSwitch.hpp   Sun Feb 04 18:39:05 
+
+  64: 0: 							saturday,
+  65: 0: 							sunday,
+  66: 0: 						};
+  67: 0: 	
+  68: 0: 		//type definitions
+  69: 0: 		typename greek gletter;	
+  70: 0: 		typename days_of_week days_type;
+  71: 0: 	}
+  72: 0: 	
+  73: 0: 
+  74: 0: 	class TestIntegers
+  75: 0: 	{
+  76: 0: 	private int nWidth	= 0;
+  77: 0: 	private int nHeight	= 0;
+  78: 0: 
+  79: 0: 	//all properties 
+  80: 0: 	public int get:Width()
+  81: 0: 	{
+  82: 0: 		return nWidth;
+  83: 0: 	}
+  84: 0: 
+  85: 0: 	public void put:Width(int value)
+  86: 0: 	{
+  87: 0: 		nWidth = value;
+  88: 0: 	}
+  89: 0: 
+  90: 0: 	public int get:Height()
+  91: 0: 	{
+  92: 0: 		return nHeight;
+  93: 0: 	}
+  94: 0: 
+  95: 0: 	public void put:Height(int value)
+  96: 0: 	{
+  97: 0: 		nHeight = value;
+  98: 0: 	}
+  99: 0: 
+ 100: 0: 	public int getArea()
+ 101: 0: 	{
+ 102: 0: 		return Width * Height;
+ 103: 0: 	}
+ 104: 0: 
+ 105: 0: 	public double getArea2()
+ 106: 0: 	{
+ 107: 0: 		return nWidth * nHeight * 1.0;
+ 108: 0: 	}
+ 109: 0: 
+ 110: 0: 	public static Int64 bigValue = 0x80000000h;
+ 111: 0: 
+ 112: 0: 	public static void TestExpressions(void)
+ 113: 0: 	{
+Page 6   C:\HCC\HCC\TestSource\TestSwitch.hpp   Sun Feb 04 18:39:05 
+
+ 114: 0: 		int hex_value = 0xDEADC0DEh;
+ 115: 0: 
+ 116: 0: 		hex_value = hex_value << 0x10; //0xC0DE0000h
+ 117: 0: 
+ 118: 0: 		hex_value = hex_value >> 8; //0x00C0DE00h
+ 119: 0: 
+ 120: 0: 		hex_value = hex_value >> 8; //0x0000C0DEh
+ 121: 0: 
+ 122: 0: 	//new type of expression down to zero from 4...
+ 123: 0: 		int j = 0;
+ 124: 0: 
+ 125: 0: 		volatile bool what = false;
+ 126: 0: 				
+ 127: 0: 		/*
+ 128: 0: 		j = (4 + (--j))%4; //3
+ 129: 0: 		j = (4 + (--j))%4; //1
+ 130: 0: 		j = (4 + (--j))%4; //0
+ 131: 0: 		j = (4 + (--j))%4; //3
+ 132: 0: 		*/
+ 133: 0: 
+ 134: 0: 		hex_value = 0;
+ 135: 0: 
+ 136: 0: 		while(true)
+ 137: 0: 		{
+ 138: 0: 			j = (4 + (--j))%4; //321032103210
+ 139: 0: 			
+ 140: 0: 			if(++hex_value < 12)
+ 141: 0: 				continue;
+ 142: 0: 
+ 143: 0: 			what = (j%2)==0; //j==0
+ 144: 0: 
+ 145: 0:             break;
+ 146: 0: 		}
+ 147: 0: 
+ 148: 0: 		what = j==3; //false
+ 149: 0: 		
+ 150: 0: 		do{
+ 151: 0: 			j = (4 + (--j))%4; //3210
+ 152: 0: 
+ 153: 0: 			if(j==0)
+ 154: 0: 				break;
+ 155: 0: 			
+ 156: 0: 		}while(j > 0);
+ 157: 0: 
+ 158: 0: 		int x = 0;
+ 159: 0: 
+ 160: 0: 		auto int y = 1, z = 2;
+ 161: 0: 
+ 162: 0: 		volatile Int32 result = (y + 1) * z; //result==4		
+ 163: 0: 
+Page 7   C:\HCC\HCC\TestSource\TestSwitch.hpp   Sun Feb 04 18:39:05 
+
+ 164: 0: 		x++; //x==1
+ 165: 0: 		++x; //x==2
+ 166: 0: 
+ 167: 0: 		x += 14; //x==010h
+ 168: 0: 
+ 169: 0: 		what = x==0x10h;
+ 170: 0: 
+ 171: 0: 		x /= 4; //x==4
+ 172: 0: 
+ 173: 0: 		--x;
+ 174: 0: 		x--; //x==2
+ 175: 0: 
+ 176: 0: 		x = 7 mod x; //
+ 177: 0: 
+ 178: 0: 		what = x==1;
+ 179: 0: 
+ 180: 0: 		x++; //x==2;
+ 181: 0: 
+ 182: 0: 		x *= 10; //x==0x14h==20		
+ 183: 0: 
+ 184: 0: 		x /= 5; //x==4
+ 185: 0: 
+ 186: 0: 		x /=4; //x==1
+ 187: 0: 
+ 188: 0: 		x %= 4; //x==1		
+ 189: 0: 
+ 190: 0: 		y = 0x400h; //1024
+ 191: 0: 
+ 192: 0: 		x = y div 15; // 68
+ 193: 0: 
+ 194: 0: 		what = x == 68;
+ 195: 0: 
+ 196: 0: 		z = 0x10; //16
+ 197: 0: 
+ 198: 0: 		x = y * z; //16kb == 16 * 1024
+ 199: 0: 
+ 200: 0: 		what = x==0x400;
+ 201: 0: 
+ 202: 0: 		y = z = x; //all must have 16384 or 04000h
+ 203: 0: 
+ 204: 0: 		x = y div 4; //x==4096
+ 205: 0: 
+ 206: 0: 		what = x==4096;
+ 207: 0: 
+ 208: 0: 		z = x%3; //x==1
+ 209: 0: 
+ 210: 0: 		what = x==1;
+ 211: 0: 
+ 212: 0: 		y = x div 3; //==1365
+ 213: 0: 
+Page 8   C:\HCC\HCC\TestSource\TestSwitch.hpp   Sun Feb 04 18:39:05 
+
+ 214: 0: 		what = x==1365;		
+ 215: 0: 
+ 216: 0: 		result = ftoi(x / 3); //==1365
+ 217: 0: 
+ 218: 0: 		result = x / (3 + 1); //==1024
+ 219: 0: 
+ 220: 0: 		what = (result==1024);
+ 221: 0: 
+ 222: 0: 		auto short a = 20000, b = 4, c = 10;
+ 223: 0: 
+ 224: 0: 		result = a * b * c; //800,000
+ 225: 0: 
+ 226: 0: 		what = result==0xC3500h;
+ 227: 0: 
+ 228: 0: 		result /= 0x10; //==50000
+ 229: 0: 
+ 230: 0: 		what = (result==50000);
+ 231: 0: 
+ 232: 0: 		x = result%3; //==2
+ 233: 0: 
+ 234: 0: 		result = Math::Round(a / 3) * 4; //round(6,666.666666....) * 5 aprox. == 33,335
+
+ 235: 0: 
+ 236: 0: 		what = (result==33335);
+ 237: 0: 
+ 238: 0: 		a = 1; b= 4; c=4;
+ 239: 0: 
+ 240: 0: 		double disc = Math::Sqr(b)- 4*a*c;
+ 241: 0: 
+ 242: 0: 		what = disc==0.0;
+ 243: 0: 
+ 244: 0: 		double x1 = -b + Math::Sqrt(disc) / 2*a; 
+ 245: 0: 		what = x1==-2.0;
+ 246: 0: 
+ 247: 0: 		double x2 = -b - Math::Sqrt(disc) / 2*a;
+ 248: 0: 		what = x2==-2.0;
+ 249: 0: 
+ 250: 0: 		x = 1;
+ 251: 0: 		Console::WriteLn("the value of x is: ", x);
+ 252: 0: 
+ 253: 0: 		++x;
+ 254: 0: 		Console::WriteLn("the value of x is: ", x); //2
+ 255: 0: 
+ 256: 0: 		--x;
+ 257: 0: 		Console::WriteLn("the value of x is: ", x); //1
+ 258: 0: 
+ 259: 0: 		Console::WriteLn("the value of x is: ", x++); //1 -->2
+ 260: 0: 
+ 261: 0: 		Console::WriteLn("the value of x is: ", x--); //2 -->1
+ 262: 0: 
+ 263: 0: 		Console::WriteLn("the value is: ", x++ - 4 / (-1)); //5
+Page 9   C:\HCC\HCC\TestSource\TestSwitch.hpp   Sun Feb 04 18:39:05 
+
+ 264: 0: 
+ 265: 0: 		Console::WriteLn("the value is: ", --x - 4 / (-1)); //5
+ 266: 0: 
+ 267: 0: 		Console::WriteLn("the value is: ", (x++ - 4) / (-1)); //3
+ 268: 0: 
+ 269: 0: 		Console::WriteLn("the value is: ", (--x - 4) / (-1)); //3
+ 270: 0: 
+ 271: 0: 		x = ten * 100; //==0x400
+ 272: 0: 
+ 273: 0: 		what = x ==1000; //true
+ 274: 0: 
+ 275: 0: 		what = ten*50 == 500; //true
+ 276: 0: /*
+ 277: 0: 		hex_value = hex_value << 16; //0xC0DE0000h
+ 278: 0: 
+ 279: 0: 		hex_value = hex_value >> 8; //0x00C0DE00h
+ 280: 0: 
+ 281: 0: 		hex_value = hex_value >> 8; //0x0000C0DEh
+ 282: 0: */
+ 283: 0: 
+ 284: 0: 		UnitTesting::TestIntegers::bigValue *= 4;
+ 285: 0: 
+ 286: 0: 		using namespace misc1;
+ 287: 0: 
+ 288: 0: 		gletter alett = alpha;	
+ 289: 0: 		
+ 290: 0: 		days_type lundi = monday, 
+ 291: 0: 				mardi = tuesday;
+ 292: 0: 				  
+ 293: 0: 		int length = 15, width = 10;
+ 294: 0: 		double area = length * width;	
+ 295: 0: 	
+ 296: 0: 		double radius, circ;
+ 297: 0: 			
+ 298: 0: 		char letter = 'x';
+ 299: 0: 		
+ 300: 0: 		double darea = (length * width) * 0.9;
+ 301: 0: 
+ 302: 0: 		a = 2;
+ 303: 0: 
+ 304: 0: 		bool ternary = 4 >= a ? 999 < 1000 && 1 > 0 : 777==77.7*10 ; 7 == 111;
+ 305: 0: 
+ 306: 0: 		ternary = (4 >= a) ? 999 > 1000 && 1 > 0 : 777 / 7 == 111;
+ 307: 0: 
+ 308: 0: 		ternary = 4 < a ? 999 > 1000 && 1 > 0 : 777 / (3 + 4) == 111;
+ 309: 0: 
+ 310: 0: 
+ 311: 0: 		return;
+ 312: 0: 	}
+ 313: 0: 
+Page 10   C:\HCC\HCC\TestSource\TestSwitch.hpp   Sun Feb 04 18:39:05 
+
+ 314: 0: 	public int Calc1(int i, int ref j)
+ 315: 0: 	{
+ 316: 0: 		auto int nArea = j * Height;
+ 317: 0: 
+ 318: 0: 		j = Width;	//reference keep this value
+ 319: 0: 
+ 320: 0: 		j = i div 5;
+ 321: 0: 
+ 322: 0: 		nArea = ftoi(j * Height * 1.0);
+ 323: 0: 		//nArea = j * Height * 1.0;
+ 324: 0: 
+ 325: 0: 		j *= 3; //new value for j
+ 326: 0: 
+ 327: 0: 		return nArea;
+ 328: 0: 	}
+ 329: 0: 
+ 330: 0: 	public void Swap(int ref value1, int ref value2)
+ 331: 0: 	{
+ 332: 0: 		auto Int32 tmp = value1;
+ 333: 0: 		value1 = value2;
+ 334: 0: 		value2 = tmp;
+ 335: 0: 	}
+ 336: 0: 
+ 337: 0: 	public void Calc2(Int32 ref x, Int32 ref y)
+ 338: 0: 	{
+ 339: 0: 		int a = 1000;
+ 340: 0: 		x = 9 * 3 * a; //27000
+ 341: 0: 		y = a * 4 * 5; //20000
+ 342: 0: 	}
+ 343: 0: 
+ 344: 0: 	//members for specific integer expressions
+ 345: 0: 	public void add(int v1, int v2, int ref res)
+ 346: 0: 	{
+ 347: 0: 		res = v1 + v2;
+ 348: 0: 
+ 349: 0: 		Console::WriteLn("(+) the result is: ", res);
+ 350: 0: 	}
+ 351: 0: 
+ 352: 0: 	public void subs(int v1, int v2, int ref res)
+ 353: 0: 	{
+ 354: 0: 		res = v1 - v2;
+ 355: 0: 
+ 356: 0: 		Console::WriteLn("(-) the result is: ", res);
+ 357: 0: 	}
+ 358: 0: 
+ 359: 0: 	public void multiply(int v1, int v2, int ref res)
+ 360: 0: 	{
+ 361: 0: 		res = v1 * v2;
+ 362: 0: 
+ 363: 0: 		Console::WriteLn("(*) the result is: ", res);
+Page 11   C:\HCC\HCC\TestSource\TestSwitch.hpp   Sun Feb 04 18:39:05 
+
+ 364: 0: 	}
+ 365: 0: 
+ 366: 0: 	public void divide(int v1, int v2, int ref res)
+ 367: 0: 	{
+ 368: 0: 		res = v1 div v2;
+ 369: 0: 
+ 370: 0: 		Console::WriteLn("(div) the result is: ", res);
+ 371: 0: 	}
+ 372: 0: 
+ 373: 0: 	public void modulus(int v1, int v2, int ref res)
+ 374: 0: 	{
+ 375: 0: 		res = v1 % v2;
+ 376: 0: 
+ 377: 0: 		Console::WriteLn("(mod) the result is: ", res);
+ 378: 0: 	}
+ 379: 0: 
+ 380: 0: 	public void divide2(int v1, int v2, int ref res)
+ 381: 0: 	{
+ 382: 0: 		res = Math::Round(v1 / v2);
+ 383: 0: 
+ 384: 0: 		Console::WriteLn("(round(/)) the result is: ", res);
+ 385: 0: 	}
+ 386: 0: 
+ 387: 0: 	public void multiple_assignments(int ref param1, int param2)
+ 388: 0: 	{
+ 389: 0: 		int local = param2 = param1 = (0x400 * 1024) / 0x10;
+ 390: 0: 
+ 391: 0: 		bool what = (local == 0x10000);
+ 392: 0: 	}
+ 393: 0: 
+ 394: 0: 	public int Factorial(int n)
+ 395: 0: 	{
+ 396: 0: 		System::Debug::BreakPoint();
+ 397: 0: 	
+ 398: 0: 		if(n==0)
+ 399: 0: 			return 1;
+ 400: 0: 		else
+ 401: 0: 			return n * Factorial(n - 1);
+ 402: 0: 	}
+ 403: 0: 
+ 404: 0: 	public void SwapDebug(int ref value1, int ref value2)
+ 405: 0: 	{
+ 406: 0: 		System::Debug::OutputString("Swaping values...");
+ 407: 0: 		Swap(value1, value2);
+ 408: 0: 	}
+ 409: 0: 
+ 410: 0: 	public double member1 = 0.0;
+ 411: 0: 	public double member2 = 1.0;
+ 412: 0: 
+ 413: 0: 	public double my_array1[2];
+Page 12   C:\HCC\HCC\TestSource\TestSwitch.hpp   Sun Feb 04 18:39:05 
+
+ 414: 0: 	public int my_array2[2];
+ 415: 0: 	};
+ 416: 0: 
+ 417: 0: 
+ 418: 0: 	class TestFloatingPoint
+ 419: 0: 	{
+ 420: 0: 		public TestFloatingPoint()
+ 421: 0: 		{
+ 422: 0: 			System::Debug::OutputString("constructing a TestFloatingPoint() object...");
+ 423: 0: 		}
+ 424: 0: 
+ 425: 0: 		public void Destructor()
+ 426: 0: 		{
+ 427: 0: 			System::Debug::OutputString("destroying a TestFloatingPoint() object...");
+ 428: 0: 		}
+ 429: 0: 		public double Power(double X, int n)
+ 430: 0: 		{
+ 431: 0: 			if(n==0)
+ 432: 0: 				return 1;
+ 433: 0: 
+ 434: 0: 			if(n%2==0)
+ 435: 0: 				return Power(X * X, n/2);
+ 436: 0: 			else
+ 437: 0: 				return X * Power(X * X, n/2);
+ 438: 0: 		}
+ 439: 0: 
+ 440: 0: 
+ 441: 0: 		public static double speed(double distance, double time)
+ 442: 0: 		{
+ 443: 0: 			return distance / time;
+ 444: 0: 		}
+ 445: 0: 
+ 446: 0: 		public double Area(double minor_base, double major_base, double height)
+ 447: 0: 		{
+ 448: 0: 			double area = ((minor_base + major_base) * height) / 2.0;
+ 449: 0: 
+ 450: 0: 			return area;
+ 451: 0: 		}
+ 452: 0: 
+ 453: 0: 
+ 454: 0: 
+ 455: 0: 	};
+ 456: 0: 
+ 457: 0: 	class TestArrays
+ 458: 0: 	{
+ 459: 0: 		private string name;
+ 460: 0: 
+ 461: 0: 		public string get:Name()
+ 462: 0: 		{
+ 463: 0: 			return name;
+Page 13   C:\HCC\HCC\TestSource\TestSwitch.hpp   Sun Feb 04 18:39:05 
+
+ 464: 0: 		}
+ 465: 0: 		public void put:Name(string value)
+ 466: 0: 		{
+ 467: 0: 			name = value;
+ 468: 0: 		}
+ 469: 0: 
+ 470: 0: 		public static void printChars(char [] array, int n)
+ 471: 0: 		{			
+ 472: 0: 			for(int i=0;i<n;++i)
+ 473: 0: 				Console::WriteLn("Char at i:[", i, "] == ", array[i]);
+ 474: 0: 
+ 475: 0: 		}
+ 476: 0: 
+ 477: 0: 		//implements the H++ statements before going into testing arrays...
+ 478: 0: 		public static void DoTest(void)
+ 479: 0: 		{
+ 480: 0: 				TestIntegers array2[4];				
+ 481: 0: 
+ 482: 0: 				array2[0].Width  = 100;
+ 483: 0: 				array2[0].Height = 200;				
+ 484: 0: 
+ 485: 0: 				Int64 nArea = array2[0].Width;
+ 486: 0: 
+ 487: 0: 				nArea = array2[0].Width * array2[0].Height;
+ 488: 0: 
+ 489: 0: 				array2[0].member1 = Math::pi();
+ 490: 0: 				array2[0].member1 = Math::log_e_base2();
+ 491: 0: 				
+ 492: 0: 
+ 493: 0: 				array2[1].Width  = 100;
+ 494: 0: 				array2[1].Height = 200;
+ 495: 0: 
+ 496: 0: 				nArea = array2[1].Width * array2[1].Height;
+ 497: 0: 
+ 498: 0: 				array2[2].Width  = 100;
+ 499: 0: 				array2[2].Height = 200;
+ 500: 0: 
+ 501: 0: 				nArea = array2[2].Width * array2[2].Height;
+ 502: 0: 
+ 503: 0: 
+ 504: 0: 				array2[3].my_array1[0] = 9.99;
+ 505: 0: 				array2[3].my_array2[0] = ftoi(9.99);
+ 506: 0: 
+ 507: 0: 				string name = "Harold L. Marzan";
+ 508: 0: 				printChars(name, StringHandling::StringLength(name));
+ 509: 0: 
+ 510: 0: 				char my_name_is[20];
+ 511: 0: 
+ 512: 0: 				my_name_is[0] = 'H';
+ 513: 0: 				my_name_is[1] = 'a';
+Page 14   C:\HCC\HCC\TestSource\TestSwitch.hpp   Sun Feb 04 18:39:05 
+
+ 514: 0: 				my_name_is[2] = 'r';
+ 515: 0: 				my_name_is[3] = 'o';
+ 516: 0: 				my_name_is[4] = 'l';
+ 517: 0: 				my_name_is[5] = 'd';
+ 518: 0: 				my_name_is[6] = '\0';
+ 519: 0: 
+ 520: 0: 				Console::WriteLn("My name is :", my_name_is);
+ 521: 0: 
+ 522: 0: 				printChars(my_name_is, StringHandling::StringLength(my_name_is));
+ 523: 0: 
+ 524: 0: 				char arr[10][20];				
+ 525: 0: 
+ 526: 0: 				printChars(arr[9], StringHandling::StringLength(arr[9]));
+ 527: 0: 
+ 528: 0: 				string arr_of_strings[4];
+ 529: 0: 
+ 530: 0: 				arr_of_strings[0] = "Harold ";
+ 531: 0: 				arr_of_strings[1] = "Lawrence ";
+ 532: 0: 				arr_of_strings[2] = "Marzan ";
+ 533: 0: 				arr_of_strings[3] = "Mercado.";
+ 534: 0: 				
+ 535: 0: 				for(unsigned int i=0;i<4;++i)
+ 536: 0: 				{
+ 537: 0: 					printChars(arr_of_strings[i], StringHandling::StringLength(arr_of_strings[i]));
+
+ 538: 0: 				}
+ 539: 0: 
+ 540: 0: 				StringHandling::StringCopy(my_name_is, name, StringHandling::StringLength(name));
+
+ 541: 0: 				printChars(my_name_is, StringHandling::StringLength(my_name_is));
+ 542: 0: 		}
+ 543: 0: 	};
+ 544: 0: 
+ 545: 0: 	namespace Test1
+ 546: 0: 	{
+ 547: 0: 		class TestRunner
+ 548: 0: 		{
+ 549: 0: 			public static void main(/*int argc, string[] argv*/)
+ 550: 0: 			{
+ 551: 0: __HELLO_PART:
+ 552: 0: 				HelloWorld hello();
+ 553: 0: 
+ 554: 0: 				string say = "Hello World from H++!!!";
+ 555: 0: 
+ 556: 0: 				hello.SayHello(say);
+ 557: 0: 
+ 558: 0: 				hello.ShowHello(say);
+ 559: 0: 
+ 560: 0: 				TestIntegers tester1;
+ 561: 0: 
+ 562: 0: 				tester1.Width	=  0x400h * 1024; //1mb
+ 563: 0: 				tester1.Height	= 0x20h; //
+Page 15   C:\HCC\HCC\TestSource\TestSwitch.hpp   Sun Feb 04 18:39:05 
+
+ 564: 0: 
+ 565: 0: 				int nWidth	= tester1.Width,
+ 566: 0: 					nHeight = tester1.Height;
+ 567: 0: 
+ 568: 0: 				auto Int64 nArea = tester1.Width * tester1.Height;
+ 569: 0: 
+ 570: 0: 				with(tester1)
+ 571: 0: 				{
+ 572: 0: 					.Width	= 0x666h;
+ 573: 0: 					.Height = 0x777h;
+ 574: 0: 				}
+ 575: 0: 
+ 576: 0: 				//int __CALC_FACTORIAL = 0;
+ 577: 0: 
+ 578: 0: 				goto __CALC_FACTORIAL;
+ 579: 0: 
+ 580: 0: 				debugger
+ 581: 0: 
+ 582: 0: 				nArea = nWidth * nHeight;
+ 583: 0: 
+ 584: 0: 				int n = 7;
+ 585: 0: 
+ 586: 0: 				Integers_Inline::Test();
+ 587: 0: 				
+ 588: 0: 				for(int index=0; index<100; index++)
+ 589: 0: 				{
+ 590: 0: 					Console::WriteLn("Current Index :", index );
+ 591: 0: 				}
+ 592: 0: 
+ 593: 0: 				for(;;)
+ 594: 0: 				{
+ 595: 0: 					//infinite loop
+ 596: 0: 					if(--index==0)
+ 597: 0: 						break;
+ 598: 0: 				}
+ 599: 0: 
+ 600: 0: 				bool what = !(index==0);
+ 601: 0: 
+ 602: 0: __CALC_FACTORIAL:
+ 603: 0: 
+ 604: 0: 				int nf = tester1.Factorial(n);
+ 605: 0: 
+ 606: 0: 				--n;
+ 607: 0: 				if(n==0)
+ 608: 0: 					goto __END_FACTORIAL;
+ 609: 0: 
+ 610: 0: 				goto __CALC_FACTORIAL;
+ 611: 0: 
+ 612: 0: __END_FACTORIAL:
+ 613: 0: 
+Page 16   C:\HCC\HCC\TestSource\TestSwitch.hpp   Sun Feb 04 18:39:05 
+
+ 614: 0: 				//only the reference param will be assigned whe the function return to main...
+
+ 615: 0: 				int myRef1 = 0;
+ 616: 0: 				int myVar1 = 0;
+ 617: 0: 
+ 618: 0: 				debugger;
+ 619: 0: 
+ 620: 0: 				tester1.multiple_assignments(myRef1, myVar1);
+ 621: 0: 
+ 622: 0: 				Console::WriteLn("The value of myRef1 must be 65536 ==", myRef1);
+ 623: 0: 				Console::WriteLn("The value of myVar1 is not 65536 but zero", myVar1);
+ 624: 0: 
+ 625: 0: 				Console::WriteLn("(int)the area is: ", tester1.getArea());
+ 626: 0: 				Console::WriteLn("(double)the area is: ", tester1.getArea2());
+ 627: 0: 
+ 628: 0: 				auto Int32 result = 0;
+ 629: 0: 				tester1.add(1024, 3072, result); //result==4096
+ 630: 0: 
+ 631: 0: 				tester1.subs(1024, 3072, result); //result==-2048
+ 632: 0: 
+ 633: 0: 				tester1.modulus(4096, 6, result); //result==4
+ 634: 0: 
+ 635: 0: 				tester1.multiply(3, 927, result); //result==2781==0xADDh
+ 636: 0: 
+ 637: 0: 				tester1.divide(4096, 6, result); //result==682
+ 638: 0: 
+ 639: 0: 				tester1.divide2(4096, 6, result); //result==682.66666 aprox. 683				
+ 640: 0: 
+ 641: 0: 				//test all kind of H++ integer expressions...
+ 642: 0: 				TestIntegers::TestExpressions();
+ 643: 0: 				
+ 644: 0: 				int val1 = 1, val2 = 2;
+ 645: 0: 
+ 646: 0: 				what = false;
+ 647: 0: 
+ 648: 0: 				tester1.Swap(val1, val2);
+ 649: 0: 
+ 650: 0: 				what = val1 == 2 && val2==1; //true
+ 651: 0: 
+ 652: 0: 				tester1.Calc2(val1, val2);
+ 653: 0: 
+ 654: 0: 				what = val1 == 27000 && val2==20000; //true
+ 655: 0: 
+ 656: 0: 				tester1.Swap(val1, val2);
+ 657: 0: 
+ 658: 0: 				tester1.SwapDebug(val1, val2);
+ 659: 0: 
+ 660: 0: 				what = val1 == 20000 && val2==27000; //true
+ 661: 0: 
+ 662: 0: 				tester1.Calc1(val1, val2);
+ 663: 0: 
+Page 17   C:\HCC\HCC\TestSource\TestSwitch.hpp   Sun Feb 04 18:39:05 
+
+ 664: 0: 				what = val2!=27000; //true
+ 665: 0: 
+ 666: 0: 				val1 = val1 << 24;
+ 667: 0: 
+ 668: 0: 				TestFloatingPoint fpTester();
+ 669: 0: 
+ 670: 0: 				double _pow = fpTester.Power(2.0, 32);
+ 671: 0: 
+ 672: 0: 				int array1[100];
+ 673: 0: 
+ 674: 0: 				for(index = 0; index < sizeof(array1); )
+ 675: 0: 				{
+ 676: 0: 					array1[index] = ftoi((index + 1) * 9.45);
+ 677: 0: 					index++;
+ 678: 0: 				}
+ 679: 0: 
+ 680: 0: 				TestArrays::DoTest();
+ 681: 0: 
+ 682: 0: 				Rnd rnd(Math::Round(0x400 * Math::log_10_base2() + 1.0));
+ 683: 0: 
+ 684: 0: 				goto _BlockRndDoubles;
+ 685: 0: 
+ 686: 0: 				Console::WriteLn("Pseudo-Random Integer values:");
+ 687: 0: 				Console::WriteLn("(1)A pseudo-random value: ", rnd.NextInt());
+ 688: 0: 				Console::WriteLn("(2)A pseudo-random value: ", rnd.NextInt());
+ 689: 0: 				Console::WriteLn("(3)A pseudo-random value: ", rnd.NextInt());
+ 690: 0: 				Console::WriteLn("(4)A pseudo-random value: ", rnd.NextInt());
+ 691: 0: 				Console::WriteLn("(5)A pseudo-random value: ", rnd.NextInt());
+ 692: 0: 				Console::WriteLn("(6)A pseudo-random value: ", rnd.NextInt());
+ 693: 0: 
+ 694: 0: _BlockRndDoubles:
+ 695: 0: 
+ 696: 0: 				Console::WriteLn("Pseudo-Random Double values:");
+ 697: 0: 				Console::WriteLn("(1)A pseudo-random value: ", rnd.NextDbl());
+ 698: 0: 				Console::WriteLn("(2)A pseudo-random value: ", rnd.NextDbl());
+ 699: 0: 				Console::WriteLn("(3)A pseudo-random value: ", rnd.NextDbl());
+ 700: 0: 				Console::WriteLn("(4)A pseudo-random value: ", rnd.NextDbl());
+ 701: 0: 				Console::WriteLn("(5)A pseudo-random value: ", rnd.NextDbl());
+ 702: 0: 				Console::WriteLn("(6)A pseudo-random value: ", rnd.NextDbl());
+ 703: 0: 				//
+ 704: 0: 
+ 705: 0: 				using namespace UnitTesting::TestVirtuals;
+ 706: 0: 
+ 707: 0: 				double res = 0.0;
+ 708: 0: 
+ 709: 0: 				SimpleRV srv();
+ 710: 0: 
+ 711: 0: 				res = srv.Sample();
+ 712: 0: 				Console::WriteLn("(1)A simple random variable has : ", res, " as its value.");
+
+ 713: 0: 				res = srv.Sample();
+Page 18   C:\HCC\HCC\TestSource\TestSwitch.hpp   Sun Feb 04 18:39:05 
+
+ 714: 0: 				Console::WriteLn("(2)A simple random variable has : ", res, " as its value.");
+
+ 715: 0: 				res = srv.Sample();
+ 716: 0: 				Console::WriteLn("(3)A simple random variable has : ", res, " as its value.");
+
+ 717: 0: 				res = srv.Sample();
+ 718: 0: 				Console::WriteLn("(4)A simple random variable has : ", res, " as its value.");
+
+ 719: 0: 				Console::WriteLn("my name is", srv.Name());
+ 720: 0: 
+ 721: 0: 				res = 1.0;
+ 722: 0: 
+ 723: 0: 				UniformRV urv(Math::log_e_base2(), Math::log_2_base_e());
+ 724: 0: 
+ 725: 0: 				res = urv.Sample();
+ 726: 0: 				Console::WriteLn("(1)An uniform random variable has : ", res, " as its value.");
+
+ 727: 0: 				res = urv.Sample();
+ 728: 0: 				Console::WriteLn("(2)An uniform random variable has : ", res, " as its value.");
+
+ 729: 0: 				res = urv.Sample();
+ 730: 0: 				Console::WriteLn("(3)An uniform random variable has : ", res, " as its value.");
+
+ 731: 0: 				res = urv.Sample();
+ 732: 0: 				Console::WriteLn("(4)An uniform random variable has : ", res, " as its value.");
+
+ 733: 0: 				Console::WriteLn("my name is", urv.Name());
+ 734: 0: 
+ 735: 0: 				res = 0.0;
+ 736: 0: 
+ 737: 0: 				ExponentialRV erv(Math::pi());
+ 738: 0: 
+ 739: 0: 				res = erv.Sample();
+ 740: 0: 				Console::WriteLn("(1)An exponential random variable has : ", res, " as its value.");
+
+ 741: 0: 				res = erv.Sample();
+ 742: 0: 				Console::WriteLn("(2)An exponential random variable has : ", res, " as its value.");
+
+ 743: 0: 				res = erv.Sample();
+ 744: 0: 				Console::WriteLn("(3)An exponential random variable has : ", res, " as its value.");
+
+ 745: 0: 				res = erv.Sample();
+ 746: 0: 				Console::WriteLn("(4)An exponential random variable has : ", res, " as its value.");
+
+ 747: 0: 				Console::WriteLn("my name is", erv.Name());
+ 748: 0: 
+ 749: 0: 				
+ 750: 0: //				goto _Alpha;
+ 751: 0: 				TestSwitch::RunTest(TestSwitch::open);
+ 752: 0: //				goto _Omega;
+ 753: 0: 				
+ 754: 0: 
+ 755: 0: 				double^ p = new double;
+ 756: 0: 
+ 757: 0: 				
+ 758: 0: 				*p = 3.141516927;
+ 759: 0: 
+ 760: 0: 				res = *p;
+ 761: 0: 				
+ 762: 0: 
+ 763: 0: 				destroy p;
+Page 19   C:\HCC\HCC\TestSource\TestSwitch.hpp   Sun Feb 04 18:39:05 
+
+ 764: 0: 
+ 765: 0: 				/*
+ 766: 0: 				p = &res;
+ 767: 0: 
+ 768: 0: 				*p = 9.99;
+ 769: 0: 				*/
+ 770: 0: 
+ 771: 0: 				TestFloatingPoint^ fpTester_ptr = new TestFloatingPoint();
+ 772: 0: 
+ 773: 0: 				_pow = fpTester_ptr.Power(2.0, 64);
+ 774: 0: 
+ 775: 0: 				destroy fpTester_ptr;
+ 776: 0: 
+ 777: 0: 								
+ 778: 0: 				int [][] iptr = new int[10][10];	//10 * 10 * 4 = 400 bytes
+ 779: 0: 
+ 780: 0: 				iptr[0][0] = 145;
+ 781: 0: 				iptr[1][9] = 541;
+ 782: 0: 				iptr[2][7] = 561;
+ 783: 0: 				iptr[3][9] = 123;
+ 784: 0: 
+ 785: 0: 				destroy iptr;
+ 786: 0: 
+ 787: 0: 				iptr = null;
+ 788: 0: 
+ 789: 0: 				int ^ xptr = null;
+ 790: 0: 
+ 791: 0: 				xptr = new int;
+ 792: 0: 
+ 793: 0: 				destroy xptr;
+ 794: 0: 				
+ 795: 0: 				int [] ii2ptr = null;
+ 796: 0: 
+ 797: 0: 				TestIntegers xtarget,
+ 798: 0: 							 ysource;
+ 799: 0: 
+ 800: 0: 				ysource.Width = 0x666;
+ 801: 0: 				ysource.Height = 0x777;
+ 802: 0: 
+ 803: 0: 				//to test the object copy feature...
+ 804: 0: 				xtarget = ysource;
+ 805: 0: 
+ 806: 0: 				val1 = 5, val2 = 3;		
+ 807: 0: 
+ 808: 0: 				xptr = xptr + 1;				
+ 809: 0: 
+ 810: 0: 				/*TODO
+ 811: 0: 				iptr = new int[val1 *3 ][(val2 * 4)];	//now [15][12] == 720 bytes
+ 812: 0: 				destroy iptr;
+ 813: 0: 				*/
+Page 20   C:\HCC\HCC\TestSource\TestSwitch.hpp   Sun Feb 04 18:39:05 
+
+ 814: 0: 				
+ 815: 0: 				//testing sizeof operators
+ 816: 0: 
+ 817: 0: 				int npi = sizeof(misc1::pi);
+ 818: 0: 
+ 819: 0: 				npi = sizeof pi;
+ 820: 0: 
+ 821: 0: 				int nint = sizeof(int),
+ 822: 0: 					ndbl = sizeof(double),
+ 823: 0: 					ni64 = sizeof Int64,
+ 824: 0: 					ntit = sizeof(TestIntegers),
+ 825: 0: 					nptr = sizeof(p),
+ 826: 0: 					narr = sizeof(iptr),
+ 827: 0: 					nar2 = sizeof(array1),
+ 828: 0: 					nar3 = sizeof(misc1::array);
+ 829: 0: 
+ 830: 0: 				nint = sizeof int + sizeof double;
+ 831: 0: 
+ 832: 0: 				nint = sizeof(int) + sizeof(Int64);
+ 833: 0: 
+ 834: 0: 				if(nint >= ndbl && ni64 < ntit)
+ 835: 0: 				{
+ 836: 0: 					Console::WriteLn("This is getting complex and better each time!");
+ 837: 0: 				}				
+ 838: 0: 
+ 839: 0: 				Circle obj;
+ 840: 0: 
+ 841: 0: 				obj.Radius = 115.456;
+ 842: 0: 
+ 843: 0: 				auto double area = obj.ComputeArea();
+ 844: 0: 
+ 845: 0: 				Square sq;
+ 846: 0: 
+ 847: 0: 				sq.Width = 500.456;
+ 848: 0: 				sq.Height = 1045.4564;
+ 849: 0: 
+ 850: 0: 				sq.ComputeArea();
+ 851: 0: 
+ 852: 0: 				Triangle tri;
+ 853: 0: 
+ 854: 0: 				tri.Base = 450.4564;
+ 855: 0: 				tri.High = 4572.4564;
+ 856: 0: 
+ 857: 0: 				tri.ComputeArea();
+ 858: 0: /*
+ 859: 0: _Alpha:
+ 860: 0: 				//
+ 861: 0: 				res = 0.0;
+ 862: 0: _Omega:
+ 863: 0: 				//
+Page 21   C:\HCC\HCC\TestSource\TestSwitch.hpp   Sun Feb 04 18:39:05 
+
+ 864: 0: 				res = 1.0;			
+ 865: 0: */				
+ 866: 0: 			}
+ 867: 0: 		};
+ 868: 0: 	}
+ 869: 0: }
+                 869 source lines.
+                   0 syntax errors.
+
+Compilation time: 0 secs.

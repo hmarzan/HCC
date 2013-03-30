@@ -1,0 +1,89 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: HCCLib - Win32 Release--------------------
+</h3>
+<h3>Command Lines</h3>
+<h3>
+--------------------Configuration: HCC - Win32 Release--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating command line "rc.exe /l 0x409 /fo"Release/HCC.res" /d "NDEBUG" "C:\HCC\HCC\HCC.rc"" 
+Creating temporary file "C:\DOCUME~1\HAROLD~1.NEM\LOCALS~1\Temp\RSP27.tmp" with contents
+[
+/nologo /MT /W3 /GX /Zi /O1 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /Fp"Release/HCC.pch" /Yu"stdafx.h" /Fo"Release/" /Fd"Release/" /FD /c 
+"C:\HCC\HCC\assembly_source_unit.cpp"
+"C:\HCC\HCC\HCC.cpp"
+"C:\HCC\HCC\HCCCodeGenerator.cpp"
+"C:\HCC\HCC\HCCExecutor.cpp"
+"C:\HCC\HCC\HCCIntermediate.cpp"
+"C:\HCC\HCC\HCCLexer.cpp"
+"C:\HCC\HCC\HCCParser.cpp"
+"C:\HCC\HCC\source_unit_compactor.cpp"
+]
+Creating command line "cl.exe @C:\DOCUME~1\HAROLD~1.NEM\LOCALS~1\Temp\RSP27.tmp" 
+Creating temporary file "C:\DOCUME~1\HAROLD~1.NEM\LOCALS~1\Temp\RSP28.tmp" with contents
+[
+/nologo /MT /W3 /GX /Zi /O1 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /Fo"Release/" /Fd"Release/" /FD /c 
+"C:\HCC\HCC\HCCLib\coreicode.cpp"
+"C:\HCC\HCC\HCCLib\corelisting.cpp"
+"C:\HCC\HCC\HCCLib\coresymbols.cpp"
+"C:\HCC\HCC\HCCLib\errors.cpp"
+]
+Creating command line "cl.exe @C:\DOCUME~1\HAROLD~1.NEM\LOCALS~1\Temp\RSP28.tmp" 
+Creating temporary file "C:\DOCUME~1\HAROLD~1.NEM\LOCALS~1\Temp\RSP29.tmp" with contents
+[
+/nologo /MT /W3 /GX /Zi /O1 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /Fp"Release/HCC.pch" /Yc"stdafx.h" /Fo"Release/" /Fd"Release/" /FD /c 
+"C:\HCC\HCC\StdAfx.cpp"
+]
+Creating command line "cl.exe @C:\DOCUME~1\HAROLD~1.NEM\LOCALS~1\Temp\RSP29.tmp" 
+Creating temporary file "C:\DOCUME~1\HAROLD~1.NEM\LOCALS~1\Temp\RSP2A.tmp" with contents
+[
+kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comsupp.lib Version.lib /nologo /subsystem:console /incremental:no /pdb:"Release/HCC.pdb" /map:"Release/HCC.map" /debug /machine:I386 /out:"Release/HCC.exe" 
+.\Release\assembly_source_unit.obj
+.\Release\coreicode.obj
+.\Release\corelisting.obj
+.\Release\coresymbols.obj
+.\Release\errors.obj
+.\Release\HCC.obj
+.\Release\HCCCodeGenerator.obj
+.\Release\HCCExecutor.obj
+.\Release\HCCIntermediate.obj
+.\Release\HCCLexer.obj
+.\Release\HCCParser.obj
+.\Release\source_unit_compactor.obj
+.\Release\StdAfx.obj
+.\Release\HCC.res
+]
+Creating command line "link.exe @C:\DOCUME~1\HAROLD~1.NEM\LOCALS~1\Temp\RSP2A.tmp"
+<h3>Output Window</h3>
+Compiling resources...
+Compiling...
+StdAfx.cpp
+Compiling...
+assembly_source_unit.cpp
+HCC.cpp
+HCCCodeGenerator.cpp
+HCCExecutor.cpp
+HCCIntermediate.cpp
+HCCLexer.cpp
+HCCParser.cpp
+source_unit_compactor.cpp
+Generating Code...
+Compiling...
+coreicode.cpp
+corelisting.cpp
+coresymbols.cpp
+errors.cpp
+Generating Code...
+Linking...
+
+
+
+<h3>Results</h3>
+HCC.exe - 0 error(s), 0 warning(s)
+</pre>
+</body>
+</html>

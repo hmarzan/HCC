@@ -1,0 +1,29 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HCC", "HCC.vcxproj", "{B0F3DB83-EDB3-419B-B712-958DBA62DDA3}"
+	ProjectSection(ProjectDependencies) = postProject
+		{E2FCE916-0495-4B8A-9AC2-69F067038C62} = {E2FCE916-0495-4B8A-9AC2-69F067038C62}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HCCLib", "HCCLib\HCCLib.vcxproj", "{E2FCE916-0495-4B8A-9AC2-69F067038C62}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B0F3DB83-EDB3-419B-B712-958DBA62DDA3}.Debug|Win32.ActiveCfg = Debug|Win32
+		{B0F3DB83-EDB3-419B-B712-958DBA62DDA3}.Debug|Win32.Build.0 = Debug|Win32
+		{B0F3DB83-EDB3-419B-B712-958DBA62DDA3}.Release|Win32.ActiveCfg = Release|Win32
+		{B0F3DB83-EDB3-419B-B712-958DBA62DDA3}.Release|Win32.Build.0 = Release|Win32
+		{E2FCE916-0495-4B8A-9AC2-69F067038C62}.Debug|Win32.ActiveCfg = Debug|Win32
+		{E2FCE916-0495-4B8A-9AC2-69F067038C62}.Debug|Win32.Build.0 = Debug|Win32
+		{E2FCE916-0495-4B8A-9AC2-69F067038C62}.Release|Win32.ActiveCfg = Release|Win32
+		{E2FCE916-0495-4B8A-9AC2-69F067038C62}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

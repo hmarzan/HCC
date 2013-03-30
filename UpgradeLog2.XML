@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet type='text/xsl' href='_UpgradeReport_Files/UpgradeReport.xslt'?><UpgradeLog>
+<Properties><Property Name="Solution" Value="HCC">
+</Property><Property Name="Solution File" Value="C:\HCC\HCC\HCC.sln">
+</Property><Property Name="User Options File" Value="C:\HCC\HCC\HCC.suo">
+</Property><Property Name="Date" Value="Tuesday, May 15, 2012">
+</Property><Property Name="Time" Value="21:41 PM">
+</Property><Property Name="Log Number" Value="2">
+</Property></Properties><Event ErrorLevel="2" Project="" Source="HCC.sln" Description="Error creating backup file: C:\HCC\HCC\HCC.sln.old">
+</Event><Event ErrorLevel="2" Project="" Source="HCC.suo" Description="Error creating backup file: C:\HCC\HCC\HCC.suo.old">
+</Event><Event ErrorLevel="0" Project="HCC" Source="HCC.vcproj" Description="Converting project file 'C:\HCC\HCC\HCC.vcproj'.">
+</Event><Event ErrorLevel="1" Project="HCC" Source="HCC.vcproj" Description="This application has been updated to include settings related to the User Account Control (UAC) feature of Windows Vista. By default, when run on Windows Vista with UAC enabled, this application is marked to run with the same privileges as the process that launched it. This marking also disables the application from running with virtualization. You can change UAC related settings from the Property Pages of the project.">
+</Event><Event ErrorLevel="1" Project="HCC" Source="HCC.vcproj" Description="VCWebServiceProxyGeneratorTool is no longer supported. The tool has been removed from your project settings.">
+</Event><Event ErrorLevel="0" Project="HCC" Source="HCC.vcproj" Description="Web deployment to the local IIS server is no longer supported. The Web Deployment build tool has been removed from your project settings.">
+</Event><Event ErrorLevel="1" Project="HCC" Source="HCC.vcproj" Description="MSB8012: $(TargetPath) ('C:\HCC\HCC\.\Debug\HCC.exe') does not match the Linker's OutputFile property value '.\Debug/HCC.exe' ('C:\HCC\HCC\Debug/HCC.exe') in project configuration 'Debug|Win32'. This may cause your project to build incorrectly. To correct this, please make sure that $(TargetPath) property value matches the value specified in %(Link.OutputFile).">
+</Event><Event ErrorLevel="1" Project="HCC" Source="HCC.vcproj" Description="MSB8012: $(TargetPath) ('C:\HCC\HCC\.\Release\HCC.exe') does not match the Linker's OutputFile property value '.\TestSource/HCC.exe' ('C:\HCC\HCC\TestSource/HCC.exe') in project configuration 'Release|Win32'. This may cause your project to build incorrectly. To correct this, please make sure that $(TargetPath) property value matches the value specified in %(Link.OutputFile).">
+</Event><Event ErrorLevel="0" Project="HCC" Source="HCC.vcproj" Description="Done converting to new project file 'C:\HCC\HCC\HCC.vcxproj'.">
+</Event><Event ErrorLevel="3" Project="HCC" Source="HCC.vcproj" Description="Converted">
+</Event><Event ErrorLevel="0" Project="HCCLib" Source="HCCLib\HCCLib.vcproj" Description="Converting project file 'C:\HCC\HCC\HCCLib\HCCLib.vcproj'.">
+</Event><Event ErrorLevel="1" Project="HCCLib" Source="HCCLib\HCCLib.vcproj" Description="This application has been updated to include settings related to the User Account Control (UAC) feature of Windows Vista. By default, when run on Windows Vista with UAC enabled, this application is marked to run with the same privileges as the process that launched it. This marking also disables the application from running with virtualization. You can change UAC related settings from the Property Pages of the project.">
+</Event><Event ErrorLevel="0" Project="HCCLib" Source="HCCLib\HCCLib.vcproj" Description="Done converting to new project file 'C:\HCC\HCC\HCCLib\HCCLib.vcxproj'.">
+</Event><Event ErrorLevel="3" Project="HCCLib" Source="HCCLib\HCCLib.vcproj" Description="Converted">
+</Event><Event ErrorLevel="0" Project="" Source="HCC.sln" Description="Solution converted successfully">
+</Event><Event ErrorLevel="3" Project="" Source="HCC.sln" Description="Converted">
+</Event></UpgradeLog>

@@ -1,0 +1,1546 @@
+Microsoft (R) Macro Assembler Version 6.15.8803		    12/18/08 00:30:28
+unittest.asm						     Page 1 - 1
+
+
+
+				.386P
+				.MODEL flat, stdcall
+				.STACK 1024 * 1024
+
+				INCLUDE hcclib32.INC
+			      C .NOLIST
+			      C .LIST
+			      C 
+			      C 
+			      C ; when the "C" calling convension is used, then we must use :PROC;
+			      C ; when the stdcall calling convension is used, we must use :PROTO;
+			      C 
+			      C EXTERN __purecall: PROTO;
+			      C 
+			      C ; H++  C O N S O L E   A P I s 
+			      C 
+			      C EXTERN Console_ClearScreen:PROTO;
+			      C EXTERN Console_ReadString:PROTO;
+			      C EXTERN Console_ReadChar:PROTO;
+			      C EXTERN Console_WriteString:PROTO;
+			      C EXTERN Console_WriteCrlf:PROTO;
+			      C EXTERN Console_WriteChar:PROTO;
+			      C EXTERN Console_SetCursorPos:PROTO;
+			      C EXTERN Console_SetTextColor:PROTO;
+			      C EXTERN Console_SetConsoleSize:PROTO;
+			      C EXTERN Console_SetTitle:PROTO;
+			      C EXTERN Console_GetTitle:PROTO;
+			      C EXTERN Console_MoveWindow:PROTO;
+			      C 
+			      C EXTERN Console_ReadDouble:PROTO;
+			      C EXTERN Console_ReadInteger:PROTO;
+			      C EXTERN Console_WriteDouble:PROTO;
+			      C EXTERN Console_WriteInteger:PROTO;
+			      C EXTERN Console_WriteInteger64:PROTO;
+			      C 
+			      C ; H++  F I L E   A P I s 
+			      C 
+			      C EXTERN File_Open:PROTO;
+			      C EXTERN File_Close:PROTO;
+			      C EXTERN File_Read:PROTO;
+			      C EXTERN File_Write:PROTO;
+			      C EXTERN File_Seek:PROTO;
+			      C EXTERN File_FileSize:PROTO;
+			      C 
+			      C ; H++  S Y S T E M   A P I s 
+			      C 
+			      C EXTERN System_Exit:PROTO;
+			      C EXTERN System_LastError:PROTO;
+			      C EXTERN System_CommandLineArgs:PROTO;
+			      C EXTERN System_Execute:PROTO;
+			      C EXTERN System_GetTickCount:PROTO;
+			      C EXTERN System_Sleep:PROTO;
+			      C EXTERN System_Debug_OutputString:PROTO;
+			      C EXTERN System_BreakPoint:PROTO;
+			      C EXTERN System_IsDebuggerPresent:PROTO;
+			      C 
+			      C ; H++  M A T H   A P I s
+			      C 
+			      C EXTERN Math_Init:PROTO;
+			      C EXTERN Math_Abs:PROTO;
+			      C EXTERN Math_ChangeSign:PROTO;
+			      C EXTERN Math_Sqrt:PROTO;
+			      C EXTERN Math_Sqr:PROTO;
+			      C 
+			      C EXTERN Math_Sin:PROTO;
+			      C EXTERN Math_Cos:PROTO;
+			      C EXTERN Math_Tan:PROTO;
+			      C EXTERN Math_ArcTan:PROTO;
+			      C EXTERN Math_Round:PROTO;
+			      C 
+			      C EXTERN Math_Modulus:PROTO;
+			      C EXTERN Math_IEEEModulus:PROTO;
+			      C EXTERN Math_ModulusTruncateDivisor:PROTO;
+			      C 
+			      C EXTERN Math_Ln:PROTO;
+			      C EXTERN Math_log2:PROTO;
+			      C EXTERN Math_log10:PROTO;
+			      C EXTERN Math_Exp:PROTO;
+			      C 
+			      C EXTERN Math_MantissaOf:PROTO;
+			      C EXTERN Math_GetNumberFrom:PROTO;
+			      C EXTERN Math_LogN_base:PROTO;
+			      C 
+			      C EXTERN Math_Max:PROTO;
+			      C EXTERN Math_Min:PROTO;
+			      C EXTERN Math_Sign:PROTO;
+			      C EXTERN Math_Pow2:PROTO;
+			      C EXTERN Math_Pow:PROTO;
+			      C EXTERN Math_Gcd:PROTO;
+			      C EXTERN Math_Odd:PROTO;
+			      C EXTERN Math_Even:PROTO;
+			      C EXTERN Math_Trunc:PROTO;
+			      C 
+			      C ; N O N - I N T R I N S I C   M A T H   F U N C T I O N S 
+			      C 
+			      C EXTERN Math_Cotan:PROTO;
+			      C EXTERN Math_Sec:PROTO;
+			      C EXTERN Math_Cosec:PROTO;
+			      C EXTERN Math_Inverse_Arcsin:PROTO;
+			      C EXTERN Math_Inverse_Arccos:PROTO;
+			      C EXTERN Math_Inverse_Arcsec:PROTO;
+			      C EXTERN Math_Inverse_Arccosec:PROTO;
+			      C EXTERN Math_Inverse_Arccotan:PROTO;
+			      C 
+			      C ; M A T H   C O N S T A N T S  
+			      C EXTERN Math_pi:PROTO;
+			      C EXTERN Math_log_10_base2:PROTO;
+			      C EXTERN Math_log_e_base2:PROTO;
+			      C EXTERN Math_log_2_base10:PROTO;
+			      C EXTERN Math_log_2_base_e:PROTO;
+			      C 
+			      C 
+			      C ; I N T E G E R   S P E C I F I C S   ( U T I L I T I E S )
+			      C EXTERN Integer_toStringEx:PROTO;
+			      C EXTERN Integer_toString:PROTO;
+			      C EXTERN Integer_fromString:PROTO;
+			      C 
+			      C 
+			      C ; F L O A T I N G   P O I N T   S P E C I F I C  (U T I L I T I E S )
+			      C 
+			      C EXTERN FloatingPoint_Compare:PROTO;
+			      C EXTERN FloatingPoint_CompareToInteger:PROTO;
+			      C EXTERN FloatingPoint_ToInt:PROTO;
+			      C EXTERN FloatingPoint_ToInt64:PROTO;
+			      C EXTERN FloatingPoint_FromInt:PROTO;
+			      C EXTERN FloatingPoint_FromInt64:PROTO;
+			      C 
+			      C EXTERN FloatingPoint_toString:PROTO;
+			      C EXTERN FloatingPoint_toStringEx:PROTO;
+			      C EXTERN FloatingPoint_fromString:PROTO;
+			      C 
+			      C ; H++  S T R I N G  H A N D L I N G   A P I s 
+			      C 
+			      C EXTERN StringHandling_StringLength2:PROTO;
+			      C EXTERN StringHandling_StringLength:PROTO;
+			      C EXTERN StringHandling_StringCopy:PROTO;
+			      C EXTERN StringHandling_StringCompare:PROTO;
+			      C EXTERN StringHandling_StringUCase:PROTO;
+			      C EXTERN StringHandling_StringLCase:PROTO;
+			      C 
+			      C ; H++  M E M O R Y   H A N D L I N G   A P I s
+			      C 
+			      C EXTERN System_Memory_Memset:PROTO;
+			      C EXTERN System_Memory_GetProcessHeap:PROTO
+			      C EXTERN System_Memory_Alloc:PROTO
+			      C EXTERN System_Memory_Free:PROTO
+			      C EXTERN System_Memory_Size:PROTO
+			      C EXTERN System_Memory_New:PROTO
+			      C EXTERN System_Memory_Destroy:PROTO
+			      C EXTERN System_Memory_SizeFor:PROTO
+			      C 
+			      C 
+			      C EXTERN System_GetCommandLineArgv:PROTO;
+			      C 
+			      C EXTERN System_ShowMessage:PROTO;
+			      C 
+			      C EXTERN ConsoleHandle:DWORD;
+			      C ;
+			      C .LIST
+			      C 
+
+ 00000000			.DATA
+
+				;symbolic constants 
+ = 00000000			NULL			EQU 0
+ = 00000050			MAX_READ_CHARS	EQU 050h
+
+ 00000000  00000050 [		ConsoleBuffer BYTE MAX_READ_CHARS DUP(?)
+	    00
+	   ]
+ 00000050  00000100 [		ConsoleTitle  BYTE 100h DUP(?)
+	    00
+	   ]
+
+ 00000150			UnitTesting_misc1_pi	REAL8	3.141593
+	   400921FB82C2BD7F
+				;this globals are for test purposes
+ 00000158 48 45 4C 4C 4F	hello		  BYTE 72,69,76,76,79, 0Dh, 0Ah
+	   0D 0A
+ 0000015F 00000007		hello_len	  DWORD ($ - hello)
+ 00000163 48 2B 2B 20 53	hcclib_title  BYTE "H++ Simple Library!", 0Dh, 0Ah, 0
+	   69 6D 70 6C 65
+	   20 4C 69 62 72
+	   61 72 79 21 0D
+	   0A 00
+ 00000179 63 3A 5C 64 65	test_file	  BYTE "c:\devicetable.log",0
+	   76 69 63 65 74
+	   61 62 6C 65 2E
+	   6C 6F 67 00
+ 0000018C  00002800 [		file_buffer	  BYTE 1024 * 10 DUP(?)
+	    00
+	   ]
+ 0000298C 6E 6F 74 65 70	note_pad	  BYTE "notepad.exe",0
+	   61 64 2E 65 78
+	   65 00
+ 00002998 48 61 72 6F 6C	test_output	  BYTE "Harold Marzan, Software Engineer & Compiler Writer", 0Dh, 0Ah
+	   64 20 4D 61 72
+	   7A 61 6E 2C 20
+	   53 6F 66 74 77
+	   61 72 65 20 45
+	   6E 67 69 6E 65
+	   65 72 20 26 20
+	   43 6F 6D 70 69
+	   6C 65 72 20 57
+	   72 69 74 65 72
+	   0D 0A
+ 000029CC 54 68 65 20 76	test_write_int BYTE "The value in radix 10 of hex 0100h is = ", 0
+	   61 6C 75 65 20
+	   69 6E 20 72 61
+	   64 69 78 20 31
+	   30 20 6F 66 20
+	   68 65 78 20 30
+	   31 30 30 68 20
+	   69 73 20 3D 20
+	   00
+ 000029F5 54 65 73 74 69	title_test	  BYTE "Testing H++ Library",0
+	   6E 67 20 48 2B
+	   2B 20 4C 69 62
+	   72 61 72 79 00
+ 00002A09 54 68 69 73 20	message_test  BYTE "This Console screen will be cleared before continue tests.",0
+	   43 6F 6E 73 6F
+	   6C 65 20 73 63
+	   72 65 65 6E 20
+	   77 69 6C 6C 20
+	   62 65 20 63 6C
+	   65 61 72 65 64
+	   20 62 65 66 6F
+	   72 65 20 63 6F
+	   6E 74 69 6E 75
+	   65 20 74 65 73
+	   74 73 2E 00
+ 00002A44 57 72 69 74 65	__ask_fp_numbers BYTE "Write floating point numbers (10 times each line)",0
+	   20 66 6C 6F 61
+	   74 69 6E 67 20
+	   70 6F 69 6E 74
+	   20 6E 75 6D 62
+	   65 72 73 20 28
+	   31 30 20 74 69
+	   6D 65 73 20 65
+	   61 63 68 20 6C
+	   69 6E 65 29 00
+ 00002A76 45 6E 74 65 72	__now_write		BYTE "Enter your number",0
+	   20 79 6F 75 72
+	   20 6E 75 6D 62
+	   65 72 00
+ 00002A88 59 6F 75 20 77	__you_wrote		BYTE "You wrote the number: ",0
+	   72 6F 74 65 20
+	   74 68 65 20 6E
+	   75 6D 62 65 72
+	   3A 20 00
+
+ 00002A9F 00000000		___argv 		DWORD 	0;Array of argument values
+ 00002AA3 00000000		___argc 		DWORD 	0;Argument count
+
+
+ 00000000			.CODE
+
+ = 00000010			IconError = 00000010h
+
+ 00000000			_except_handler PROC
+ 00000000  6A 10			push IconError
+ 00000002  68 000029F5 R		push OFFSET title_test
+ 00000007  68 00002998 R		push OFFSET test_output
+ 0000000C  E8 00000000 E		call System_ShowMessage
+ 00000011  C3			   ret
+ 00000012			_except_handler ENDP
+
+
+ 00000012			test_seh PROC
+ 00000012  CC					int 3
+ 00000013  68 00000000 R			push offset _except_handler;	;set SEH handler
+						assume fs:nothing
+ 00000018  64: A1				mov eax, dword ptr fs:[0]
+	   00000000
+ 0000001E  50					push eax
+ 0000001F  64: 89 25				mov dword ptr fs:[0], esp;
+	   00000000
+						
+ 00000026  33 C0				xor eax, eax
+ 00000028  C7 00 00000001			mov dword ptr [eax], 1	;this will raise an Access Violation Exception
+
+ 0000002E  5A					pop edx;						;remove SEH handler
+ 0000002F  64: 89 15				mov dword ptr fs:[0], edx;
+	   00000000
+ 00000036  59					pop ecx
+ 00000037  C3				ret
+ 00000038			test_seh ENDP
+
+ 00002AA7			.DATA
+
+ = 0C0000005h			STATUS_ACCESS_VIOLATION  			EQU <0C0000005h>
+ = 0C0000094h			STATUS_INTEGER_DIVIDE_BY_ZERO    	EQU <0C0000094h>    
+
+ 00002AA7 41 6E 20 61 63	lpszOopsAV BYTE "An access violation exception has occurred!",0
+	   63 65 73 73 20
+	   76 69 6F 6C 61
+	   74 69 6F 6E 20
+	   65 78 63 65 70
+	   74 69 6F 6E 20
+	   68 61 73 20 6F
+	   63 63 75 72 72
+	   65 64 21 00
+ 00002AD3 41 6E 20 69 6E	lpszOopsIDZ BYTE "An integer division by zero exception has occurred!",0
+	   74 65 67 65 72
+	   20 64 69 76 69
+	   73 69 6F 6E 20
+	   62 79 20 7A 65
+	   72 6F 20 65 78
+	   63 65 70 74 69
+	   6F 6E 20 68 61
+	   73 20 6F 63 63
+	   75 72 72 65 64
+	   21 00
+
+ 00000038			.CODE 
+
+ 00000038			main_ex PROC NEAR
+
+ 00000038  55				push ebp
+ 00000039  8B EC			mov ebp, esp
+ 0000003B  83 EC 10			sub esp, 10h
+					
+ 0000003E  CC				int 3
+ 0000003F  B8 00002AA7 R		mov eax, offset lpszOopsAV
+ 00000044  89 45 F0			mov dword ptr [ebp-10h], eax
+					;try{
+ 00000047  33 C0			xor eax, eax
+ 00000049  54				push esp		; pPrevESP
+ 0000004A  55				push ebp		;pPrevEBP
+ 0000004B  68 00000078 R		push offset  __exception_handler;	the master handler
+					assume fs:nothing
+ 00000050  64: FF 35			push dword ptr fs:[0]	;the current EXCEPTION_REGISTRATION struct pointer
+	   00000000
+ 00000057  64: 89 25			mov dword ptr fs:[0], esp	;the new EXCEPTION_REGISTRATION struct pointer
+	   00000000
+					
+ 0000005E  8D 05 00002AD3 R		lea eax, offset lpszOopsIDZ;
+ 00000064  89 45 F8			mov dword ptr [ebp-8], eax
+					;
+ 00000067  33 C0			xor eax, eax
+ 00000069  50				push eax
+ 0000006A  50				push eax
+ 0000006B  BD DEADBEEF			mov ebp, 0DEADBEEFh;  <--this has changed the base pointer
+					;mov esp, 0BEEFBEEFh; <--this has modified the stack pointer
+					;
+ 00000070  C7 00 00000001		mov dword ptr [eax], 1 ;<--- the access violation is provoked here!
+					;
+ 00000076  EB 46			jmp offset __continue0;	
+ 00000078			__exception_handler:
+				;EXCEPTION_DISPOSITION __cdecl _except_handler (
+				;    __in struct _EXCEPTION_RECORD *_ExceptionRecord,
+				;    __in void * _EstablisherFrame,
+				;   __inout struct _CONTEXT *_ContextRecord,
+				;    __inout void * _DispatcherContext
+				;    );
+					;
+ 00000078  8B 5C 24 04			mov ebx, dword ptr [esp+4];  _EXCEPTION_RECORD *_ExceptionRecord
+ 0000007C  8B 0B			mov ecx, dword ptr [ebx];  _ExceptionRecord->ExceptionCode 
+					;
+ 0000007E  64: 8B 1D			mov ebx, dword ptr fs:[0]  ;<--- restore the stack pointer
+	   00000000
+ 00000085  8B 23			mov esp, dword ptr [ebx]
+ 00000087  64: 8F 05			pop fs:[0]		;<--- set back the prev SEH ER pointer		
+	   00000000
+ 0000008E  8B 6C 24 04			mov ebp, dword ptr [esp+4];the prev EBP
+ 00000092  8B 64 24 08			mov esp, dword ptr [esp+8]; the prev ESP
+ 00000096			__access_violation_handler:
+ 00000096  B8 C0000005			mov eax, STATUS_ACCESS_VIOLATION ;the expr must have an exception code to use
+ 0000009B  3B C1			cmp eax, ecx	;is this exception AV as I expected?
+ 0000009D  75 0A			jnz offset __next_seh_handler0;
+					;{
+ 0000009F  FF 75 F0			push dword ptr [ebp-10h]
+ 000000A2  E8 00000000 E		call System_Debug_OutputString;	
+					;}
+ 000000A7  EB 2B			jmp offset __safer_place0;
+ 000000A9			__next_seh_handler0: ;no more seh handling
+ 000000A9  B8 C0000094			mov eax, STATUS_INTEGER_DIVIDE_BY_ZERO ; 
+ 000000AE  3B C1			cmp eax, ecx
+ 000000B0  75 0A			jnz offset __next_seh_handler1;
+					;{
+ 000000B2  FF 75 F8			push dword ptr [ebp-8]
+ 000000B5  E8 00000000 E		call System_Debug_OutputString;	
+					;}
+ 000000BA  EB 18			jmp offset __safer_place0;
+ 000000BC			__next_seh_handler1:
+ 000000BC  EB 16			jmp offset __safer_place0;
+ 000000BE			__continue0:
+ 000000BE  64: 8B 25			mov esp, dword ptr fs:[0]  ;<--- restore the stack pointer
+	   00000000
+ 000000C5  64: 8F 05			pop fs:[0]		;<--- set back the prev ER pointer
+	   00000000
+ 000000CC  8B 6C 24 04			mov ebp, dword ptr [esp+4];the prev EBP
+ 000000D0  8B 64 24 08			mov esp, dword ptr [esp+8]; the prev ESP	
+ 000000D4			__safer_place0:
+ 000000D4			__end_func:
+ 000000D4  C9				leave
+ 000000D5  C3				ret
+ 000000D6			main_ex ENDP
+
+
+ 000000D6			test_fp PROC
+ 000000D6  56				push esi
+					
+ 000000D7  6A 00			push 0
+ 000000D9  6A 00			push 0	; 0.0	
+ 000000DB  E8 00000000 E		call Console_WriteDouble;	
+ 000000E0  E8 00000000 E		call Console_WriteCrLf	
+					
+ 000000E5  68 3FF00000			push 03ff00000h
+ 000000EA  6A 00			push 000000000h; 1.0
+ 000000EC  E8 00000000 E		call Console_WriteDouble;	
+ 000000F1  E8 00000000 E		call Console_WriteCrLf	
+
+ 000000F6  68 40000000			push 040000000h
+ 000000FB  6A 00			push 000000000h; 2.0
+ 000000FD  E8 00000000 E		call Console_WriteDouble;	
+ 00000102  E8 00000000 E		call Console_WriteCrLf	
+					
+ 00000107  68 408F4800			push 0408f4800h
+ 0000010C  6A 00			push 000000000h; 1001.0
+ 0000010E  E8 00000000 E		call Console_WriteDouble;	
+ 00000113  E8 00000000 E		call Console_WriteCrLf	
+
+ 00000118  68 3F57E77D			push 03f57e77dh
+ 0000011D  68 523B3637			push 0523b3637h; 0.001459
+ 00000122  E8 00000000 E		call Console_WriteDouble;	
+ 00000127  E8 00000000 E		call Console_WriteCrLf	
+					
+ 0000012C  68 40623FFE			push 040623ffeh
+ 00000131  68 32A0663C			push 032a0663ch; 146.0
+ 00000136  E8 00000000 E		call Console_WriteDouble;	
+ 0000013B  E8 00000000 E		call Console_WriteCrLf	
+
+ 00000140  68 400921FB			push 0400921fbh
+ 00000145  68 5A7ED197			push 05a7ed197h; 3.14159
+ 0000014A  E8 00000000 E		call Console_WriteDouble;	
+ 0000014F  E8 00000000 E		call Console_WriteCrLf	
+
+
+ 00000154  68 4045CA11			push 04045ca11h
+ 00000159  68 DBCA9692			push 0dbca9692h; 43.5787
+ 0000015E  E8 00000000 E		call Console_WriteDouble;	
+ 00000163  E8 00000000 E		call Console_WriteCrLf	
+
+
+ 00000168  68 4068BE1E			push 04068be1eh
+ 0000016D  68 9D0E9920			push 09d0e9920h; 197.941
+ 00000172  E8 00000000 E		call Console_WriteDouble;	
+ 00000177  E8 00000000 E		call Console_WriteCrLf	
+
+
+ 0000017C  68 4023FAE1			push 04023fae1h
+ 00000181  68 47AE147B			push 047ae147bh; 9.99
+ 00000186  E8 00000000 E		call Console_WriteDouble;	
+ 0000018B  E8 00000000 E		call Console_WriteCrLf	
+
+
+ 00000190  68 4033FF3B			push 04033ff3bh
+ 00000195  68 645A1CAC			push 0645a1cach; 19.997
+ 0000019A  E8 00000000 E		call Console_WriteDouble;	
+ 0000019F  E8 00000000 E		call Console_WriteCrLf	
+
+
+ 000001A4  68 40100095			push 040100095h
+ 000001A9  68 6C0D6F54			push 06c0d6f54h; 4.00057
+ 000001AE  E8 00000000 E		call Console_WriteDouble;	
+ 000001B3  E8 00000000 E		call Console_WriteCrLf	
+
+
+ 000001B8  68 C007D3C3			push 0c007d3c3h
+ 000001BD  68 6113404F			push 06113404fh; -2.9784
+ 000001C2  E8 00000000 E		call Console_WriteDouble;	
+ 000001C7  E8 00000000 E		call Console_WriteCrLf	
+
+
+ 000001CC  68 C088ABA6			push 0c088aba6h
+ 000001D1  68 D9BE4CD7			push 0d9be4cd7h; -789.456
+ 000001D6  E8 00000000 E		call Console_WriteDouble;	
+ 000001DB  E8 00000000 E		call Console_WriteCrLf	
+
+
+ 000001E0  68 C023FAE1			push 0c023fae1h
+ 000001E5  68 47AE147B			push 047ae147bh; -9.99
+ 000001EA  E8 00000000 E		call Console_WriteDouble;	
+ 000001EF  E8 00000000 E		call Console_WriteCrLf	
+
+
+ 000001F4  68 C044C46C			push 0c044c46ch
+ 000001F9  68 B10342AB			push 0b10342abh; -41.5346
+ 000001FE  E8 00000000 E		call Console_WriteDouble;	
+ 00000203  E8 00000000 E		call Console_WriteCrLf	
+
+
+ 00000208  68 40590000			push 040590000h
+ 0000020D  6A 00			push 000000000h; 100
+ 0000020F  E8 00000000 E		call Console_WriteDouble;	
+ 00000214  E8 00000000 E		call Console_WriteCrLf	
+
+
+ 00000219  68 408F403D			push 0408f403dh
+ 0000021E  68 70A3D70A			push 070a3d70ah; 1000.03
+ 00000223  E8 00000000 E		call Console_WriteDouble;	
+ 00000228  E8 00000000 E		call Console_WriteCrLf	
+
+ 0000022D  68 BF235775			push 0bf235775h
+ 00000232  68 B2B49DAC			push 0b2b49dach; -0.000147565
+ 00000237  E8 00000000 E		call Console_WriteDouble;	
+ 0000023C  E8 00000000 E		call Console_WriteCrLf	
+
+
+ 00000241  68 3F847AE1			push 03f847ae1h
+ 00000246  68 47AE147B			push 047ae147bh; 0.01
+ 0000024B  E8 00000000 E		call Console_WriteDouble;	
+ 00000250  E8 00000000 E		call Console_WriteCrLf	
+
+
+ 00000255  68 3F50624D			push 03f50624dh
+ 0000025A  68 D2F1A9FC			push 0d2f1a9fch; 0.001
+ 0000025F  E8 00000000 E		call Console_WriteDouble;	
+ 00000264  E8 00000000 E		call Console_WriteCrLf	
+
+
+ 00000269  68 3F1A36E2			push 03f1a36e2h
+ 0000026E  68 EB1C432D			push 0eb1c432dh; 0.0001
+ 00000273  E8 00000000 E		call Console_WriteDouble;	
+ 00000278  E8 00000000 E		call Console_WriteCrLf	
+
+ 0000027D  68 3FEFAE14			push 03fefae14h
+ 00000282  68 7AE147AE			push 07ae147aeh; 0.99
+ 00000287  E8 00000000 E		call Console_WriteDouble;	
+ 0000028C  E8 00000000 E		call Console_WriteCrLf	
+
+
+ 00000291  68 3FB95810			push 03fb95810h
+ 00000296  68 624DD2F2			push 0624dd2f2h; 0.099
+ 0000029B  E8 00000000 E		call Console_WriteDouble;	
+ 000002A0  E8 00000000 E		call Console_WriteCrLf	
+
+
+ 000002A5  68 3F844673			push 03f844673h
+ 000002AA  68 81D7DBF5			push 081d7dbf5h; 0.0099
+ 000002AF  E8 00000000 E		call Console_WriteDouble;	
+ 000002B4  E8 00000000 E		call Console_WriteCrLf	
+
+ 000002B9  5E				pop esi
+ 000002BA  C3				retn
+ 000002BB			test_fp ENDP
+					
+ 000002BB			test_fp_from_string PROC
+ 000002BB  6A 32			push SIZEOF __ask_fp_numbers
+ 000002BD  68 00002A44 R		push OFFSET __ask_fp_numbers
+ 000002C2  E8 00000000 E		call Console_WriteString;
+ 000002C7  E8 00000000 E		call Console_WriteCrLf;
+ 000002CC  BE 00000020			mov esi, 20h
+ 000002D1			__loopx:
+ 000002D1  6A 12			push SIZEOF __now_write;
+ 000002D3  68 00002A76 R		push OFFSET __now_write;
+ 000002D8  E8 00000000 E		call Console_WriteString;
+ 000002DD  E8 00000000 E		call Console_ReadString;
+ 000002E2  50				push eax;
+ 000002E3  E8 00000000 E		call FloatingPoint_fromString;
+ 000002E8  50				push eax
+ 000002E9  52				push edx
+					;int 3
+						
+ 000002EA  6A 17			push SIZEOF __you_wrote	
+ 000002EC  68 00002A88 R		push OFFSET __you_wrote
+ 000002F1  E8 00000000 E		call Console_WriteString;
+					
+ 000002F6  E8 00000000 E		call Console_WriteDouble;
+ 000002FB  E8 00000000 E		call Console_WriteCrLf;
+ 00000300  E8 00000000 E		call Console_WriteCrLf;
+					
+ 00000305  4E				dec esi
+ 00000306  79 C9			jns __loopx;
+					
+ 00000308  C3				retn
+ 00000309			test_fp_from_string ENDP 
+
+ 00000309			main PROC
+				;
+ 00000309  55				push ebp
+ 0000030A  8B EC			mov ebp, esp	
+ 0000030C  53				push ebx
+ 0000030D  56				push esi
+ 0000030E  57				push edi
+					
+					;int 3
+ 0000030F  6A 40			push 040h ;icon information
+ 00000311  68 000029F5 R		push OFFSET title_test
+ 00000316  68 00002A09 R		push OFFSET message_test
+ 0000031B  E8 00000000 E		call System_ShowMessage
+					
+					;call test_seh
+ 00000320  E8 FFFFFD13			call main_ex
+					
+ 00000325  CC				int 3
+ 00000326  E8 00000000 E		call Console_ClearScreen;
+					
+ 0000032B  CC				int 3; breakpoint
+ 0000032C  51				push ecx
+ 0000032D  8D 14 24			lea edx, [esp]
+ 00000330  52				push edx
+ 00000331  E8 00000000 E		call System_GetCommandLineArgv ;TEST THIS CRITICAL AND HELPFUL H++ FUNCTION USED IN H++ PROGRAMS STARTUP	
+ 00000336  59				pop ecx
+ 00000337  50				push eax;
+ 00000338  E8 00000000 E		call System_Memory_GetProcessHeap;
+ 0000033D  50				push eax;
+ 0000033E  E8 00000000 E		call System_Memory_Free;
+					
+ 00000343  E8 FFFFFD8E			call test_fp;
+					
+ 00000348  E8 FFFFFF6E			call test_fp_from_string;
+					
+					;call Console_ReadString;
+					;push eax;
+					;call FloatingPoint_fromString;
+					;push eax
+					;push edx
+					;add esp, 8
+					
+					
+ 0000034D  68 00001A0B			push 6667
+ 00000352  E8 00000000 E		call Integer_toString;
+ 00000357  8B F0			mov esi, eax
+ 00000359  6A 00			push 0
+ 0000035B  50				push eax
+ 0000035C  E8 00000000 E		call Console_WriteString;
+ 00000361  E8 00000000 E		call Console_WriteCrLf;
+ 00000366  56				push esi
+ 00000367  E8 00000000 E		call System_Memory_Destroy;
+					
+ 0000036C  E8 00000000 E		call Console_ReadInteger
+ 00000371  50				push eax
+ 00000372  E8 00000000 E		call Console_WriteInteger;
+					
+					;call __purecall;
+					
+ 00000377  B9 00000029			mov ecx, LENGTHOF test_write_int
+ 0000037C  51				push ecx
+ 0000037D  B8 000029CC R		mov eax, OFFSET test_write_int
+ 00000382  50				push eax
+ 00000383  E8 00000000 E		call Console_WriteString;
+					
+ 00000388  68 00000100			push 0100h
+ 0000038D  E8 00000000 E		call Console_WriteInteger;
+					
+ 00000392  B8 00002998 R		mov eax, OFFSET test_output
+ 00000397  50				push eax
+ 00000398  E8 00000000 E		call System_Debug_OutputString;
+					
+ 0000039D  E8 00000000 E		call System_IsDebuggerPresent;
+					
+
+ 000003A2  E8 00000000 E		call Math_Init;	
+ 000003A7  CC				int 3	; breakpoint
+					;|-13.1415927| == -13.1415927
+ 000003A8  68 C02A487E			push        0C02A487Eh	;low part
+ 000003AD  68 D69FB466			push        0D69FB466h	;high part
+ 000003B2  E8 00000000 E		call Math_Abs
+ 000003B7  83 EC 08			sub esp, 8
+ 000003BA  89 14 24			mov dword ptr [esp], edx	;high of 13.1415927
+ 000003BD  89 44 24 04			mov dword ptr [esp+4], eax	;low of 13.1415927
+					
+ 000003C1  E8 00000000 E		call Math_ChangeSign	;-13.1415927
+ 000003C6  83 EC 08			sub esp, 8
+ 000003C9  89 14 24			mov dword ptr [esp], edx
+ 000003CC  89 44 24 04			mov dword ptr [esp+4], eax
+					
+ 000003D0  68 409F3C00			push        409F3C00h	; 1999.0
+ 000003D5  6A 00			push        0	
+ 000003D7  E8 00000000 E		call Math_Sqrt			; 44.710177812216314199613423002048
+ 000003DC  89 14 24			mov dword ptr [esp], edx
+ 000003DF  89 44 24 04			mov dword ptr [esp+4], eax
+					
+ 000003E3  E8 00000000 E		call Math_Sqr			; 1999.0
+ 000003E8  83 EC 08			sub esp, 8
+ 000003EB  89 14 24			mov dword ptr [esp], edx
+ 000003EE  89 44 24 04			mov dword ptr [esp+4], eax		
+					
+					;int 3	; breakpoint
+ 000003F2  68 403E0000			push        403E0000h		; 30.0
+ 000003F7  6A 00			push        0
+ 000003F9  E8 00000000 E		call Math_Sin				;-0.98803162409286178998774890729446
+ 000003FE  89 14 24			mov dword ptr [esp], edx
+ 00000401  89 44 24 04			mov dword ptr [esp+4], eax		
+					
+ 00000405  68 403E0000			push        403E0000h		; 30.0
+ 0000040A  6A 00			push        0
+ 0000040C  E8 00000000 E		call Math_Cos				;0.15425144988758405071866214661421
+ 00000411  89 14 24			mov dword ptr [esp], edx
+ 00000414  89 44 24 04			mov dword ptr [esp+4], eax		
+					
+ 00000418  68 403E0000			push        403E0000h		; 30.0
+ 0000041D  6A 00			push        0
+ 0000041F  E8 00000000 E		call Math_Tan				;-6.405331196646275784896075505668
+ 00000424  89 14 24			mov dword ptr [esp], edx
+ 00000427  89 44 24 04			mov dword ptr [esp+4], eax		
+
+ 0000042B  68 403E0000			push        403E0000h		; 30.0
+ 00000430  6A 00			push        0	
+ 00000432  E8 00000000 E		call Math_Cotan				; 1/-6.405331196646275784896075505668 == -0.15611995216165922287132050523869
+ 00000437  89 14 24			mov dword ptr [esp], edx
+ 0000043A  89 44 24 04			mov dword ptr [esp+4], eax			
+					
+					;int 3	; breakpoint
+					
+ 0000043E  68 403E0000			push        403E0000h	; 30.0
+ 00000443  6A 00			push        0	
+ 00000445  68 402E0000			push        402E0000h	;15.0
+ 0000044A  6A 00			push        0
+ 0000044C  E8 00000000 E		call Math_ArcTan		;
+ 00000451  89 14 24			mov dword ptr [esp], edx
+ 00000454  89 44 24 04			mov dword ptr [esp+4], eax			
+					
+ 00000458  68 40059999			push        40059999h	; 2.7
+ 0000045D  68 9999999A			push        9999999Ah
+ 00000462  E8 00000000 E		call Math_Round
+ 00000467  89 14 24			mov dword ptr [esp], edx
+ 0000046A  89 44 24 04			mov dword ptr [esp+4], eax				
+					
+					;int 3	; breakpoint
+					
+ 0000046E  E8 00000000 E		call Math_pi
+ 00000473  89 14 24			mov dword ptr [esp], edx
+ 00000476  89 44 24 04			mov dword ptr [esp+4], eax					
+					
+ 0000047A  E8 00000000 E		call Math_log_10_base2
+ 0000047F  89 14 24			mov dword ptr [esp], edx
+ 00000482  89 44 24 04			mov dword ptr [esp+4], eax					
+
+ 00000486  E8 00000000 E		call Math_log_e_base2
+ 0000048B  89 14 24			mov dword ptr [esp], edx
+ 0000048E  89 44 24 04			mov dword ptr [esp+4], eax					
+
+ 00000492  E8 00000000 E		call Math_log_2_base10
+ 00000497  89 14 24			mov dword ptr [esp], edx
+ 0000049A  89 44 24 04			mov dword ptr [esp+4], eax					
+
+ 0000049E  E8 00000000 E		call Math_log_2_base_e
+ 000004A3  89 14 24			mov dword ptr [esp], edx
+ 000004A6  89 44 24 04			mov dword ptr [esp+4], eax						
+					
+					;int 3	; breakpoint
+
+ 000004AA  68 402E0000			push        402E0000h	;15.0	;Divisor
+ 000004AF  6A 00			push        0	
+ 000004B1  68 40404C1A			push        40404C1Ah	;32.594546	;Dividend
+ 000004B6  68 1554FBDB			push        1554FBDBh
+ 000004BB  E8 00000000 E		call Math_Modulus		; partial modulus ==
+ 000004C0  89 14 24			mov dword ptr [esp], edx
+ 000004C3  89 44 24 04			mov dword ptr [esp+4], eax						
+
+ 000004C7  68 402E0000			push        402E0000h	;15.0	;Divisor
+ 000004CC  6A 00			push        0	
+ 000004CE  68 40404C1A			push        40404C1Ah	;32.594546	;Dividend
+ 000004D3  68 1554FBDB			push        1554FBDBh
+ 000004D8  E8 00000000 E		call Math_ModulusTruncateDivisor	; partial modulus ==
+ 000004DD  89 14 24			mov dword ptr [esp], edx
+ 000004E0  89 44 24 04			mov dword ptr [esp+4], eax						
+
+ 000004E4  68 402E0000			push        402E0000h	;15.0	;Divisor
+ 000004E9  6A 00			push        0	
+ 000004EB  68 40404C1A			push        40404C1Ah	;32.594546	;Dividend
+ 000004F0  68 1554FBDB			push        1554FBDBh	
+ 000004F5  E8 00000000 E		call Math_IEEEModulus
+ 000004FA  89 14 24			mov dword ptr [esp], edx
+ 000004FD  89 44 24 04			mov dword ptr [esp+4], eax							
+					
+ 00000501  CC				int 3
+					
+ 00000502  68 40404C1A			push        40404C1Ah	;32.594546	;Dividend
+ 00000507  68 1554FBDB			push        1554FBDBh
+ 0000050C  68 40404C1A			push        40404C1Ah	;32.594546	;Dividend
+ 00000511  68 1554FBDB			push        1554FBDBh	
+ 00000516  E8 00000000 E		call FloatingPoint_Compare	;result ==0
+					
+ 0000051B  68 40404C1A			push        40404C1Ah	;32.594546	;Dividend
+ 00000520  68 1554FBDB			push        1554FBDBh
+ 00000525  68 402E0000			push        402E0000h	;15.0	;Divisor
+ 0000052A  6A 00			push        0	
+ 0000052C  E8 00000000 E		call FloatingPoint_Compare	;result ==-1
+					
+ 00000531  68 402E0000			push        402E0000h	;15.0	;Divisor
+ 00000536  6A 00			push        0	
+ 00000538  68 40404C1A			push        40404C1Ah	;32.594546	;Dividend
+ 0000053D  68 1554FBDB			push        1554FBDBh
+ 00000542  E8 00000000 E		call FloatingPoint_Compare	;result ==1	
+
+ 00000547  CC				int 3
+					
+ 00000548  68 402E0000			push        402E0000h	;15.0	;Y
+ 0000054D  6A 00			push        0	
+ 0000054F  68 40490000			push        40490000h	; 50.0	;X
+ 00000554  6A 00			push        0		
+ 00000556  E8 00000000 E		call Math_Max;	;50.0
+ 0000055B  89 14 24			mov dword ptr [esp], edx
+ 0000055E  89 44 24 04			mov dword ptr [esp+4], eax	
+
+
+ 00000562  68 40404C1A			push        40404C1Ah	;32.594546	;Y
+ 00000567  68 1554FBDB			push        1554FBDBh
+ 0000056C  68 402E0000			push        402E0000h	;15.0		;X
+ 00000571  6A 00			push        0		
+ 00000573  E8 00000000 E		call Math_Max;
+ 00000578  89 14 24			mov dword ptr [esp], edx
+ 0000057B  89 44 24 04			mov dword ptr [esp+4], eax	
+
+ 0000057F  68 40404C1A			push        40404C1Ah	;32.594546	;Y
+ 00000584  68 1554FBDB			push        1554FBDBh
+ 00000589  68 40404C1A			push        40404C1Ah	;32.594546	;X
+ 0000058E  68 1554FBDB			push        1554FBDBh
+ 00000593  E8 00000000 E		call Math_Max;
+ 00000598  89 14 24			mov dword ptr [esp], edx
+ 0000059B  89 44 24 04			mov dword ptr [esp+4], eax	
+					
+ 0000059F  68 402E0000			push        402E0000h	;15.0	;Y
+ 000005A4  6A 00			push        0	
+ 000005A6  68 40490000			push        40490000h	; 50.0	;X
+ 000005AB  6A 00			push        0		
+ 000005AD  E8 00000000 E		call Math_Min;	;15.0
+ 000005B2  89 14 24			mov dword ptr [esp], edx
+ 000005B5  89 44 24 04			mov dword ptr [esp+4], eax	
+
+ 000005B9  68 40404C1A			push        40404C1Ah	;32.594546	;Y
+ 000005BE  68 1554FBDB			push        1554FBDBh
+ 000005C3  68 402E0000			push        402E0000h	;15.0		;X
+ 000005C8  6A 00			push        0		
+ 000005CA  E8 00000000 E		call Math_Min;
+ 000005CF  89 14 24			mov dword ptr [esp], edx
+ 000005D2  89 44 24 04			mov dword ptr [esp+4], eax	
+
+ 000005D6  68 40404C1A			push        40404C1Ah	;32.594546	;Y
+ 000005DB  68 1554FBDB			push        1554FBDBh
+ 000005E0  68 40404C1A			push        40404C1Ah	;32.594546	;X
+ 000005E5  68 1554FBDB			push        1554FBDBh
+ 000005EA  E8 00000000 E		call Math_Min;
+ 000005EF  89 14 24			mov dword ptr [esp], edx
+ 000005F2  89 44 24 04			mov dword ptr [esp+4], eax	
+					
+ 000005F6  68 402E0000			push        402E0000h	;15.0	
+ 000005FB  6A 00			push        0		
+ 000005FD  E8 00000000 E		call Math_Sign;	
+					
+ 00000602  68 C02E0000			push        0C02E0000h	;-15.0
+ 00000607  6A 00			push        0	
+ 00000609  E8 00000000 E		call Math_Sign;		
+					
+ 0000060E  6A 00			push 0
+ 00000610  6A 00			push 0
+ 00000612  E8 00000000 E		call Math_Sign;		
+					
+					;int 3;
+					
+ 00000617  6A 0F			push		0Fh			; 15  int	;Y
+ 00000619  68 402E0000			push        402E0000h	;15.0 double;X
+ 0000061E  6A 00			push        0			
+ 00000620  E8 00000000 E		call FloatingPoint_CompareToInteger;	
+					
+ 00000625  6A 0A			push		0Ah			; 10 int	;Y
+ 00000627  68 40404C1A			push        40404C1Ah	;32.594546	;X
+ 0000062C  68 1554FBDB			push        1554FBDBh
+ 00000631  E8 00000000 E		call FloatingPoint_CompareToInteger;		
+					
+ 00000636  68 00000100			push		0100h		; 256 int	;Y
+ 0000063B  68 40490000			push        40490000h	; 50.0		;X
+ 00000640  6A 00			push        0		
+ 00000642  E8 00000000 E		call FloatingPoint_CompareToInteger;		
+					
+					;int 3;
+						
+ 00000647  68 40404C1A			push        40404C1Ah	;32.594546	;X
+ 0000064C  68 1554FBDB			push        1554FBDBh	
+ 00000651  E8 00000000 E		call FloatingPoint_ToInt
+					
+ 00000656  68 42541864			push        42541864h		;345,234,234,523.0
+ 0000065B  68 1726C000			push        1726C000h
+ 00000660  E8 00000000 E		call FloatingPoint_ToInt64
+ 00000665  89 14 24			mov dword ptr [esp], edx
+ 00000668  89 44 24 04			mov dword ptr [esp+4], eax	
+					
+						
+ 0000066C  68 40490000			push        40490000h	; 50.0
+ 00000671  6A 00			push        0	
+ 00000673  E8 00000000 E		call Math_Ln;			;3.9120230054281460586187507879106
+ 00000678  89 14 24			mov dword ptr [esp], edx
+ 0000067B  89 44 24 04			mov dword ptr [esp+4], eax	
+					
+ 0000067F  68 40490000			push        40490000h	; 50.0
+ 00000684  6A 00			push        0	
+ 00000686  E8 00000000 E		call Math_log2;			;5.6438561897747246957406388589788
+ 0000068B  89 14 24			mov dword ptr [esp], edx
+ 0000068E  89 44 24 04			mov dword ptr [esp+4], eax								
+
+ 00000692  68 40490000			push        40490000h	; 50.0
+ 00000697  6A 00			push        0		
+ 00000699  E8 00000000 E		call Math_log10;		;1.6989700043360188047862611052755
+ 0000069E  89 14 24			mov dword ptr [esp], edx
+ 000006A1  89 44 24 04			mov dword ptr [esp+4], eax								
+					
+ 000006A5  CC				int 3
+					;Recursive version	
+ 000006A6  6A 06			push		6
+ 000006A8  68 40000000			push		40000000h	; 2.0
+ 000006AD  6A 00			push		0	
+ 000006AF  E8 00000000 E		call Math_Pow2;			; 64.0
+
+ 000006B4  89 14 24			mov dword ptr [esp], edx
+ 000006B7  89 44 24 04			mov dword ptr [esp+4], eax
+					
+ 000006BB  6A 05			push		5
+ 000006BD  68 40180000			push		40180000h	; 6.0
+ 000006C2  6A 00			push		0
+ 000006C4  E8 00000000 E		call Math_Pow2;			; 7776.0
+						
+ 000006C9  89 14 24			mov dword ptr [esp], edx
+ 000006CC  89 44 24 04			mov dword ptr [esp+4], eax
+					
+					;scientific power
+ 000006D0  68 40180000			push		40180000h	; 6.0
+ 000006D5  6A 00			push		0
+ 000006D7  68 40000000			push		40000000h	; 2.0
+ 000006DC  6A 00			push		0	
+ 000006DE  E8 00000000 E		call Math_Pow;			; 64.0
+
+ 000006E3  89 14 24			mov dword ptr [esp], edx
+ 000006E6  89 44 24 04			mov dword ptr [esp+4], eax
+					
+					
+ 000006EA  68 40404C1A			push        40404C1Ah	;32.594546	;Y
+ 000006EF  68 1554FBDB			push        1554FBDBh
+ 000006F4  68 40000000			push		40000000h	; 2.0
+ 000006F9  6A 00			push		0	
+ 000006FB  E8 00000000 E		call Math_Pow;			; x^y = 2^32.594546 == 6485389155.8816977702934985503259
+					
+ 00000700  89 14 24			mov dword ptr [esp], edx
+ 00000703  89 44 24 04			mov dword ptr [esp+4], eax	
+					
+					
+ 00000707  68 40000000			push		40000000h	; 2.0
+ 0000070C  6A 00			push		0	
+ 0000070E  E8 00000000 E		call Math_Exp			;7.389057031524
+					
+ 00000713  89 14 24			mov dword ptr [esp], edx
+ 00000716  89 44 24 04			mov dword ptr [esp+4], eax	
+					
+					;int 3
+					
+ 0000071A  50				push eax
+ 0000071B  52				push edx
+ 0000071C  E8 00000000 E		call Math_Trunc	; 7.0
+					
+ 00000721  50				push eax
+ 00000722  52				push edx
+ 00000723  83 C4 08			add esp, 8	
+					
+ 00000726  6A 05			push 5
+ 00000728  E8 00000000 E		call Math_Odd	;true
+ 0000072D  6A 05			push 5
+ 0000072F  E8 00000000 E		call Math_Even	; false
+					
+ 00000734  6A 04			push 4
+ 00000736  E8 00000000 E		call Math_Even	; true
+ 0000073B  6A 04			push 4
+ 0000073D  E8 00000000 E		call Math_Odd	; false
+						
+ 00000742  CC				int 3
+					
+ 00000743  51				push ecx
+ 00000744  8D 04 24			lea eax, dword ptr [esp]
+ 00000747  50				push eax
+ 00000748  68 403E0000			push        403E0000h		; 30.0
+ 0000074D  6A 00			push        0		
+ 0000074F  E8 00000000 E		call Math_MantissaOf;	
+ 00000754  59				pop ecx	
+					
+ 00000755  51				push ecx
+ 00000756  50				push eax
+ 00000757  52				push edx
+ 00000758  E8 00000000 E		call Math_GetNumberFrom;
+
+ 0000075D  68 403E0000			push        403E0000h		; 30.0
+ 00000762  6A 00			push        0	
+ 00000764  E8 00000000 E		call Math_Sec;				;6.4829212349626777884063491596252
+ 00000769  89 14 24			mov dword ptr [esp], edx
+ 0000076C  89 44 24 04			mov dword ptr [esp+4], eax
+
+ 00000770  68 403E0000			push        403E0000h		; 30.0
+ 00000775  6A 00			push        0		
+ 00000777  E8 00000000 E		call Math_Cosec				;-1.0121133530701779868975132834767
+ 0000077C  89 14 24			mov dword ptr [esp], edx
+ 0000077F  89 44 24 04			mov dword ptr [esp+4], eax	
+					
+ 00000783  CC				int 3
+					
+ 00000784  68 403E0000			push        403E0000h		; 30.0
+ 00000789  6A 00			push        0		
+ 0000078B  E8 00000000 E		call Math_Inverse_Arcsin;	;0.78567609559630802
+ 00000790  89 14 24			mov dword ptr [esp], edx
+ 00000793  89 44 24 04			mov dword ptr [esp+4], eax		
+						
+ 00000797  68 403E0000			push        403E0000h		; 30.0
+ 0000079C  6A 00			push        0		
+ 0000079E  E8 00000000 E		call Math_Inverse_Arccos;	;
+ 000007A3  89 14 24			mov dword ptr [esp], edx
+ 000007A6  89 44 24 04			mov dword ptr [esp+4], eax	
+					
+ 000007AA  68 403E0000			push        403E0000h		; 30.0
+ 000007AF  6A 00			push        0			
+ 000007B1  E8 00000000 E		call Math_Inverse_Arccotan;	
+ 000007B6  89 14 24			mov dword ptr [esp], edx
+ 000007B9  89 44 24 04			mov dword ptr [esp+4], eax		
+
+ 000007BD  68 403E0000			push        403E0000h		; 30.0
+ 000007C2  6A 00			push        0			
+ 000007C4  E8 00000000 E		call Math_Inverse_Arcsec
+ 000007C9  89 14 24			mov dword ptr [esp], edx
+ 000007CC  89 44 24 04			mov dword ptr [esp+4], eax		
+
+ 000007D0  68 403E0000			push        403E0000h		; 30.0
+ 000007D5  6A 00			push        0			
+ 000007D7  E8 00000000 E		call Math_Inverse_Arccosec
+ 000007DC  89 14 24			mov dword ptr [esp], edx
+ 000007DF  89 44 24 04			mov dword ptr [esp+4], eax	
+					
+					
+				;	push		40240000h	; 10.0
+				;	push		0				
+					
+ 000007E3  CC				int 3
+ 000007E4  6A 0A			push		0Ah	
+ 000007E6  68 408F4000			push        408F4000h	; 1000.0
+ 000007EB  6A 00			push        0
+ 000007ED  E8 00000000 E		call Math_LogN_base;	; 3.0
+ 000007F2  89 14 24			mov dword ptr [esp], edx
+ 000007F5  89 44 24 04			mov dword ptr [esp+4], eax		
+					
+ 000007F9  5A				pop edx	;high
+ 000007FA  58				pop eax	;low		
+					
+					
+ 000007FB  B8 00000163 R		mov eax, OFFSET hcclib_title
+ 00000800  50				push eax
+ 00000801  E8 00000000 E		call Console_SetTitle;
+					
+					;temporally get away while testing the math part...
+					;jmp __IsTheEnd;
+					
+					
+ 00000806  E8 00000000 E		call Console_GetTitle;	
+					
+ 0000080B  BA 00000100			mov edx, SIZEOF ConsoleTitle
+ 00000810  52				push edx
+ 00000811  50				push eax
+ 00000812  E8 00000000 E		call Console_WriteString;
+					
+ 00000817  6A 0A			push 0Ah
+ 00000819  6A 00			push 0
+ 0000081B  E8 00000000 E		call Console_SetCursorPos;
+					
+					;	
+ 00000820  E8 00000000 E		call Console_ReadChar;
+ 00000825  E8 00000000 E		call Console_ReadString;
+					
+					;int 3	; breakpoint
+ 0000082A  BA 00000000 R		mov edx, OFFSET ConsoleBuffer
+ 0000082F  B8 00000050			mov eax, SIZEOF ConsoleBuffer
+ 00000834  50				push eax
+ 00000835  52				push edx
+ 00000836  E8 00000000 E		call Console_WriteString;	
+					
+ 0000083B  E8 00000000 E		call Console_WriteCrlf;	
+					
+ 00000840  6A 0C			push 000Ch	; Y
+ 00000842  6A 28			push 0028h	; X
+ 00000844  E8 00000000 E		call Console_SetCursorPos;	
+					
+					;write chars
+ 00000849  B8 00000158 R		mov eax, OFFSET hello
+ 0000084E  50				push eax
+ 0000084F  8B 0D 0000015F R		mov ecx, hello_len
+ 00000855  51				push ecx
+ 00000856			_WriteAllChars:
+ 00000856  89 0C 24			mov dword ptr [esp], ecx
+ 00000859  89 44 24 04			mov dword ptr [esp+4], eax
+					;
+ 0000085D  FF 30			push dword ptr [eax]
+ 0000085F  E8 00000000 E		call Console_WriteChar;
+ 00000864  8B 0C 24			mov ecx, dword ptr [esp]
+ 00000867  8B 44 24 04			mov eax, dword ptr [esp+4]
+ 0000086B  40				inc eax	;next char
+ 0000086C  E2 E8			loop _WriteAllChars;
+							
+ 0000086E  E8 00000000 E		call Console_GetTitle;	
+					
+ 00000873  BA 00000100			mov edx, SIZEOF ConsoleTitle
+ 00000878  52				push edx
+ 00000879  50				push eax
+ 0000087A  E8 00000000 E		call Console_WriteString;	
+					
+ 0000087F  B8 00000179 R		mov eax, OFFSET test_file;
+ 00000884  BA 80000000			mov edx, GENERIC_READ
+ 00000889  81 CA 40000000		or edx, GENERIC_WRITE	
+ 0000088F  6A 01			push FILE_SHARE_READ
+ 00000891  52				push edx
+ 00000892  6A 03			push OPEN_EXISTING
+ 00000894  50				push eax
+ 00000895  E8 00000000 E		call File_Open;
+ 0000089A  8B F0			mov esi, eax
+						
+ 0000089C  56				push esi
+ 0000089D  E8 00000000 E		call File_FileSize	
+ 000008A2  50				push eax
+					
+ 000008A3  BF 0000018C R		mov edi, OFFSET file_buffer
+ 000008A8  B9 00002800			mov ecx, SIZEOF file_buffer	;could be eax if < 10kb
+ 000008AD  51				push ecx	;nBytesToRead
+ 000008AE  57				push edi	;Buffer
+ 000008AF  56				push esi	;hFile
+ 000008B0  E8 00000000 E		call File_Read
+					
+					;already on the stack	
+					;mov ecx, SIZEOF file_buffer	
+					;push ecx
+ 000008B5  57				push edi
+ 000008B6  E8 00000000 E		call Console_WriteString;			
+					
+ 000008BB  56				push esi
+ 000008BC  E8 00000000 E		call File_FileSize;
+ 000008C1  8B F8			mov edi, eax
+					
+ 000008C3  68 00000200			push 200h	;512 bytes from origin
+ 000008C8  6A 00			push 0
+ 000008CA  56				push esi
+ 000008CB  E8 00000000 E		call File_Seek;
+					
+ 000008D0  57				push edi
+ 000008D1  6A 00			push 0
+ 000008D3  56				push esi
+ 000008D4  E8 00000000 E		call File_Seek;
+						
+					;Write some data...
+ 000008D9  B9 00000016			mov ecx, SIZEOF hcclib_title
+ 000008DE  B8 00000163 R		mov eax, OFFSET hcclib_title
+ 000008E3  51				push ecx
+ 000008E4  50				push eax	
+ 000008E5  56				push esi
+ 000008E6  E8 00000000 E		call File_Write;
+					
+ 000008EB  56				push esi
+ 000008EC  E8 00000000 E		call File_Close;
+					
+					;int 3 ; breakpoint
+					
+ 000008F1  6A 40			push 40h		;X
+ 000008F3  6A 0A			push 0Ah		;Y
+ 000008F5  E8 00000000 E		call Console_SetConsoleSize
+					
+ 000008FA  6A 04			push 4
+ 000008FC  E8 00000000 E		call Console_SetTextColor;
+					
+ 00000901  E8 00000000 E		call System_CommandLineArgs
+ 00000906  8B F0			mov esi, eax
+ 00000908  50				push eax
+ 00000909  E8 00000000 E		call StringHandling_StringLength
+					
+ 0000090E  50				push eax
+ 0000090F  56				push esi
+ 00000910  E8 00000000 E		call Console_WriteString;			
+					
+ 00000915  6A 07			push 7
+ 00000917  E8 00000000 E		call Console_SetTextColor;
+					
+ 0000091C  E8 00000000 E		call System_CommandLineArgs
+ 00000921  8B F0			mov esi, eax
+ 00000923  50				push eax
+ 00000924  E8 00000000 E		call StringHandling_StringLength
+					
+ 00000929  50				push eax
+ 0000092A  56				push esi
+ 0000092B  E8 00000000 E		call Console_WriteString;
+					
+ 00000930  6A 18			push 18h
+ 00000932  6A 4F			push 4Fh	
+ 00000934  6A 05			push 5
+ 00000936  6A 05			push 5	
+ 00000938  E8 00000000 E		call Console_MoveWindow;
+					
+ 0000093D  B8 0000298C R		mov eax, OFFSET note_pad
+ 00000942  6A 01			push 1	;show
+ 00000944  50				push eax
+ 00000945  E8 00000000 E		call System_Execute	
+					
+ 0000094A  E8 00000000 E		call System_GetTickCount;
+ 0000094F  50				push eax
+					
+ 00000950  68 000007D0			push 2000
+ 00000955  E8 00000000 E		call System_Sleep;
+					
+					;2000 milisecs have passed
+ 0000095A  E8 00000000 E		call System_GetTickCount;
+					;int 3 ; breakpoint
+ 0000095F  5E				pop esi
+ 00000960  2B C6			sub eax, esi
+								
+					
+ 00000962			__IsTheEnd:
+ 00000962  E8 00000000 E		call System_Exit;
+ 00000967  5F				pop edi
+ 00000968  5E				pop esi
+ 00000969  5B				pop ebx	
+ 0000096A  8B E5			mov esp, ebp
+ 0000096C  5D				pop ebp
+ 0000096D  C3				ret
+				;
+ 0000096E			main ENDP
+
+
+				END main ; the Entry Point 
+Microsoft (R) Macro Assembler Version 6.15.8803		    12/18/08 00:30:28
+unittest.asm						     Symbols 2 - 1
+
+
+
+
+Structures and Unions:
+
+                N a m e                  Size
+                                         Offset      Type
+
+CONSOLE_CURSOR_INFO  . . . . . .	 00000008
+  dwSize . . . . . . . . . . . .	 00000000	 DWord
+  bVisible . . . . . . . . . . .	 00000004	 DWord
+CONSOLE_SCREEN_BUFFER_INFO . . .	 00000016
+  dwSize . . . . . . . . . . . .	 00000000	 DWord
+  dwCursorPos  . . . . . . . . .	 00000004	 DWord
+  wAttributes  . . . . . . . . .	 00000008	 Word
+  srWindow . . . . . . . . . . .	 0000000A	 QWord
+  maxWinSize . . . . . . . . . .	 00000012	 DWord
+COORD  . . . . . . . . . . . . .	 00000004
+  X  . . . . . . . . . . . . . .	 00000000	 Word
+  Y  . . . . . . . . . . . . . .	 00000002	 Word
+FILETIME . . . . . . . . . . . .	 00000008
+  loDateTime . . . . . . . . . .	 00000000	 DWord
+  hiDateTime . . . . . . . . . .	 00000004	 DWord
+SMALL_RECT . . . . . . . . . . .	 00000008
+  Left . . . . . . . . . . . . .	 00000000	 Word
+  Top  . . . . . . . . . . . . .	 00000002	 Word
+  Right  . . . . . . . . . . . .	 00000004	 Word
+  Bottom . . . . . . . . . . . .	 00000006	 Word
+SYSTEMTIME . . . . . . . . . . .	 00000010
+  wYear  . . . . . . . . . . . .	 00000000	 Word
+  wMonth . . . . . . . . . . . .	 00000002	 Word
+  wDayOfWeek . . . . . . . . . .	 00000004	 Word
+  wDay . . . . . . . . . . . . .	 00000006	 Word
+  wHour  . . . . . . . . . . . .	 00000008	 Word
+  wMinute  . . . . . . . . . . .	 0000000A	 Word
+  wSecond  . . . . . . . . . . .	 0000000C	 Word
+  wMilliseconds  . . . . . . . .	 0000000E	 Word
+
+
+Segments and Groups:
+
+                N a m e                 Size     Length   Align   Combine Class
+
+FLAT . . . . . . . . . . . . . .	GROUP
+STACK  . . . . . . . . . . . . .	32 Bit	 00100000 DWord	  Stack	  'STACK'	 
+_DATA  . . . . . . . . . . . . .	32 Bit	 00002B07 DWord	  Public  'DATA'	
+_TEXT  . . . . . . . . . . . . .	32 Bit	 0000096E DWord	  Public  'CODE'	
+
+
+Procedures,  parameters and locals:
+
+                N a m e                 Type     Value    Attr
+
+CloseHandle  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Console_ClearScreen  . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Console_GetTitle . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Console_MoveWindow . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Console_ReadChar . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Console_ReadDouble . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Console_ReadInteger  . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Console_ReadString . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Console_SetConsoleSize . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Console_SetCursorPos . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Console_SetTextColor . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Console_SetTitle . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Console_WriteChar  . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Console_WriteCrlf  . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Console_WriteDouble  . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Console_WriteInteger64 . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Console_WriteInteger . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Console_WriteString  . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+CreateFileA  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ExitProcess  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+File_Close . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+File_FileSize  . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+File_Open  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+File_Read  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+File_Seek  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+File_Write . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+FloatingPoint_CompareToInteger .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+FloatingPoint_Compare  . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+FloatingPoint_FromInt64  . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+FloatingPoint_FromInt  . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+FloatingPoint_ToInt64  . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+FloatingPoint_ToInt  . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+FloatingPoint_fromString . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+FloatingPoint_toStringEx . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+FloatingPoint_toString . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+FlushConsoleInputBuffer  . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetCommandLineA  . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetConsoleCP . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetConsoleCursorInfo . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetConsoleMode . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetConsoleScreenBufferInfo . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetKeyState  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetLastError . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetLocalTime . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetNumberOfConsoleInputEvents  .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetProcessHeap . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetStdHandle . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetSystemTime  . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetTickCount . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+HeapAlloc  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+HeapCreate . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+HeapDestroy  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+HeapFree . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+HeapSize . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Integer_fromString . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Integer_toStringEx . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Integer_toString . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Math_Abs . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Math_ArcTan  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Math_ChangeSign  . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Math_Cosec . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Math_Cos . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Math_Cotan . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Math_Even  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Math_Exp . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Math_Gcd . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Math_GetNumberFrom . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Math_IEEEModulus . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Math_Init  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Math_Inverse_Arccosec  . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Math_Inverse_Arccos  . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Math_Inverse_Arccotan  . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Math_Inverse_Arcsec  . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Math_Inverse_Arcsin  . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Math_Ln  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Math_LogN_base . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Math_MantissaOf  . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Math_Max . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Math_Min . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Math_ModulusTruncateDivisor  . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Math_Modulus . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Math_Odd . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Math_Pow2  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Math_Pow . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Math_Round . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Math_Sec . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Math_Sign  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Math_Sin . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Math_Sqrt  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Math_Sqr . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Math_Tan . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Math_Trunc . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Math_log10 . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Math_log2  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Math_log_10_base2  . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Math_log_2_base10  . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Math_log_2_base_e  . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Math_log_e_base2 . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Math_pi  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+PeekConsoleInputA  . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadConsoleA . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadConsoleInputA  . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadFile . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetConsoleCursorInfo . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetConsoleCursorPosition . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetConsoleMode . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetConsoleScreenBufferSize . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetConsoleTextAttribute  . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetConsoleTitleA . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetConsoleWindowInfo . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetFilePointer . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetLocalTime . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Sleep  . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+StringHandling_StringCompare . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+StringHandling_StringCopy  . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+StringHandling_StringLCase . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+StringHandling_StringLength2 . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+StringHandling_StringLength  . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+StringHandling_StringUCase . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SystemTimeToFileTime . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+System_BreakPoint  . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+System_CommandLineArgs . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+System_Debug_OutputString  . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+System_Execute . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+System_Exit  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+System_GetCommandLineArgv  . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+System_GetTickCount  . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+System_IsDebuggerPresent . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+System_LastError . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+System_Memory_Alloc  . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+System_Memory_Destroy  . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+System_Memory_Free . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+System_Memory_GetProcessHeap . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+System_Memory_Memset . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+System_Memory_New  . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+System_Memory_SizeFor  . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+System_Memory_Size . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+System_ShowMessage . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+System_Sleep . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteConsoleA  . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteConsoleOutputAttribute  . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteConsoleOutputCharacterA . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteFile  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+__purecall . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+_except_handler  . . . . . . . .	P Near	 00000000 _TEXT	Length= 00000012 Public STDCALL
+main_ex  . . . . . . . . . . . .	P Near	 00000038 _TEXT	Length= 0000009E Public STDCALL
+  __exception_handler  . . . . .	L Near	 00000078 _TEXT	
+  __access_violation_handler . .	L Near	 00000096 _TEXT	
+  __next_seh_handler0  . . . . .	L Near	 000000A9 _TEXT	
+  __next_seh_handler1  . . . . .	L Near	 000000BC _TEXT	
+  __continue0  . . . . . . . . .	L Near	 000000BE _TEXT	
+  __safer_place0 . . . . . . . .	L Near	 000000D4 _TEXT	
+  __end_func . . . . . . . . . .	L Near	 000000D4 _TEXT	
+main . . . . . . . . . . . . . .	P Near	 00000309 _TEXT	Length= 00000665 Public STDCALL
+  _WriteAllChars . . . . . . . .	L Near	 00000856 _TEXT	
+  __IsTheEnd . . . . . . . . . .	L Near	 00000962 _TEXT	
+test_fp_from_string  . . . . . .	P Near	 000002BB _TEXT	Length= 0000004E Public STDCALL
+  __loopx  . . . . . . . . . . .	L Near	 000002D1 _TEXT	
+test_fp  . . . . . . . . . . . .	P Near	 000000D6 _TEXT	Length= 000001E5 Public STDCALL
+test_seh . . . . . . . . . . . .	P Near	 00000012 _TEXT	Length= 00000026 Public STDCALL
+
+
+Symbols:
+
+                N a m e                 Type     Value    Attr
+
+@CodeSize  . . . . . . . . . . .	Number	 00000000h   
+@DataSize  . . . . . . . . . . .	Number	 00000000h   
+@Interface . . . . . . . . . . .	Number	 00000003h   
+@Model . . . . . . . . . . . . .	Number	 00000007h   
+@code  . . . . . . . . . . . . .	Text   	 _TEXT
+@data  . . . . . . . . . . . . .	Text   	 FLAT
+@fardata?  . . . . . . . . . . .	Text   	 FLAT
+@fardata . . . . . . . . . . . .	Text   	 FLAT
+@stack . . . . . . . . . . . . .	Text   	 FLAT
+CREATE_ALWAYS  . . . . . . . . .	Number	 00000002h   
+CREATE_NEW . . . . . . . . . . .	Number	 00000001h   
+ConsoleBuffer  . . . . . . . . .	Byte	 00000000 _DATA	
+ConsoleHandle  . . . . . . . . .	DWord	 00000000 FLAT	External STDCALL
+ConsoleTitle . . . . . . . . . .	Byte	 00000050 _DATA	
+CreateFile . . . . . . . . . . .	Text   	 CreateFileA
+ENABLE_ECHO_INPUT  . . . . . . .	Number	 00000004h   
+ENABLE_LINE_INPUT  . . . . . . .	Number	 00000002h   
+ENABLE_MOUSE_INPUT . . . . . . .	Number	 00000010h   
+ENABLE_PROCESSED_INPUT . . . . .	Number	 00000001h   
+ENABLE_PROCESSED_OUTPUT  . . . .	Number	 00000001h   
+ENABLE_WINDOW_INPUT  . . . . . .	Number	 00000008h   
+ENABLE_WRAP_AT_EOL_OUTPUT  . . .	Number	 00000002h   
+FILE_APPEND_DATA . . . . . . . .	Number	 00000004h   
+FILE_ATTRIBUTE_ARCHIVE . . . . .	Number	 00000020h   
+FILE_ATTRIBUTE_COMPRESSED  . . .	Number	 00000800h   
+FILE_ATTRIBUTE_DEVICE  . . . . .	Number	 00000040h   
+FILE_ATTRIBUTE_DIRECTORY . . . .	Number	 00000010h   
+FILE_ATTRIBUTE_ENCRYPTED . . . .	Number	 00004000h   
+FILE_ATTRIBUTE_HIDDEN  . . . . .	Number	 00000002h   
+FILE_ATTRIBUTE_NORMAL  . . . . .	Number	 00000080h   
+FILE_ATTRIBUTE_NOT_CONTENT_INDEXED .	Number	 00002000h   
+FILE_ATTRIBUTE_OFFLINE . . . . .	Number	 00001000h   
+FILE_ATTRIBUTE_READONLY  . . . .	Number	 00000001h   
+FILE_ATTRIBUTE_REPARSE_POINT . .	Number	 00000400h   
+FILE_ATTRIBUTE_SPARSE_FILE . . .	Number	 00000200h   
+FILE_ATTRIBUTE_SYSTEM  . . . . .	Number	 00000004h   
+FILE_ATTRIBUTE_TEMPORARY . . . .	Number	 00000100h   
+FILE_BEGIN . . . . . . . . . . .	Number	 00000000h   
+FILE_CURRENT . . . . . . . . . .	Number	 00000001h   
+FILE_DELETE_CHILD  . . . . . . .	Number	 00000040h   
+FILE_END . . . . . . . . . . . .	Number	 00000002h   
+FILE_READ_DATA . . . . . . . . .	Number	 00000001h   
+FILE_SHARE_DELETE  . . . . . . .	Number	 00000004h   
+FILE_SHARE_READ  . . . . . . . .	Number	 00000001h   
+FILE_SHARE_WRITE . . . . . . . .	Number	 00000002h   
+FILE_WRITE_DATA  . . . . . . . .	Number	 00000002h   
+FOCUS_EVENT  . . . . . . . . . .	Number	 00000010h   
+GENERIC_ALL  . . . . . . . . . .	Number	 10000000h   
+GENERIC_EXECUTE  . . . . . . . .	Number	 20000000h   
+GENERIC_READ . . . . . . . . . .	Number	 -80000000h   
+GENERIC_WRITE  . . . . . . . . .	Number	 40000000h   
+GetCommandLine . . . . . . . . .	Text   	 GetCommandLineA
+HEAP_GENERATE_EXCEPTIONS . . . .	Number	 00000004h   
+HEAP_GROWABLE  . . . . . . . . .	Number	 00000002h   
+HEAP_NO_SERIALIZE  . . . . . . .	Number	 00000001h   
+HEAP_REALLOC_IN_PLACE_ONLY . . .	Number	 00000010h   
+HEAP_ZERO_MEMORY . . . . . . . .	Number	 00000008h   
+INVALID_HANDLE_VALUE . . . . . .	Number	 -00000001h   
+IconError  . . . . . . . . . . .	Number	 00000010h   
+KEY_EVENT  . . . . . . . . . . .	Number	 00000001h   
+MAX_READ_CHARS . . . . . . . . .	Number	 00000050h   
+MENU_EVENT . . . . . . . . . . .	Number	 00000008h   
+MOUSE_EVENT  . . . . . . . . . .	Number	 00000002h   
+NULL . . . . . . . . . . . . . .	Number	 00000000h   
+OPEN_ALWAYS  . . . . . . . . . .	Number	 00000004h   
+OPEN_EXISTING  . . . . . . . . .	Number	 00000003h   
+PeekConsoleInput . . . . . . . .	Text   	 PeekConsoleInputA
+ReadConsoleInput . . . . . . . .	Text   	 ReadConsoleInputA
+ReadConsole  . . . . . . . . . .	Text   	 ReadConsoleA
+STATUS_ACCESS_VIOLATION  . . . .	Text   	 0C0000005h
+STATUS_INTEGER_DIVIDE_BY_ZERO  .	Text   	 0C0000094h
+STD_INPUT_HANDLE . . . . . . . .	Number	 -0000000Ah   
+STD_OUTPUT_HANDLE  . . . . . . .	Number	 -0000000Bh   
+SetConsoleTitle  . . . . . . . .	Text   	 SetConsoleTitleA
+TRUNCATE_EXISTING  . . . . . . .	Number	 00000005h   
+UnitTesting_misc1_pi . . . . . .	QWord	 00000150 _DATA	
+WINDOW_BUFFER_SIZE_EVENT . . . .	Number	 00000004h   
+WriteConsoleOutputCharacter  . .	Text   	 WriteConsoleOutputCharacterA
+WriteConsole . . . . . . . . . .	Text   	 WriteConsoleA
+___argc  . . . . . . . . . . . .	DWord	 00002AA3 _DATA	
+___argv  . . . . . . . . . . . .	DWord	 00002A9F _DATA	
+__ask_fp_numbers . . . . . . . .	Byte	 00002A44 _DATA	
+__now_write  . . . . . . . . . .	Byte	 00002A76 _DATA	
+__you_wrote  . . . . . . . . . .	Byte	 00002A88 _DATA	
+exit . . . . . . . . . . . . . .	Text   	 INVOKE ExitProcess,0
+file_buffer  . . . . . . . . . .	Byte	 0000018C _DATA	
+hcclib_title . . . . . . . . . .	Byte	 00000163 _DATA	
+hello_len  . . . . . . . . . . .	DWord	 0000015F _DATA	
+hello  . . . . . . . . . . . . .	Byte	 00000158 _DATA	
+lpszOopsAV . . . . . . . . . . .	Byte	 00002AA7 _DATA	
+lpszOopsIDZ  . . . . . . . . . .	Byte	 00002AD3 _DATA	
+message_test . . . . . . . . . .	Byte	 00002A09 _DATA	
+note_pad . . . . . . . . . . . .	Byte	 0000298C _DATA	
+test_file  . . . . . . . . . . .	Byte	 00000179 _DATA	
+test_output  . . . . . . . . . .	Byte	 00002998 _DATA	
+test_write_int . . . . . . . . .	Byte	 000029CC _DATA	
+title_test . . . . . . . . . . .	Byte	 000029F5 _DATA	
+
+	   0 Warnings
+	   0 Errors

@@ -1,0 +1,237 @@
+ test
+
+ Timestamp is 4ebf4c85 (Sun Nov 13 00:50:13 2011)
+
+ Preferred load address is 00400000
+
+ Start         Length     Name                   Class
+ 0001:00000000 00003441H .text                   CODE
+ 0002:00000000 00000121H .rdata                  DATA
+ 0002:00000121 00000000H .edata                  DATA
+ 0003:00000000 0000048cH .data                   DATA
+ 0004:00000000 0000003cH .idata$2                DATA
+ 0004:0000003c 00000014H .idata$3                DATA
+ 0004:00000050 00000138H .idata$4                DATA
+ 0004:00000188 00000138H .idata$5                DATA
+ 0004:000002c0 00000415H .idata$6                DATA
+
+  Address         Publics by Value              Rva+Base     Lib:Object
+
+ 0001:00000510       _Math_DegreesToRadians@0   00401510 f   test.obj
+ 0001:0000055c       _Math_Hyperbolic_HCos@0    0040155c f   test.obj
+ 0001:000005bc       _Math_Hyperbolic_HCosec@0  004015bc f   test.obj
+ 0001:0000061e       _Math_Hyperbolic_HCotan@0  0040161e f   test.obj
+ 0001:000006a4       _Math_Hyperbolic_HSec@0    004016a4 f   test.obj
+ 0001:00000704       _Math_Hyperbolic_HSin@0    00401704 f   test.obj
+ 0001:00000766       _Math_Hyperbolic_HTan@0    00401766 f   test.obj
+ 0001:000007ec       _Math_Hyperbolic_Inverse_HArccos@0 004017ec f   test.obj
+ 0001:00000855       _Math_Hyperbolic_Inverse_HArccosec@0 00401855 f   test.obj
+ 0001:000008f4       _Math_Hyperbolic_Inverse_HArccotan@0 004018f4 f   test.obj
+ 0001:0000097a       _Math_Hyperbolic_Inverse_HArcsec@0 0040197a f   test.obj
+ 0001:00000a04       _Math_Hyperbolic_Inverse_HArcsin@0 00401a04 f   test.obj
+ 0001:00000a6b       _Math_Hyperbolic_Inverse_HArctan@0 00401a6b f   test.obj
+ 0001:00000af1       _Math_RadiansToDegrees@0   00401af1 f   test.obj
+ 0001:00000b3d       _Program_main@0            00401b3d f   test.obj
+ 0001:00000b9f       ___System_Hpp_Runtime_Init@0 00401b9f f   test.obj
+ 0001:00000dcc       ___Internal_ConsoleIO_LX@0 00401dcc f   hcclib32.obj
+ 0001:00000dfd       ___Internal_ConsoleIO_L@0  00401dfd f   hcclib32.obj
+ 0001:00000e07       _Console_ClearScreen@0     00401e07 f   hcclib32.obj
+ 0001:00000e8c       _Console_ReadString@0      00401e8c f   hcclib32.obj
+ 0001:00000ed9       _Console_ReadChar@0        00401ed9 f   hcclib32.obj
+ 0001:00000f3f       _Console_WriteString@0     00401f3f f   hcclib32.obj
+ 0001:00000f87       _Console_WriteCrlf@0       00401f87 f   hcclib32.obj
+ 0001:00000f9b       _Console_WriteChar@0       00401f9b f   hcclib32.obj
+ 0001:00000fb0       _Console_WriteBoolean@0    00401fb0 f   hcclib32.obj
+ 0001:00000fd4       _Console_ReadInteger@0     00401fd4 f   hcclib32.obj
+ 0001:00000fe0       _Console_WriteIntegerEx@0  00401fe0 f   hcclib32.obj
+ 0001:00001007       _Console_WriteInteger@0    00402007 f   hcclib32.obj
+ 0001:00001016       _Console_WriteBinary@0     00402016 f   hcclib32.obj
+ 0001:00001025       _Console_WriteHex@0        00402025 f   hcclib32.obj
+ 0001:00001034       _Console_WriteOctal@0      00402034 f   hcclib32.obj
+ 0001:00001043       _Console_ReadDouble@0      00402043 f   hcclib32.obj
+ 0001:00001053       _Console_WriteDouble@0     00402053 f   hcclib32.obj
+ 0001:00001076       _Console_WriteInteger64@0  00402076 f   hcclib32.obj
+ 0001:00001091       _Console_SetCursorPos@0    00402091 f   hcclib32.obj
+ 0001:000010c8       _Console_SetTextColor@0    004020c8 f   hcclib32.obj
+ 0001:000010f0       _Console_SetConsoleSize@0  004020f0 f   hcclib32.obj
+ 0001:00001122       _Console_SetTitle@0        00402122 f   hcclib32.obj
+ 0001:00001139       _Console_GetTitle@0        00402139 f   hcclib32.obj
+ 0001:0000115c       _Console_MoveWindow@0      0040215c f   hcclib32.obj
+ 0001:000011ac       _File_Open@0               004021ac f   hcclib32.obj
+ 0001:000011d5       _File_Close@0              004021d5 f   hcclib32.obj
+ 0001:000011e2       _File_Read@0               004021e2 f   hcclib32.obj
+ 0001:0000120a       _File_Write@0              0040220a f   hcclib32.obj
+ 0001:00001232       _File_Seek@0               00402232 f   hcclib32.obj
+ 0001:00001253       _File_FileSize@0           00402253 f   hcclib32.obj
+ 0001:00001267       _System_Exit@0             00402267 f   hcclib32.obj
+ 0001:00001274       _System_LastError@0        00402274 f   hcclib32.obj
+ 0001:0000127a       _System_CommandLineArgs@0  0040227a f   hcclib32.obj
+ 0001:00001280       _System_Execute@0          00402280 f   hcclib32.obj
+ 0001:00001292       _System_GetTickCount@0     00402292 f   hcclib32.obj
+ 0001:00001298       _System_Sleep@0            00402298 f   hcclib32.obj
+ 0001:000012a5       _System_Debug_OutputString@0 004022a5 f   hcclib32.obj
+ 0001:000012b1       _System_BreakPoint@0       004022b1 f   hcclib32.obj
+ 0001:000012b2       _System_IsDebuggerPresent@0 004022b2 f   hcclib32.obj
+ 0001:000012b8       _Math_Init@0               004022b8 f   hcclib32.obj
+ 0001:000012bb       _Math_Abs@0                004022bb f   hcclib32.obj
+ 0001:000012cf       _Math_ChangeSign@0         004022cf f   hcclib32.obj
+ 0001:000012e3       _Math_Sqrt@0               004022e3 f   hcclib32.obj
+ 0001:000012f7       _Math_Sqr@0                004022f7 f   hcclib32.obj
+ 0001:0000130d       _Math_Sin@0                0040230d f   hcclib32.obj
+ 0001:00001321       _Math_Cos@0                00402321 f   hcclib32.obj
+ 0001:00001335       _Math_Tan@0                00402335 f   hcclib32.obj
+ 0001:0000134c       _Math_ArcTan@0             0040234c f   hcclib32.obj
+ 0001:00001364       _Math_Round@0              00402364 f   hcclib32.obj
+ 0001:00001382       _Math_Round64@0            00402382 f   hcclib32.obj
+ 0001:00001390       _Math_pi@0                 00402390 f   hcclib32.obj
+ 0001:0000139b       _Math_log_10_base2@0       0040239b f   hcclib32.obj
+ 0001:000013a6       _Math_log_e_base2@0        004023a6 f   hcclib32.obj
+ 0001:000013b1       _Math_log_2_base10@0       004023b1 f   hcclib32.obj
+ 0001:000013bc       _Math_log_2_base_e@0       004023bc f   hcclib32.obj
+ 0001:000013c7       _Math_Modulus@0            004023c7 f   hcclib32.obj
+ 0001:000013df       _Math_IEEEModulus@0        004023df f   hcclib32.obj
+ 0001:000013f7       _Math_ModulusTruncateDivisor@0 004023f7 f   hcclib32.obj
+ 0001:0000140f       _Math_Ln@0                 0040240f f   hcclib32.obj
+ 0001:00001429       _Math_log2@0               00402429 f   hcclib32.obj
+ 0001:0000143f       _Math_log10@0              0040243f f   hcclib32.obj
+ 0001:00001459       _Math_Pow@0                00402459 f   hcclib32.obj
+ 0001:00001482       _Math_Exp@0                00402482 f   hcclib32.obj
+ 0001:000014a0       _Math_MantissaOf@0         004024a0 f   hcclib32.obj
+ 0001:000014ca       _Math_GetNumberFrom@0      004024ca f   hcclib32.obj
+ 0001:000014e4       _Math_LogN_base@0          004024e4 f   hcclib32.obj
+ 0001:00001527       _Math_Cotan@0              00402527 f   hcclib32.obj
+ 0001:0000153d       _Math_Sec@0                0040253d f   hcclib32.obj
+ 0001:0000155f       _Math_Cosec@0              0040255f f   hcclib32.obj
+ 0001:00001581       _Math_Inverse_Arcsin@0     00402581 f   hcclib32.obj
+ 0001:000015b5       _Math_Inverse_Arccos@0     004025b5 f   hcclib32.obj
+ 0001:00001608       _Math_Inverse_Arcsec@0     00402608 f   hcclib32.obj
+ 0001:0000166d       _Math_Inverse_Arccosec@0   0040266d f   hcclib32.obj
+ 0001:000016d7       _Math_Inverse_Arccotan@0   004026d7 f   hcclib32.obj
+ 0001:00001718       _FloatingPoint_Compare@0   00402718 f   hcclib32.obj
+ 0001:00001747       _Math_Max@0                00402747 f   hcclib32.obj
+ 0001:00001777       _Math_Min@0                00402777 f   hcclib32.obj
+ 0001:000017a7       _Math_Sign@0               004027a7 f   hcclib32.obj
+ 0001:000017d4       _FloatingPoint_CompareToInteger@0 004027d4 f   hcclib32.obj
+ 0001:00001803       _FloatingPoint_ToInt@0     00402803 f   hcclib32.obj
+ 0001:0000180f       _FloatingPoint_ToInt64@0   0040280f f   hcclib32.obj
+ 0001:0000181d       _FloatingPoint_FromInt@0   0040281d f   hcclib32.obj
+ 0001:0000182c       _FloatingPoint_FromInt64@0 0040282c f   hcclib32.obj
+ 0001:0000183b       _Math_Pow2@0               0040283b f   hcclib32.obj
+ 0001:00001895       _Math_Odd@0                00402895 f   hcclib32.obj
+ 0001:000018aa       _Math_Even@0               004028aa f   hcclib32.obj
+ 0001:000018bf       _Math_Trunc@0              004028bf f   hcclib32.obj
+ 0001:000018d0       _StringHandling_StringLength2@0 004028d0 f   hcclib32.obj
+ 0001:000018ee       _StringHandling_StringLength@0 004028ee f   hcclib32.obj
+ 0001:00001914       _StringHandling_StringCopy@0 00402914 f   hcclib32.obj
+ 0001:0000193b       _StringHandling_StringCompare@0 0040293b f   hcclib32.obj
+ 0001:00001966       _StringHandling_StringUCase@0 00402966 f   hcclib32.obj
+ 0001:0000198b       _StringHandling_StringLCase@0 0040298b f   hcclib32.obj
+ 0001:000019ab       _Math_Gcd@0                004029ab f   hcclib32.obj
+ 0001:000019dd       _Integer_toStringEx@0      004029dd f   hcclib32.obj
+ 0001:00001a42       _Integer_toString@0        00402a42 f   hcclib32.obj
+ 0001:00001a61       _Integer_fromString@0      00402a61 f   hcclib32.obj
+ 0001:00001ab0       _FloatingPoint_toString@0  00402ab0 f   hcclib32.obj
+ 0001:00001acd       _FloatingPoint_toStringEx@0 00402acd f   hcclib32.obj
+ 0001:00001c94       ___AccumValue_Number@0     00402c94 f   hcclib32.obj
+ 0001:00001d2c       _FloatingPoint_fromString@0 00402d2c f   hcclib32.obj
+ 0001:00001ea8       _System_Memory_GetProcessHeap@0 00402ea8 f   hcclib32.obj
+ 0001:00001eae       _System_Memory_Memset@0    00402eae f   hcclib32.obj
+ 0001:00001ec9       _System_Memory_Alloc@0     00402ec9 f   hcclib32.obj
+ 0001:00001ee1       _System_Memory_Free@0      00402ee1 f   hcclib32.obj
+ 0001:00001ef6       _System_Memory_Size@0      00402ef6 f   hcclib32.obj
+ 0001:00001f0b       _System_Memory_New@0       00402f0b f   hcclib32.obj
+ 0001:00001f1e       _System_Memory_Destroy@0   00402f1e f   hcclib32.obj
+ 0001:00001f31       _System_Memory_SizeFor@0   00402f31 f   hcclib32.obj
+ 0001:00001f44       _System_ShowMessage@0      00402f44 f   hcclib32.obj
+ 0001:00001f5f       _StringHandling_StringSet@0 00402f5f f   hcclib32.obj
+ 0001:00001f7b       ___purecall@0              00402f7b f   hcclib32.obj
+ 0001:00001f8f       _System_GetCommandLineArgv@0 00402f8f f   hcclib32.obj
+ 0001:00002506       _GetVersion@0              00403506 f   kernel32:KERNEL32.dll
+ 0001:0000250c       _CloseHandle@4             0040350c f   kernel32:KERNEL32.dll
+ 0001:00002512       _CreateFileA@28            00403512 f   kernel32:KERNEL32.dll
+ 0001:00002518       _ExitProcess@4             00403518 f   kernel32:KERNEL32.dll
+ 0001:0000251e       _GetConsoleMode@8          0040351e f   kernel32:KERNEL32.dll
+ 0001:00002524       _GetConsoleScreenBufferInfo@8 00403524 f   kernel32:KERNEL32.dll
+ 0001:0000252a       _GetLastError@0            0040352a f   kernel32:KERNEL32.dll
+ 0001:00002530       _GetStdHandle@4            00403530 f   kernel32:KERNEL32.dll
+ 0001:00002536       _GetTickCount@0            00403536 f   kernel32:KERNEL32.dll
+ 0001:0000253c       _GetProcessHeap@0          0040353c f   kernel32:KERNEL32.dll
+ 0001:00002542       _HeapAlloc@12              00403542 f   kernel32:KERNEL32.dll
+ 0001:00002548       _HeapFree@12               00403548 f   kernel32:KERNEL32.dll
+ 0001:0000254e       _HeapSize@12               0040354e f   kernel32:KERNEL32.dll
+ 0001:00002554       _ReadConsoleA@20           00403554 f   kernel32:KERNEL32.dll
+ 0001:0000255a       _ReadFile@20               0040355a f   kernel32:KERNEL32.dll
+ 0001:00002560       _SetConsoleCursorPosition@8 00403560 f   kernel32:KERNEL32.dll
+ 0001:00002566       _SetConsoleMode@8          00403566 f   kernel32:KERNEL32.dll
+ 0001:0000256c       _SetConsoleScreenBufferSize@8 0040356c f   kernel32:KERNEL32.dll
+ 0001:00002572       _SetConsoleTextAttribute@8 00403572 f   kernel32:KERNEL32.dll
+ 0001:00002578       _SetConsoleTitleA@4        00403578 f   kernel32:KERNEL32.dll
+ 0001:0000257e       _SetConsoleWindowInfo@12   0040357e f   kernel32:KERNEL32.dll
+ 0001:00002584       _SetFilePointer@16         00403584 f   kernel32:KERNEL32.dll
+ 0001:0000258a       _Sleep@4                   0040358a f   kernel32:KERNEL32.dll
+ 0001:00002590       _WriteFile@20              00403590 f   kernel32:KERNEL32.dll
+ 0001:00002596       _WriteConsoleA@20          00403596 f   kernel32:KERNEL32.dll
+ 0001:0000259c       _GetConsoleTitleA@8        0040359c f   kernel32:KERNEL32.dll
+ 0001:000025a2       _GetFileSize@8             004035a2 f   kernel32:KERNEL32.dll
+ 0001:000025a8       _WinExec@8                 004035a8 f   kernel32:KERNEL32.dll
+ 0001:000025ae       _OutputDebugStringA@4      004035ae f   kernel32:KERNEL32.dll
+ 0001:000025b4       _IsDebuggerPresent@0       004035b4 f   kernel32:KERNEL32.dll
+ 0001:000025ba       _FillConsoleOutputCharacterA@20 004035ba f   kernel32:KERNEL32.dll
+ 0001:000025c0       _FillConsoleOutputAttribute@20 004035c0 f   kernel32:KERNEL32.dll
+ 0001:000025c6       _lstrlenW@4                004035c6 f   kernel32:KERNEL32.dll
+ 0001:000025cc       _GetCommandLineW@0         004035cc f   kernel32:KERNEL32.dll
+ 0001:000025d2       _WideCharToMultiByte@32    004035d2 f   kernel32:KERNEL32.dll
+ 0001:000025d8       _LocalFree@4               004035d8 f   kernel32:KERNEL32.dll
+ 0001:000025de       _MessageBoxA@16            004035de f   user32:USER32.dll
+ 0001:000025e4       _CommandLineToArgvW@8      004035e4 f   shell32:SHELL32.dll
+ 0003:00000048       _ConsoleHandle             00406048     hcclib32.obj
+ 0003:0000004c       _ConsoleBuffer             0040604c     hcclib32.obj
+ 0003:0000009e       _ConsoleTitle              0040609e     hcclib32.obj
+ 0004:00000000       __IMPORT_DESCRIPTOR_KERNEL32 00407000     kernel32:KERNEL32.dll
+ 0004:00000014       __IMPORT_DESCRIPTOR_USER32 00407014     user32:USER32.dll
+ 0004:00000028       __IMPORT_DESCRIPTOR_SHELL32 00407028     shell32:SHELL32.dll
+ 0004:0000003c       __NULL_IMPORT_DESCRIPTOR   0040703c     kernel32:KERNEL32.dll
+ 0004:00000188       __imp__GetVersion@0        00407188     kernel32:KERNEL32.dll
+ 0004:0000018c       __imp__CloseHandle@4       0040718c     kernel32:KERNEL32.dll
+ 0004:00000190       __imp__CreateFileA@28      00407190     kernel32:KERNEL32.dll
+ 0004:00000194       __imp__ExitProcess@4       00407194     kernel32:KERNEL32.dll
+ 0004:00000198       __imp__GetConsoleMode@8    00407198     kernel32:KERNEL32.dll
+ 0004:0000019c       __imp__GetConsoleScreenBufferInfo@8 0040719c     kernel32:KERNEL32.dll
+ 0004:000001a0       __imp__GetLastError@0      004071a0     kernel32:KERNEL32.dll
+ 0004:000001a4       __imp__GetStdHandle@4      004071a4     kernel32:KERNEL32.dll
+ 0004:000001a8       __imp__GetTickCount@0      004071a8     kernel32:KERNEL32.dll
+ 0004:000001ac       __imp__GetProcessHeap@0    004071ac     kernel32:KERNEL32.dll
+ 0004:000001b0       __imp__HeapAlloc@12        004071b0     kernel32:KERNEL32.dll
+ 0004:000001b4       __imp__HeapFree@12         004071b4     kernel32:KERNEL32.dll
+ 0004:000001b8       __imp__HeapSize@12         004071b8     kernel32:KERNEL32.dll
+ 0004:000001bc       __imp__ReadConsoleA@20     004071bc     kernel32:KERNEL32.dll
+ 0004:000001c0       __imp__ReadFile@20         004071c0     kernel32:KERNEL32.dll
+ 0004:000001c4       __imp__SetConsoleCursorPosition@8 004071c4     kernel32:KERNEL32.dll
+ 0004:000001c8       __imp__SetConsoleMode@8    004071c8     kernel32:KERNEL32.dll
+ 0004:000001cc       __imp__SetConsoleScreenBufferSize@8 004071cc     kernel32:KERNEL32.dll
+ 0004:000001d0       __imp__SetConsoleTextAttribute@8 004071d0     kernel32:KERNEL32.dll
+ 0004:000001d4       __imp__SetConsoleTitleA@4  004071d4     kernel32:KERNEL32.dll
+ 0004:000001d8       __imp__SetConsoleWindowInfo@12 004071d8     kernel32:KERNEL32.dll
+ 0004:000001dc       __imp__SetFilePointer@16   004071dc     kernel32:KERNEL32.dll
+ 0004:000001e0       __imp__Sleep@4             004071e0     kernel32:KERNEL32.dll
+ 0004:000001e4       __imp__WriteFile@20        004071e4     kernel32:KERNEL32.dll
+ 0004:000001e8       __imp__WriteConsoleA@20    004071e8     kernel32:KERNEL32.dll
+ 0004:000001ec       __imp__GetConsoleTitleA@8  004071ec     kernel32:KERNEL32.dll
+ 0004:000001f0       __imp__GetFileSize@8       004071f0     kernel32:KERNEL32.dll
+ 0004:000001f4       __imp__WinExec@8           004071f4     kernel32:KERNEL32.dll
+ 0004:000001f8       __imp__OutputDebugStringA@4 004071f8     kernel32:KERNEL32.dll
+ 0004:000001fc       __imp__IsDebuggerPresent@0 004071fc     kernel32:KERNEL32.dll
+ 0004:00000200       __imp__FillConsoleOutputCharacterA@20 00407200     kernel32:KERNEL32.dll
+ 0004:00000204       __imp__FillConsoleOutputAttribute@20 00407204     kernel32:KERNEL32.dll
+ 0004:00000208       __imp__lstrlenW@4          00407208     kernel32:KERNEL32.dll
+ 0004:0000020c       __imp__GetCommandLineW@0   0040720c     kernel32:KERNEL32.dll
+ 0004:00000210       __imp__WideCharToMultiByte@32 00407210     kernel32:KERNEL32.dll
+ 0004:00000214       __imp__LocalFree@4         00407214     kernel32:KERNEL32.dll
+ 0004:00000218       \177KERNEL32_NULL_THUNK_DATA 00407218     kernel32:KERNEL32.dll
+ 0004:00000260       __imp__CommandLineToArgvW@8 00407260     shell32:SHELL32.dll
+ 0004:00000264       \177SHELL32_NULL_THUNK_DATA 00407264     shell32:SHELL32.dll
+ 0004:00000290       __imp__MessageBoxA@16      00407290     user32:USER32.dll
+ 0004:00000294       \177USER32_NULL_THUNK_DATA 00407294     user32:USER32.dll
+
+ entry point at        0001:00000b9f
+

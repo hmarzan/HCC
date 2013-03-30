@@ -1,0 +1,437 @@
+
+/*
+	Standard H++ header file that imports the principal functions
+	used in any H++ console program.
+	Harold L. Marzan
+*/
+class System
+{
+	typename enum __ShowOptions
+	{
+		Hide		= 0,
+		Show		= 1,
+		Maximize	= 3,
+		Minimize	= 6,
+		Restore		= 9,		
+	}ShowOptions;	
+	
+	public extern "hcclib32" static void Exit(int exitCode);
+	public extern "hcclib32" static long LastError();
+	public extern "hcclib32" static string CommandLineArgs();
+	public extern "hcclib32" static bool Execute(string cmd, ShowOptions option);
+
+	public extern "hcclib32" static int GetTickCount();
+	public extern "hcclib32" static void Sleep(long Miliseconds);
+
+	class Debug
+	{
+	public extern "hcclib32" static void OutputString(string message);
+	public extern "hcclib32" static void BreakPoint(void);
+	public extern "hcclib32" static bool IsDebuggerPresent(void);
+	};
+	
+	typename enum __MessageType
+	{
+		IconError		= 0x00000010,
+		IconQuestion	= 0x00000020,
+		IconWarning		= 0x00000030,
+		IconInformation	= 0x00000040,
+		UserIcon		= 0x00000080,		
+	}MessageType;
+	
+	public extern "hcclib32" static bool ShowMessage(string message, string title, MessageType type);
+		
+	class Memory
+	{	
+		typename long Handle;
+		typename long Pointer;
+		typename long HeapSize;
+	
+		//heap specific
+		public extern "hcclib32" static Handle GetProcessHeap();
+		public extern "hcclib32" static Pointer Alloc(Handle hHeap, long nBytes);
+		public extern "hcclib32" static bool	Free(Handle hHeap, Pointer mem_ptr);
+		public extern "hcclib32" static HeapSize Size(Handle hHeap, Pointer mem_ptr);
+		
+		public extern "hcclib32" static Pointer New(long nBytes);	
+		public extern "hcclib32" static bool	Destroy(Pointer mem_ptr);
+		public extern "hcclib32" static HeapSize SizeFor(Pointer mem_ptr);
+		
+		public extern "hcclib32" static long Memset(Pointer mem_ptr, int nVal, int nBytes);
+	};
+	
+	
+	class Directory{}; //TODO
+
+	class Thread{}; //TODO
+	
+	class Synchronize{}; //TODO
+};
+
+class Console
+{
+	public extern "hcclib32" static string ReadString();
+	public extern "hcclib32" static char ReadChar();
+
+	public extern "hcclib32" static void WriteString(string line, int length);
+	public extern "hcclib32" static void WriteCrlf();
+	public extern "hcclib32" static void WriteChar(char val);
+
+	public extern "hcclib32" static bool SetCursorPos(short X, short Y);
+	public extern "hcclib32" static bool SetTitle(string title);
+	public extern "hcclib32" static string GetTitle();
+	
+	public extern "hcclib32" static double ReadDouble();				
+	public extern "hcclib32" static void WriteDouble(double expr);		
+	public extern "hcclib32" static void WriteInteger64(Int64 expr);
+	
+	public extern "hcclib32" static int ReadInteger();
+	public extern "hcclib32" static void WriteInteger(int expr);
+	public extern "hcclib32" static void WriteBinary(int expr);
+	public extern "hcclib32" static void WriteHex(int expr);
+	public extern "hcclib32" static void WriteOctal(int expr);	
+	
+	//COMPILER BUILD-IN
+	/*
+	public extern "hcclib32" static void Write(...);
+	public extern "hcclib32" static void WriteLn(...);	
+	*/
+
+	typename enum __Color
+	{
+	//-----------------------------------
+	// Standard 4-bit color definitions
+	//-----------------------------------
+		black        = 0, //0000b
+		blue         = 1, //0001b
+		green        = 2, //0010b
+		cyan         = 3, //0011b
+		red          = 4, //0100b
+		magenta      = 5, //0101b
+		brown        = 6, //0110b
+		lightGray    = 7, //0111b
+		gray         = 8, //1000b
+		lightBlue    = 9, //1001b
+		lightGreen   = 10, //1010b
+		lightCyan    = 11, //1011b
+		lightRed     = 12, //1100b
+		lightMagenta = 13, //1101b
+		yellow       = 14, //1110b
+		white        = 15, //1111b	
+	}Color;
+
+	public extern "hcclib32" static bool SetTextColor(Color color);
+	public extern "hcclib32" static bool SetConsoleSize(short X, short Y);
+	public extern "hcclib32" static bool MoveWindow(short Left, short Top, short Right, short Bottom);
+	public extern "hcclib32" static void ClearScreen(void);
+};
+
+
+class File
+{
+	typename enum __FileFormat
+	{
+		PlainTextFile = 1,
+		BinaryFile,
+	}FileFormat;
+	
+	typename enum __FileMode
+	{
+		CreateNew			= 1,
+		CreateAlways		= 2,			
+		OpenExisting		= 3,
+		OpenOrCreate		= 4,
+		TruncateExisting	= 5,
+	}FileMode;
+	
+	typename enum __FileAccess
+	{
+		FileReadOnly	= 0x80000000h,				//2147483648
+		FileWrite		= 0x40000000h,				//1073741824
+		FileReadWrite	= 0xC0000000h, //FileReadOnly | FileWrite, //0xC0000000h == 3221225472
+	}FileAccess;
+	
+	typename enum __FileSharing
+	{
+		SharedRead	=1,
+		SharedWrite	=2,
+		Exclusive	=4,
+	}FileSharing;
+	
+	typename enum __SeekType
+	{
+		SeekBegin	= 0,
+		SeekCurrent,
+		SeekEnd,
+	}SeekType;
+	
+	typename long FileHandle;
+	
+	public const int INVALID_HANDLE_VALUE = -1;
+	public const int INVALID_SET_FILE_POINTER = INVALID_HANDLE_VALUE;
+	
+	public extern "hcclib32" static FileHandle Open(string filePath, 
+														FileMode mode, 
+														FileAccess access,
+														FileSharing sharing);
+											  
+	public extern "hcclib32" static bool Close(FileHandle handle);
+
+	public extern "hcclib32" static long Read(FileHandle handle, char [] buffer, long nBytesToRead);
+	public extern "hcclib32" static long Write(FileHandle handle, char [] buffer, long nBytesToWrite);
+	public extern "hcclib32" static long Seek(FileHandle handle, SeekType moveType, long offset);
+	public extern "hcclib32" static long FileSize(FileHandle handle);
+
+};
+
+//string handling functions
+class StringHandling
+{
+	public extern "hcclib32" static int StringLength(const string source);
+	public extern "hcclib32" static int StringCopy(string ref target, string source, int length);
+	public extern "hcclib32" static int StringCompare(const string target, const string source, int length);
+	
+	public extern "hcclib32" static void StringUCase(string source, int length);
+	public extern "hcclib32" static void StringLCase(string source, int length);
+	
+	public extern "hcclib32" static string StringTrim(string source);						//TODO
+	public extern "hcclib32" static string StringLTrim(string source);						//TODO
+	public extern "hcclib32" static string StringRTrim(string source);						//TODO
+};
+
+class Integer
+{
+	public extern "hcclib32" static Int32 fromString(string value);
+	public extern "hcclib32" static short toStringEx(Int32 expr, short radix, char [] result);
+	//returns a string in dynamic memory: user must free it with 'destroy'.
+	public extern "hcclib32" static string toString(Int32 expr);
+};
+
+class FloatingPoint
+{
+	public extern "hcclib32" static int Compare(double X, double Y);
+	public extern "hcclib32" static int CompareToInteger(double X, int Y);			
+	public extern "hcclib32" static int ToInt(double expr);
+	public extern "hcclib32" static Int64 ToInt64(double expr);
+	
+	public extern "hcclib32" static double FromInt(Int32 expr);
+	public extern "hcclib32" static double FromInt64(Int64 expr);
+	
+	//returns a string in dynamic memory: user must free it with 'destroy'.
+	public extern "hcclib32" static string toString(double expr);
+	public extern "hcclib32" static void toStringEx(double expr, char [] result);
+	
+	public extern "hcclib32" static double fromString(string value);
+};
+
+//BEGIN - A L I A S E S
+//H++ Aliases to use short names for the conversion classes static members, to behave like C standard functions
+
+using itoa		= Integer::toStringEx;
+using atoi		= Integer::fromString;
+
+using ftoa		= FloatingPoint::toStringEx;
+using atof		= FloatingPoint::fromString;
+
+using itof		= FloatingPoint::FromInt;
+using i64tof	= FloatingPoint::FromInt64;
+
+using ftoi		= FloatingPoint::ToInt;
+using ftoi64	= FloatingPoint::ToInt64;
+
+using fpcmp		= FloatingPoint::Compare;
+using fpcmpi	= FloatingPoint::CompareToInteger;
+
+//STRING 
+
+using strlen	= StringHandling::StringLength;
+using strncpy	= StringHandling::StringCopy;
+using strncmp	= StringHandling::StringCompare;
+
+//MEMORY 
+
+using memset		= System::Memory::Memset;
+using heap_sizeof	= System::Memory::SizeFor;
+
+//FILE
+
+using fopen		= File::Open;
+using fclose	= File::Close;
+using fread		= File::Read;
+using fwrite	= File::Write;
+using fseek		= File::Seek;
+using ftell		= File::FileSize;
+
+//END - A L I A S E S
+
+class Math
+{
+	public extern "hcclib32" static void Init(void);
+	public extern "hcclib32" static double Gcd(int a, int b);
+	public extern "hcclib32" static double Abs(double expr);	
+	public extern "hcclib32" static double ChangeSign(double expr);					
+	public extern "hcclib32" static double Modulus(double Dividend, double Divisor);
+	public extern "hcclib32" static double IEEEModulus(double Dividend, double Divisor);
+	public extern "hcclib32" static double ModulusTruncateDivisor(double Dividend, double Divisor);
+	public extern "hcclib32" static double MantissaOf(double number, int ref exponent);
+	public extern "hcclib32" static double GetNumberFrom(double mantissa, int exponent);
+	public extern "hcclib32" static double Max(double X, double Y);
+	public extern "hcclib32" static double Min(double X, double Y);
+	public extern "hcclib32" static double Sign(double X);		
+	
+				//based on the formula: log_b(x) <-- (log_2(b))^–1 * log_2(x)
+	public extern "hcclib32" static double Ln(double expr);
+	public extern "hcclib32" static double log10(double expr);	//ln(x)/ln(10)
+	public extern "hcclib32" static double log2(double expr);	//ln(x)/ln(2)
+	public extern "hcclib32" static double LogN_base(double N, int b); //ln(N)/ln(b)
+	
+
+	//constant values from Intel FPU
+	public extern "hcclib32" static double pi(void);
+	public extern "hcclib32" static double log_10_base2(void);						
+	public extern "hcclib32" static double log_e_base2(void);						
+	public extern "hcclib32" static double log_2_base10(void);						
+	public extern "hcclib32" static double log_2_base_e(void);						
+
+	public extern "hcclib32" static int Round(double expr);
+	public extern "hcclib32" static Int64 Round64(double expr);
+
+	public extern "hcclib32" static double Sin(double angle);						
+	public extern "hcclib32" static double Cos(double angle);						
+	public extern "hcclib32" static double Tan(double angle);	
+	public extern "hcclib32" static double Sec(double expr);
+	public extern "hcclib32" static double Cosec(double expr);						
+	public extern "hcclib32" static double Cotan(double angle);						
+	public extern "hcclib32" static double ArcTan(double X, double Y);				
+
+	public extern "hcclib32" static double Sqr(double expr);						
+	public extern "hcclib32" static double Sqrt(double expr);						
+
+			//Recursive Power of x by y
+	public extern "hcclib32" static double Pow2(double x, int exp);			//x^y
+			//Supports floating point exponents for scientific computations
+	public extern "hcclib32" static double Pow(double x, double exp);		//x^y
+	public extern "hcclib32" static double Exp(double expr);				//e^x	
+	
+	public extern "hcclib32" static bool Odd(int val);								
+	public extern "hcclib32" static bool Even(int val);								
+	public extern "hcclib32" static double Trunc(double expr);	
+
+	public  static double RadiansToDegrees(double rad)
+	{
+		return (180 / pi()) * rad;
+	}
+	
+	public  static double DegreesToRadians(double deg)
+	{
+		return (deg * pi()) / 180;
+	}
+
+/*
+	**N O N - I N T R I N S I C   M A T H   F U N C T I O N S**
+//-------------------------------------------------------------------------------------------	
+(DONE)Logarithm to base N 									LogN(X) = Log(X) / Log(N) 	
+
+(DONE)Secant												Sec(X) = 1 / Cos(X) 
+(DONE)Cosecant 												Cosec(X) = 1 / Sin(X)
+(DONE)Cotangent 											Cotan(X) = 1 / Tan(X) 
+
+(DONE)Inverse Sine 											Arcsin(X) = Atn(X / Sqr(-X * X + 1)) 
+(DONE)Inverse Cosine 										Arccos(X) = Atn(-X / Sqr(-X * X + 1)) + 2 * Atn(1) 
+
+(DONE)Inverse Secant 										Arcsec(X)	= Atn(X / Sqr(X * X - 1)) + Sgn(X-1) * (2 * Atn(1)) 
+(DONE)Inverse Cosecant 										Arccosec(X) = Atn(X / Sqr(X * X - 1)) + (Sgn(X) - 1) * (2 * Atn(1)) 
+
+(DONE)Inverse Cotangent 									Arccotan(X) = Atn(X) + 2 * Atn(1)
+
+//------------------------------------------------------------------------------------------- 
+*/
+
+	class Inverse
+	{
+		public extern "hcclib32" static double Arcsin(double X);
+		public extern "hcclib32" static double Arccos(double X);
+		
+		public extern "hcclib32" static double Arcsec(double X);
+		public extern "hcclib32" static double Arccosec(double X);
+		
+		public extern "hcclib32" static double Arccotan(double X);
+	};
+
+/*
+	**N O N - I N T R I N S I C   M A T H   F U N C T I O N S**
+//-------------------------------------------------------------------------------------------
+
+(DONE)Hyperbolic Sine 										HSin(X) = (Exp(X) - Exp(-X)) / 2  
+(DONE)Hyperbolic Cosine 									HCos(X) = (Exp(X) + Exp(-X)) / 2 
+(DONE)Hyperbolic Tangent 									HTan(X) = (Exp(X) - Exp(-X)) / (Exp(X) + Exp(-X)) 
+(DONE)Hyperbolic Secant 									HSec(X) = 2 / (Exp(X) + Exp(-X)) 
+(DONE)Hyperbolic Cosecant 									HCosec(X) = 2 / (Exp(X) - Exp(-X)) 
+(DONE)Hyperbolic Cotangent 									HCotan(X) = (Exp(X) + Exp(-X)) / (Exp(X) - Exp(-X)) 
+
+(DONE)Inverse Hyperbolic Sine 								HArcsin(X) = Log(X + Sqr(X * X + 1)) 
+(DONE)Inverse Hyperbolic Cosine 							HArccos(X) = Log(X + Sqr(X * X - 1)) 
+(DONE)Inverse Hyperbolic Tangent 							HArctan(X) = Log((1 + X) / (1 - X)) / 2 
+(DONE)Inverse Hyperbolic Secant 							HArcsec(X) = Log((Sqr(-X * X + 1) + 1) / X) 
+(DONE)Inverse Hyperbolic Cosecant 							HArccosec(X) = Log((Sgn(X) * Sqr(X * X + 1) +1) / X) 
+(DONE)Inverse Hyperbolic Cotangent 							HArccotan(X) = Log((X + 1) / (X - 1)) / 2 
+
+//-------------------------------------------------------------------------------------------
+*/	
+	class Hyperbolic
+	{
+		
+		public  static double HSin(double X)
+		{
+			return (Math::Exp(X) - Math::Exp(-X)) / 2;
+		}
+		public  static double HCos(double X)
+		{
+			return (Math::Exp(X) + Math::Exp(-X)) / 2;
+		}
+		public  static double HTan(double X)
+		{
+			return (Math::Exp(X) - Math::Exp(-X)) / (Math::Exp(X) + Math::Exp(-X));
+		}		
+		public  static double HSec(double X)
+		{
+			return 2 / (Math::Exp(X) + Math::Exp(-X));
+		}
+		public  static double HCosec(double X)
+		{
+			return 2 / (Math::Exp(X) - Math::Exp(-X));
+		}
+		public  static double HCotan(double X)
+		{
+			return (Math::Exp(X) + Math::Exp(-X)) / (Math::Exp(X) - Math::Exp(-X));
+		}
+		
+		class Inverse
+		{
+			public  static double HArcsin(double X)
+			{
+				return Math::log10(X + Math::Sqrt(X * X + 1));
+			}
+			public  static double HArccos(double X)
+			{
+				return Math::log10(X + Math::Sqrt(X * X - 1));
+			}
+			public  static double HArctan(double X)
+			{
+				return Math::log10((1 + X) / (1 - X)) / 2;
+			}
+			public  static double HArcsec(double X)
+			{
+				return Math::log10((Math::Sqrt(-X * X + 1) + 1) / X);
+			}
+			public  static double HArccosec(double X)
+			{
+				return Math::log10((Math::Sign(X) * Math::Sqrt(X * X + 1) +1) / X);
+			}
+			public  static double HArccotan(double X)
+			{
+				return Math::log10((X + 1) / (X - 1)) / 2;
+			}
+		};
+	};
+};

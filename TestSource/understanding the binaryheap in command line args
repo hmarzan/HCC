@@ -1,0 +1,23 @@
+
+From
+L"c:\test.exe"\0\0L"/x"\0\0L"/y"\0\0L"/z"\0\0\0\0
+
+to
+c:\test.exe"\0"/x"\0"/y"\0"/z"\0\0
+
+  0           +4          +8           +0Ch        +10h           +14h
+0x0030e368, 0x0030e36c, 0x0030e370, 0x0030e374, 0x0030e378,... 0x0030e37c
+
+
+0x0030e368, 0x0030e37c
+0x0030e36c, 0x0030e3d6
+0x0030e370, 0x0030e3dc
+0x0030e374, 0x0030e3e2
+0x0030e378, 0x00000000
+
+0x0030e37c "c:\hmarzan\testcmdargs\debug\TestCmdArgs.exe"
+0x0030e3d6 "/x"
+0x0030e3dc "/y"
+0x0030e3e2 "/z"
+
+

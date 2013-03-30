@@ -1,0 +1,3390 @@
+Microsoft (R) Macro Assembler Version 6.15.8803		    03/28/13 13:50:54
+stdhpp\hcclib32.asm					     Page 1 - 1
+
+
+
+				;	*****************************************************************************
+				;					H++ Include Library.
+				;
+				;		This file contains the assembly implementation of the H++ library
+				;		API set.
+				;
+				;		Harold L. Marzan
+				;		H++ Developer & Designer.
+				;		May 2006.
+				;
+				;	*****************************************************************************
+				.386P
+				.MODEL flat, stdcall
+				.STACK 1024 * 1024
+
+				INCLUDE SmallWin.inc
+			      C .NOLIST
+			      C .LIST
+			      C 
+
+				;HANDLE WINAPI
+
+				;FILE_SHARE_READ = 0x00000001; Other open operations can be performed on the console screen buffer for read access.
+				;FILE_SHARE_WRITE = 0x00000002;Other open operations can be performed on the console screen buffer for write access.
+				;GENERIC_READ (0x80000000L)	Requests read access to the console screen buffer, enabling the process to read data from the buffer.
+				;GENERIC_WRITE (0x40000000L)	Requests write access to the console screen buffer, enabling the process to write data to the buffer.
+
+				CreateConsoleScreenBuffer PROTO, dwDesiredAccess:DWORD,
+												 dwShareMode:DWORD,
+												 lpSecurityAttributes:DWORD,
+												 dwFlags:DWORD,
+												 lpScreenBufferData:DWORD
+												 
+				SetConsoleActiveScreenBuffer PROTO, hConsoleOutput:DWORD
+
+
+ = GetConsoleTitleA		GetConsoleTitle EQU <GetConsoleTitleA>
+ = MessageBoxA			MessageBox		EQU <MessageBoxA>
+
+				GetConsoleTitle PROTO, lpConsoleTitle: PTR BYTE, ; points to string
+									   nSize: DWORD				 ; the size of buffer
+
+				GetFileSize PROTO, hFile:DWORD,					; file handle
+								   lpFileSizeHigh:PTR DWORD		; high-dword of 64-bit files
+								   
+				WinExec PROTO, lpCmdLine:PTR BYTE,				;the command line
+							   uCmdShow:DWORD					;show flags				   
+							   
+ = OutputDebugStringA		OutputDebugString EQU <OutputDebugStringA>
+				OutputDebugString PROTO, lpOutputString : PTR BYTE	;points to a string
+
+				IsDebuggerPresent PROTO
+
+ = FillConsoleOutputCharact	FillConsoleOutputCharacter EQU <FillConsoleOutputCharacterA>
+   erA
+				FillConsoleOutputCharacter PROTO, hConsoleOutput: DWORD,
+												  cCharacter: DWORD,
+												  nLength: DWORD,
+												  dwWriteCoord: DWORD,
+												  lpNumberOfCharsWritten: PTR DWORD
+												  
+				FillConsoleOutputAttribute PROTO, hConsoleOutput: DWORD,
+												  wAttribute: DWORD,
+												  nLength: DWORD,
+												  dwWriteCoord: DWORD,
+												  lpNumberOfAttrsWritten: PTR DWORD
+
+				GetComputerName PROTO, 
+									lpBuffer: PTR DWORD,
+									lpnSize: PTR DWORD			;return BOOL
+
+
+				GetWindowsDirectory PROTO,
+									  lpBuffer:PTR DWORD,
+									  uSize:DWORD				;return UINT 
+
+
+				GetEnvironmentVariable PROTO,
+										lpName:PTR DWORD,
+										lpBuffer:PTR DWORD,
+										nSize:DWORD				;return DWORD
+
+
+				GetCurrentDirectory PROTO,
+										nBufferLength: DWORD,
+										lpBuffer: PTR DWORD		;return DWORD 
+
+				CreateDirectory PROTO,
+									lpPathName:PTR DWORD,
+									lpSecurityAttributes: PTR DWORD		;return BOOL 
+
+				RemoveDirectory PROTO,
+									lpPathName: PTR DWORD			;return BOOL
+									
+ = GetCommandLineW		GetCommandLine		EQU <GetCommandLineW>
+ = CommandLineToArgvW		CommandLineToArgv	EQU <CommandLineToArgvW>
+ = lstrlenW			lstrlen				EQU <lstrlenW>
+
+				lstrlen	PROTO,
+								 lpString: PTR WORD					;return int
+
+				GetCommandLine PROTO							;returns LPWSTR
+
+				CommandLineToArgv PROTO,
+									lpCmdLine: PTR DWORD,
+									pNumArgs: PTR DWORD			;returns LPWSTR*
+									
+				WideCharToMultiByte PROTO,
+								CodePage: DWORD,			; code page
+								dwFlags: DWORD,				;performance and mapping flags
+								lpWideCharStr:PTR WORD,		;wide-character string
+								cchWideChar:DWORD,          ;number of chars in string
+								lpMultiByteStr:PTR BYTE,    ;buffer for new string
+								cbMultiByte:DWORD,          ;size of buffer
+								lpDefaultChar: PTR BYTE,    ;default for unmappable chars
+								lpUsedDefaultChar:DWORD		;set when default char used
+					;return int 
+					
+				GlobalFree PROTO,
+								hMem: DWORD					;must return NULL
+
+				LocalFree PROTO, hMem: DWORD 				;must return NULL
+								
+
+				GetProcessHeap PROTO					
+
+				HeapAlloc PROTO,
+							hHeap: DWORD,
+							dwFlags: DWORD,
+							dwBytes:DWORD				;return LPVOID
+
+				HeapFree PROTO,
+							hHeap: DWORD,
+							dwFlags: DWORD,
+							lpMem: DWORD				;return BOOL 
+
+				HeapSize PROTO,
+							hHeap: DWORD,
+							dwFlags: DWORD,
+							lpMem: DWORD				;return SIZE_T 
+							
+				HeapReAlloc PROTO,
+							hHeap: DWORD,
+							dwFlags: DWORD,
+							lpMem: DWORD,
+							dwBytes: DWORD				;return LPVOID			
+
+				MessageBox PROTO,
+						   hWnd: DWORD,
+						   lpText: PTR DWORD,
+						   lpCaption: PTR DWORD,
+						   uType: DWORD				;return int
+
+
+				PUBLIC ConsoleHandle;
+				PUBLIC ConsoleBuffer;
+				PUBLIC ConsoleTitle;
+
+				;symbolic constants 
+ = 00000000			NULL			EQU 0
+ = 00000050			MAX_READ_CHARS	EQU 050h
+
+ = 00000008			HEAP_ZERO_MEMORY	EQU	00000008
+ = 00000001			HEAP_NO_SERIALIZE	EQU	00000001      
+ = 00000020			MAX_DIGITS_COUNT	EQU	00000020h ;==32
+ = 00000134			MAX_EXPONENT_VALUE	EQU	00000308
+
+ = 0000000A			INVALID_NUMBER EQU		0000000Ah	
+ = 0000000C			INVALID_FRACTION EQU	0000000Ch
+ = 0000000F			INVALID_EXPONENT EQU	0000000Fh
+
+ 00000000			.DATA
+
+ 00000000 00000000		__hargc		  DWORD 0
+ 00000004 00000000		ConsoleHandle DWORD 0
+ 00000008  00000050 [		ConsoleBuffer BYTE MAX_READ_CHARS DUP(?)
+	    00
+	   ]
+ 00000058 0D 0A			CRLF		  BYTE 0Dh, 0Ah
+ 0000005A  00000100 [		ConsoleTitle  BYTE 100h DUP(?)
+	    00
+	   ]
+
+ 0000015A 30 31 32 33 34	__xtable BYTE "0123456789ABCDEF"
+	   35 36 37 38 39
+	   41 42 43 44 45
+	   46
+ 0000016A 43 61 6C 6C 20	__virtual_abstract_call_msg BYTE "Call to a virtual abstract member function is illegal. Program aborted.", 0
+	   74 6F 20 61 20
+	   76 69 72 74 75
+	   61 6C 20 61 62
+	   73 74 72 61 63
+	   74 20 6D 65 6D
+	   62 65 72 20 66
+	   75 6E 63 74 69
+	   6F 6E 20 69 73
+	   20 69 6C 6C 65
+	   67 61 6C 2E 20
+	   50 72 6F 67 72
+	   61 6D 20 61 62
+	   6F 72 74 65 64
+	   2E 00
+				;
+				;Floating point conversion error messages
+ 000001B2 49 6E 76 61 6C	__msg_enumber 			BYTE "Invalid Number.", 0
+	   69 64 20 4E 75
+	   6D 62 65 72 2E
+	   00
+ 000001C2 49 6E 76 61 6C	__msg_efraction			BYTE "Invalid Fraction.", 0
+	   69 64 20 46 72
+	   61 63 74 69 6F
+	   6E 2E 00
+ 000001D4 49 6E 76 61 6C	__msg_eexponent			BYTE "Invalid Exponent.",0
+	   69 64 20 45 78
+	   70 6F 6E 65 6E
+	   74 2E 00
+ 000001E6 54 6F 6F 20 6D	__msg_too_many_digits	BYTE "Too many digits.",0
+	   61 6E 79 20 64
+	   69 67 69 74 73
+	   2E 00
+ 000001F7 46 6C 6F 61 74	__msg_fp_out_of_range	BYTE "Floating point value out of range.",0
+	   69 6E 67 20 70
+	   6F 69 6E 74 20
+	   76 61 6C 75 65
+	   20 6F 75 74 20
+	   6F 66 20 72 61
+	   6E 67 65 2E 00
+
+ 0000021A			__FP_MAX_RANGE			DQ		9.997e+1,	9.997e+3,	9.997e+5,	9.997e+7,	9.997e+9,	9.997e+11,	9.997e+13,	9.997e+15
+	   4058FE147AE147AE
+	   40C3868000000000
+	   412E822800000000
+	   4197D5AF40000000
+	   42029EF0EA000000
+	   426D18586DA00000
+	   42D6BB0515A50000
+	   4341C21BF8E8E800
+ 0000025A			__FP_MAX_POWER_10		DQ		1.0e+16,	1.0e+14,	1.0e+12,	1.0e+10,	1.0e+8,		1.0e+6,		1.0e+4,		1.0e+2
+	   4341C37937E08000
+	   42D6BCC41E900000
+	   426D1A94A2000000
+	   4202A05F20000000
+	   4197D78400000000
+	   412E848000000000
+	   40C3880000000000
+	   4059000000000000
+ 0000029A 10 0E 0C 0A 08	__FP_MAX_EXPONENT		BYTE	10h,		0Eh,		0Ch,		0Ah,		8,			6,			4,			2
+	   06 04 02
+
+
+ 000002A2 54 72 75 65 00	_@StringBooleanTrue@@__  BYTE "True",0
+ 000002A7 46 61 6C 73 65	_@StringBooleanFalse@@__ BYTE "False",0
+	   00
+
+ 000002AD 43 4F 4E 4F 55	__@ConOutName BYTE "CONOUT$",0
+	   54 24 00
+ 000002B5 43 4F 4E 49 4E	__@ConInName BYTE "CONIN$",0
+	   24 00
+
+ 00000000			.CODE
+
+				; These functions will be the APIs exposed in H++'s hcclib32.obj file 
+				; imported from the stdapi.hcc file.
+				; This apis are wrappers to the ones in Kernel32.dll, and other Windows libraries
+
+ = 00000002			__@SharedWrite	= 2;
+ = 00000001			__@SharedRead	= 1;
+ = 40000000			__@FileWrite	= 40000000h;
+ = 80000000			__@FileReadOnly	= 80000000h;
+ = 00000003			__@OpenExisting	= 3;
+				;//C O N S O L E  A P I 
+ 00000000			__Internal_ConsoleIO_LX PROC
+ 00000000  8B 44 24 04			mov eax, [esp+4];
+								;string filePath,		+8
+								;FileMode mode,			+0Ch
+								;FileAccess access,		+10h
+								;FileSharing sharing	+14h
+ 00000004  83 F8 F5			cmp eax, STD_OUTPUT_HANDLE;
+ 00000007  75 14			jnz OFFSET __InputConsole;
+ 00000009  6A 02			push __@SharedWrite;
+ 0000000B  68 40000000			push __@FileWrite;
+ 00000010  6A 03			push __@OpenExisting;	
+ 00000012  68 000002AD R		push OFFSET __@ConOutName;
+ 00000017  E8 000003C4			call File_Open;
+ 0000001C  C3				ret
+ 0000001D			__InputConsole:
+ 0000001D  6A 01			push __@SharedRead;
+ 0000001F  68 80000000			push __@FileReadOnly;
+ 00000024  6A 03			push __@OpenExisting;		
+ 00000026  68 000002B5 R		push OFFSET __@ConInName;
+ 0000002B  E8 000003B0			call File_Open;
+ 00000030  C3				ret
+ 00000031			__Internal_ConsoleIO_LX ENDP
+
+ 00000031			__Internal_ConsoleIO_L PROC
+ 00000031  FF 74 24 04			push dword ptr [esp+4];
+ 00000035  E8 00000000 E		call GetStdHandle;
+ 0000003A  C3				ret
+ 0000003B			__Internal_ConsoleIO_L ENDP
+
+ = __Internal_ConsoleIO_L	__Internal_ConsoleIO_Load EQU <__Internal_ConsoleIO_L>
+
+ 0000003B			Console_ClearScreen PROC
+ 0000003B  55				push ebp
+ 0000003C  8B EC			mov ebp, esp
+ 0000003E  57				push edi
+ 0000003F  56				push esi
+ 00000040  53				push ebx		
+ 00000041  33 DB			xor	ebx,ebx
+								;COORD coordScreen = { 0, 0 };    // home for the cursor; we will use 4 bytes
+								;DWORD cCharsWritten;				
+								;CONSOLE_SCREEN_BUFFER_INFO csbi; requires 012h bytes; we will use 014h				
+								;DWORD dwConSize;				
+					;the local variables
+ 00000043  83 EC 20			sub esp, 20h
+					;Get the console handle
+ 00000046  6A F5			push STD_OUTPUT_HANDLE
+					;call GetStdHandle;
+ 00000048  E8 FFFFFFE4			call __Internal_ConsoleIO_Load;
+ 0000004D  BE 00000004 R		mov esi, OFFSET ConsoleHandle
+ 00000052  89 06			mov dword ptr [esi], eax	; the console handle	
+					;Get the number of character cells in the current buffer. 	
+ 00000054  8D 45 E4			lea eax, dword ptr [ebp-1Ch]	;csbi
+ 00000057  50				push eax
+ 00000058  FF 36			push dword ptr [esi]			;hConsoleHandle
+ 0000005A  E8 00000000 E		call GetConsoleScreenBufferInfo;
+ 0000005F  85 C0			test eax, eax
+ 00000061  74 56			jz _EndClrScr
+					;dwSize : contains the size of the console screen buffer, in character columns and rows. 
+ 00000063  33 C0			xor eax,eax	
+ 00000065  66| 8B 45 E4			mov ax, word ptr [ebp-1Ch]		;csbi.dwSize.X
+ 00000069  66| 8B 4D E6			mov cx, word ptr [ebp-1Ah]		;csbi.dwSize.Y
+ 0000006D  66| F7 E1			mul cx							;csbi.dwSize.X * csbi.dwSize.Y;	
+ 00000070  89 45 E0			mov dword ptr [ebp-20h], eax	;dwConSize
+					;
+					; Fill the entire screen with blanks.
+ 00000073  8D 55 F8			lea edx, dword ptr [ebp-8]	;lpNumberOfCharsWritten == cCharsWritten
+ 00000076  52				push edx
+ 00000077  53				push ebx					;dwWriteCoord
+ 00000078  FF 75 E0			push dword ptr [ebp-20h]	;nLength
+ 0000007B  6A 20			push 00000020h				;cCharacter
+ 0000007D  FF 36			push dword ptr [esi]		;hConsoleOutput
+ 0000007F  E8 00000000 E		call FillConsoleOutputCharacter;
+ 00000084  85 C0			test eax, eax
+ 00000086  74 31			jz _EndClrScr
+					;
+					; Get the current text attribute.
+ 00000088  8D 45 E4			lea eax, dword ptr [ebp-1Ch]	;csbi
+ 0000008B  50				push eax
+ 0000008C  FF 36			push dword ptr [esi]			;hConsoleHandle
+ 0000008E  E8 00000000 E		call GetConsoleScreenBufferInfo;
+ 00000093  85 C0			test eax, eax
+ 00000095  74 22			jz _EndClrScr
+					;
+				    ; Set the buffer's attributes accordingly.	
+ 00000097  33 C0			xor eax, eax
+ 00000099  66| 8B 45 EC			mov ax, word ptr [ebp-14h]  ;csbi.wAttributes
+ 0000009D  8D 55 F8			lea edx, dword ptr [ebp-8]	;lpNumberOfCharsWritten == cCharsWritten
+ 000000A0  52				push edx
+ 000000A1  53				push ebx					;dwWriteCoord
+ 000000A2  FF 75 E0			push dword ptr [ebp-20h]	;nLength	
+ 000000A5  50				push eax					;wAttribute
+ 000000A6  FF 36			push dword ptr [esi]		;hConsoleHandle
+ 000000A8  E8 00000000 E		call FillConsoleOutputAttribute;
+ 000000AD  85 C0			test eax, eax
+ 000000AF  74 08			jz _EndClrScr;
+					;Put the cursor at its home coordinates.   
+ 000000B1  53				push ebx
+ 000000B2  FF 36			push dword ptr [esi]
+ 000000B4  E8 00000000 E		call SetConsoleCursorPosition;
+					;
+ 000000B9			_EndClrScr:	
+ 000000B9  5B				pop ebx
+ 000000BA  5E				pop esi
+ 000000BB  5F				pop edi
+ 000000BC  8B E5			mov esp, ebp
+ 000000BE  5D				pop ebp
+ 000000BF  C3				ret
+ 000000C0			Console_ClearScreen ENDP
+
+ 000000C0			Console_ReadString PROC
+ 000000C0  55				push ebp
+ 000000C1  8B EC			mov ebp, esp
+ 000000C3  83 EC 04			sub esp, 4
+ 000000C6  53				push ebx
+ 000000C7  56				push esi
+ 000000C8  57				push edi
+				;
+ 000000C9  6A F6			push STD_INPUT_HANDLE
+					;call GetStdHandle;
+ 000000CB  E8 FFFFFF61			call __Internal_ConsoleIO_Load;
+ 000000D0  BE 00000004 R		mov esi, OFFSET ConsoleHandle
+ 000000D5  89 06			mov dword ptr [esi], eax	; the console handle	
+					;
+ 000000D7  8D 45 FC			lea eax, dword ptr [ebp-4]
+ 000000DA  8D 15 00000008 R		lea edx, OFFSET ConsoleBuffer
+ 000000E0  6A 00			push NULL					; reserved
+ 000000E2  50				push eax					; bytes read
+ 000000E3  6A 50			push MAX_READ_CHARS			; max chars to read
+ 000000E5  52				push edx					;the buffer
+ 000000E6  FF 36			push dword ptr [esi]		;the console handle
+ 000000E8  E8 00000000 E		call ReadConsole
+					;	
+ 000000ED  8D 15 00000008 R		lea edx, OFFSET ConsoleBuffer	;the buffer
+ 000000F3  8B 45 FC			mov eax, dword ptr [ebp-4]		;bytes read
+ 000000F6  8D 54 10 FE			lea edx, [edx+eax-2]			
+ 000000FA  C7 02 00000000		mov dword ptr [edx], 0			;deletes the 0dh, 0ah from result	
+ 00000100  8D 05 00000008 R		lea eax, OFFSET ConsoleBuffer	;the buffer
+				;
+ 00000106  5F				pop edi
+ 00000107  5E				pop esi
+ 00000108  5B				pop ebx
+ 00000109  8B E5			mov esp, ebp
+ 0000010B  5D				pop ebp
+ 0000010C  C3				ret
+ 0000010D			Console_ReadString ENDP
+
+ 0000010D			Console_ReadChar PROC
+ 0000010D  55				push ebp
+ 0000010E  8B EC			mov ebp, esp
+ 00000110  83 EC 0C			sub esp, 0Ch
+ 00000113  53				push ebx
+ 00000114  56				push esi
+ 00000115  57				push edi
+				;
+ 00000116  6A F6			push STD_INPUT_HANDLE
+					;call GetStdHandle;
+ 00000118  E8 FFFFFF14			call __Internal_ConsoleIO_Load;
+ 0000011D  BE 00000004 R		mov esi, OFFSET ConsoleHandle
+ 00000122  89 06			mov dword ptr [esi], eax	; the console handle	
+				;
+ 00000124  8D 45 FC			lea eax, dword ptr [ebp-4]	; to save the current input mode
+ 00000127  50				push eax
+ 00000128  FF 36			push dword ptr [esi]
+ 0000012A  E8 00000000 E		call GetConsoleMode;
+				;	
+ 0000012F  BE 00000004 R		mov esi, OFFSET ConsoleHandle
+ 00000134  6A 00			push 0						;read one char at a time	
+ 00000136  FF 36			push dword ptr [esi]
+ 00000138  E8 00000000 E		call SetConsoleMode;	
+				;
+ 0000013D  8D 45 F8			lea eax, dword ptr [ebp-8]
+ 00000140  8D 15 00000008 R		lea edx, OFFSET ConsoleBuffer
+ 00000146  6A 00			push NULL					; reserved
+ 00000148  50				push eax					; bytes read
+ 00000149  6A 01			push 1						; max chars to read
+ 0000014B  52				push edx					;the buffer
+ 0000014C  FF 36			push dword ptr [esi]		;the console handle
+ 0000014E  E8 00000000 E		call ReadConsole
+						
+					;
+ 00000153  8B 45 FC			mov eax, dword ptr [ebp-4]	;the saved input mode
+ 00000156  BE 00000004 R		mov esi, OFFSET ConsoleHandle
+ 0000015B  50				push eax
+ 0000015C  FF 36			push dword ptr [esi]
+ 0000015E  E8 00000000 E		call SetConsoleMode;
+					
+ 00000163  8D 15 00000008 R		lea edx, OFFSET ConsoleBuffer	
+ 00000169  66| 8B 02			mov ax, word ptr [edx]		; the byte that was read
+ 0000016C  5F				pop edi
+ 0000016D  5E				pop esi
+ 0000016E  5B				pop ebx
+ 0000016F  8B E5			mov esp, ebp
+ 00000171  5D				pop ebp
+ 00000172  C3				ret
+ 00000173			Console_ReadChar ENDP
+
+ 00000173			Console_WriteString PROC
+ 00000173  55				push ebp
+ 00000174  8B EC			mov ebp, esp		
+ 00000176  53				push ebx
+ 00000177  56				push esi
+ 00000178  57				push edi
+					
+ 00000179  51				push ecx
+					
+				;
+ 0000017A  6A F5			push STD_OUTPUT_HANDLE
+					;call GetStdHandle;
+ 0000017C  E8 FFFFFEB0			call __Internal_ConsoleIO_Load;
+ 00000181  BE 00000004 R		mov esi, OFFSET ConsoleHandle
+ 00000186  89 06			mov dword ptr [esi], eax	; the console handle	
+				;	
+ 00000188  8D 04 24			lea eax, dword ptr [esp]
+ 0000018B  8B 55 08			mov edx, dword ptr [ebp+8]	; ptr to buffer
+ 0000018E  6A 00			push 0						;reserved
+ 00000190  50				push eax					; number of chars written		
+ 00000191  8B 4D 0C			mov ecx, dword ptr [ebp+0Ch]; number of chars to write	
+ 00000194  85 C9			test ecx, ecx				; if zero, calculate it by the string length
+ 00000196  75 0B			jnz __use_char_size;
+ 00000198  52				push edx
+ 00000199  E8 00000984			call StringHandling_StringLength;
+ 0000019E  8B C8			mov ecx, eax
+ 000001A0  8B 55 08			mov edx, dword ptr [ebp+8]	; ptr to buffer
+ 000001A3			__use_char_size:
+ 000001A3  51				push ecx
+ 000001A4  52				push edx					; source buffer
+ 000001A5  FF 36			push dword ptr [esi]		; the output handle
+ 000001A7  E8 00000000 E		call WriteConsole;
+					;returns the number of bytes read
+ 000001AC  8B 04 24			mov eax, dword ptr [esp]	
+ 000001AF  83 C4 04			add esp, 4
+					
+ 000001B2  5F				pop edi
+ 000001B3  5E				pop esi
+ 000001B4  5B				pop ebx
+						
+ 000001B5  8B E5			mov esp, ebp
+ 000001B7  5D				pop ebp
+ 000001B8  C2 0008			retn 8
+ 000001BB			Console_WriteString ENDP
+
+ 000001BB			Console_WriteCrlf PROC
+ 000001BB  53				push ebx
+ 000001BC  56				push esi
+ 000001BD  57				push edi
+					
+ 000001BE  B8 00000058 R		mov eax, OFFSET CRLF
+ 000001C3  6A 02			push 2
+ 000001C5  50				push eax
+ 000001C6  E8 FFFFFFA8			call Console_WriteString;	
+
+ 000001CB  5F				pop edi
+ 000001CC  5E				pop esi
+ 000001CD  5B				pop ebx
+ 000001CE  C3				ret	
+ 000001CF			Console_WriteCrlf ENDP
+
+ 000001CF			Console_WriteChar PROC
+ 000001CF  53				push ebx
+ 000001D0  56				push esi
+ 000001D1  57				push edi	
+					
+ 000001D2  8D 44 24 10			lea eax, dword ptr [esp+4*4]
+ 000001D6  6A 01			push 1
+ 000001D8  50				push eax
+ 000001D9  E8 FFFFFF95			call Console_WriteString;
+
+ 000001DE  5F				pop edi
+ 000001DF  5E				pop esi
+ 000001E0  5B				pop ebx
+ 000001E1  C2 0004			ret	4
+ 000001E4			Console_WriteChar ENDP
+
+ 000001E4			Console_WriteBoolean PROC
+ 000001E4  53				push ebx
+ 000001E5  56				push esi
+ 000001E6  57				push edi	
+					
+ 000001E7  8A 44 24 10			mov al, byte ptr [esp+4*4]
+ 000001EB  84 C0	test al, al
+ 000001ED  6A 00			push 0
+ 000001EF  74 07			jz offset __WriteFalse;
+ 000001F1  68 000002A2 R		push offset _@StringBooleanTrue@@__
+ 000001F6  EB 05			jmp offset __WriteBooleanString;
+ 000001F8			__WriteFalse:
+ 000001F8  68 000002A7 R		push offset _@StringBooleanFalse@@__
+ 000001FD			__WriteBooleanString:
+ 000001FD  E8 FFFFFF71			call Console_WriteString;
+
+ 00000202  5F				pop edi
+ 00000203  5E				pop esi
+ 00000204  5B				pop ebx
+ 00000205  C2 0004			ret	4
+ 00000208			Console_WriteBoolean ENDP
+
+
+ 00000208			Console_ReadInteger PROC
+ 00000208  E8 FFFFFEB3			call Console_ReadString;	
+ 0000020D  50				push eax
+ 0000020E  E8 00000A7A			call Integer_fromString;
+ 00000213  C3				retn
+ 00000214			Console_ReadInteger ENDP
+
+ 00000214			Console_WriteIntegerEx PROC
+ 00000214  8B 4C 24 08		     mov ecx, dword ptr [esp+8]	;radix
+ 00000218  8B 44 24 04		     mov eax, dword ptr [esp+4] ;integer value
+ 0000021C  55			     push ebp
+ 0000021D  8B EC		     mov ebp, esp     
+ 0000021F  83 EC 20		     sub esp, 20h
+ 00000222  8D 1C 24		     lea ebx, [esp]
+ 00000225  53			     push	ebx					; buffer
+ 00000226  51			     push 	ecx					; radix
+ 00000227  50			     push	eax					; the number
+ 00000228  E8 000009DC		     call	Integer_toStringEx	; do conversion
+ 0000022D  8D 1C 24		     lea ebx, [esp]
+ 00000230  50			     push eax					; number of chars to print
+ 00000231  53			     push ebx     
+ 00000232  E8 FFFFFF3C		     call Console_WriteString;     
+ 00000237  C9			     leave
+ 00000238  C2 0008		     ret 8
+ 0000023B			Console_WriteIntegerEx ENDP
+
+ 0000023B			Console_WriteInteger PROC
+ 0000023B  8B 44 24 04			mov eax, dword ptr [esp+4]
+ 0000023F  6A 0A			push 0Ah ;the radix 10
+ 00000241  50				push eax
+ 00000242  E8 FFFFFFCD			call Console_WriteIntegerEx
+ 00000247  C2 0004			retn 4
+ 0000024A			Console_WriteInteger ENDP
+
+ 0000024A			Console_WriteBinary PROC
+ 0000024A  8B 44 24 04			mov eax, dword ptr [esp+4]
+ 0000024E  6A 02			push 02h ;the radix 2
+ 00000250  50				push eax
+ 00000251  E8 FFFFFFBE			call Console_WriteIntegerEx
+ 00000256  C2 0004			retn 4
+ 00000259			Console_WriteBinary ENDP
+
+ 00000259			Console_WriteHex PROC
+ 00000259  8B 44 24 04			mov eax, dword ptr [esp+4]
+ 0000025D  6A 10			push 10h ;the radix 16
+ 0000025F  50				push eax
+ 00000260  E8 FFFFFFAF			call Console_WriteIntegerEx
+ 00000265  C2 0004			retn 4
+ 00000268			Console_WriteHex ENDP
+
+ 00000268			Console_WriteOctal PROC
+ 00000268  8B 44 24 04			mov eax, dword ptr [esp+4]
+ 0000026C  6A 08			push 8h ;the radix 8
+ 0000026E  50				push eax
+ 0000026F  E8 FFFFFFA0			call Console_WriteIntegerEx
+ 00000274  C2 0004			retn 4
+ 00000277			Console_WriteOctal ENDP
+
+ 00000277			Console_ReadDouble PROC	;double expr
+ 00000277  57				push edi
+ 00000278  56				push esi
+ 00000279  E8 FFFFFE42			call Console_ReadString;
+ 0000027E  50				push eax
+ 0000027F  E8 00000CD4			call FloatingPoint_fromString;
+ 00000284  5E				pop esi
+ 00000285  5F				pop edi
+ 00000286  C3				retn
+ 00000287			Console_ReadDouble ENDP
+
+ 00000287			Console_WriteDouble PROC
+ 00000287  8B 54 24 04			mov edx, dword ptr [esp+4]
+ 0000028B  FF 74 24 08			push dword ptr [esp+8]
+ 0000028F  52				push edx
+ 00000290  E8 00000A47			call FloatingPoint_toString
+ 00000295  57				push edi
+ 00000296  8B F8			mov edi, eax
+ 00000298  6A 00			push 0
+ 0000029A  50				push eax
+ 0000029B  E8 FFFFFED3			call Console_WriteString;
+ 000002A0  57				push edi
+ 000002A1  E8 00000EA4			call System_Memory_Destroy;
+ 000002A6  5F				pop edi
+ 000002A7  C2 0008			retn 8
+ 000002AA			Console_WriteDouble ENDP
+
+ 000002AA			Console_WriteInteger64 PROC
+ 000002AA  8B 54 24 04			mov edx, dword ptr [esp+4]
+ 000002AE  8B 44 24 08			mov eax, dword ptr [esp+4*2]
+ 000002B2  50				push eax
+ 000002B3  52				push edx
+ 000002B4  9B DB E2			fclex
+ 000002B7  DF 2C 24			fild qword ptr [esp]	; st = m64int
+ 000002BA  DD 1C 24			fstp qword ptr [esp]	; m64 = st
+ 000002BD  E8 FFFFFFC5			call Console_WriteDouble;
+ 000002C2  C2 0008			retn 8
+ 000002C5			Console_WriteInteger64 ENDP
+
+ 000002C5			Console_SetCursorPos PROC	; short X, short Y
+ 000002C5  55				push ebp
+ 000002C6  8B EC			mov ebp, esp
+ 000002C8  53				push ebx
+ 000002C9  56				push esi
+ 000002CA  57				push edi
+					
+ 000002CB  6A F5			push STD_OUTPUT_HANDLE
+					;call GetStdHandle;
+ 000002CD  E8 FFFFFD5F			call __Internal_ConsoleIO_Load;
+ 000002D2  BE 00000004 R		mov esi, OFFSET ConsoleHandle
+ 000002D7  89 06			mov dword ptr [esi], eax	; the console handle	
+						
+ 000002D9  83 EC 04			sub esp, 4
+ 000002DC  33 C0			xor eax,eax
+ 000002DE  66| 8B 45 0C			mov ax, word ptr [ebp+0Ch] ; Y
+ 000002E2  C1 E0 10			shl eax,010h
+ 000002E5  66| 8B 45 08			mov ax, word ptr [ebp+8]   ; X		
+ 000002E9  89 04 24			mov dword ptr [esp], eax
+ 000002EC  FF 36			push dword ptr [esi]
+ 000002EE  E8 00000000 E		call SetConsoleCursorPosition;
+					;
+ 000002F3  5F				pop edi
+ 000002F4  5E				pop esi
+ 000002F5  5B				pop ebx
+					
+ 000002F6  8B E5			mov esp, ebp
+ 000002F8  5D				pop ebp
+ 000002F9  C2 0008			retn 8
+ 000002FC			Console_SetCursorPos ENDP
+
+ 000002FC			Console_SetTextColor PROC
+ 000002FC  55				push ebp
+ 000002FD  8B EC			mov ebp, esp
+ 000002FF  53				push ebx
+ 00000300  56				push esi
+ 00000301  57				push edi
+					
+ 00000302  6A F5			push STD_OUTPUT_HANDLE
+					;call GetStdHandle;
+ 00000304  E8 FFFFFD28			call __Internal_ConsoleIO_Load;
+ 00000309  BE 00000004 R		mov esi, OFFSET ConsoleHandle
+ 0000030E  89 06			mov dword ptr [esi], eax	; the console handle	
+					;
+ 00000310  8B 45 08			mov eax, dword ptr [ebp+8]
+ 00000313  50				push eax
+ 00000314  FF 36			push dword ptr [esi]
+ 00000316  E8 00000000 E		call SetConsoleTextAttribute;
+					;
+ 0000031B  5F				pop edi
+ 0000031C  5E				pop esi
+ 0000031D  5B				pop ebx
+					
+ 0000031E  8B E5			mov esp, ebp
+ 00000320  5D				pop ebp
+ 00000321  C2 0004			retn 4	
+ 00000324			Console_SetTextColor ENDP
+
+ 00000324			Console_SetConsoleSize PROC
+ 00000324  55				push ebp
+ 00000325  8B EC			mov ebp, esp
+ 00000327  53				push ebx
+ 00000328  56				push esi
+ 00000329  57				push edi
+					
+ 0000032A  51				push ecx
+					
+ 0000032B  6A F5			push STD_OUTPUT_HANDLE
+					;call GetStdHandle;
+ 0000032D  E8 FFFFFCFF			call __Internal_ConsoleIO_Load;
+ 00000332  BE 00000004 R		mov esi, OFFSET ConsoleHandle
+ 00000337  89 06			mov dword ptr [esi], eax	; the console handle	
+
+ 00000339  8B 45 0C			mov eax, dword ptr [ebp+0Ch] ; Y
+ 0000033C  C1 E0 10			shl eax, 10h
+ 0000033F  66| 8B 45 08			mov ax, word ptr [ebp+8]	 ; X
+ 00000343  89 04 24			mov dword ptr [esp]	, eax
+ 00000346  FF 36			push dword ptr [esi]		;output handle
+ 00000348  E8 00000000 E		call SetConsoleScreenBufferSize
+					;
+ 0000034D  5F				pop edi
+ 0000034E  5E				pop esi
+ 0000034F  5B				pop ebx
+					
+ 00000350  8B E5			mov esp, ebp
+ 00000352  5D				pop ebp
+ 00000353  C2 0008			retn 8
+ 00000356			Console_SetConsoleSize ENDP
+
+ 00000356			Console_SetTitle PROC
+ 00000356  55				push ebp
+ 00000357  8B EC			mov ebp, esp
+ 00000359  53				push ebx
+ 0000035A  56				push esi
+ 0000035B  57				push edi
+					
+ 0000035C  FF 75 08			push dword ptr [ebp+8]
+ 0000035F  E8 00000000 E		call SetConsoleTitle;
+					;
+ 00000364  5F				pop edi
+ 00000365  5E				pop esi
+ 00000366  5B				pop ebx
+					
+ 00000367  8B E5			mov esp, ebp
+ 00000369  5D				pop ebp
+ 0000036A  C2 0004			retn 4
+ 0000036D			Console_SetTitle ENDP
+
+ 0000036D			Console_GetTitle PROC
+ 0000036D  55				push ebp
+ 0000036E  8B EC			mov ebp, esp
+ 00000370  53				push ebx
+ 00000371  56				push esi
+ 00000372  57				push edi
+					
+ 00000373  BA 00000100			mov edx, SIZEOF ConsoleTitle	
+ 00000378  B8 0000005A R		mov eax, OFFSET ConsoleTitle
+ 0000037D  52				push edx
+ 0000037E  50				push eax
+ 0000037F  E8 00000000 E		call GetConsoleTitle;
+ 00000384  B8 0000005A R		mov eax, OFFSET ConsoleTitle
+					;
+ 00000389  5F				pop edi
+ 0000038A  5E				pop esi
+ 0000038B  5B				pop ebx
+					
+ 0000038C  8B E5			mov esp, ebp
+ 0000038E  5D				pop ebp
+ 0000038F  C3				ret
+ 00000390			Console_GetTitle ENDP
+
+				;BOOL SetConsoleWindowInfo(
+				;  HANDLE hConsoleOutput,
+				;  BOOL bAbsolute,
+				;  const SMALL_RECT* lpConsoleWindow
+				;);
+
+ 00000390			Console_MoveWindow PROC	
+										;Left,	+8
+										;Top,	+0Ch
+										;Right,	+10h	
+										;Bottom	+14h
+ 00000390  55				push ebp
+ 00000391  8B EC			mov ebp, esp
+ 00000393  53				push ebx
+ 00000394  56				push esi
+ 00000395  57				push edi
+					;
+ 00000396  6A F5			push STD_OUTPUT_HANDLE
+					;call GetStdHandle;
+ 00000398  E8 FFFFFC94			call __Internal_ConsoleIO_Load;
+ 0000039D  BE 00000004 R		mov esi, OFFSET ConsoleHandle
+ 000003A2  89 06			mov dword ptr [esi], eax	; the console handle	
+						
+ 000003A4  33 C0			xor eax,eax
+ 000003A6  33 D2			xor edx, edx
+ 000003A8  83 EC 08			sub esp, 8
+ 000003AB  66| 8B 45 0C			mov ax, word ptr [ebp+0Ch]	;Top
+ 000003AF  C1 E0 10			shl eax, 10h
+ 000003B2  66| 03 45 08			add ax, word ptr [ebp+8]	;Left
+					
+ 000003B6  66| 8B 55 14			mov dx, word ptr [ebp+14h]	;Bottom
+ 000003BA  C1 E2 10			shl edx, 10h
+ 000003BD  66| 03 55 10			add dx, word ptr [ebp+10h]	;Right
+						
+ 000003C1  89 04 24			mov dword ptr [esp], eax
+ 000003C4  89 54 24 04			mov dword ptr [esp+4], edx
+ 000003C8  8D 04 24			lea eax, dword ptr [esp]
+ 000003CB  50				push eax
+ 000003CC  6A 01			push 1	;bAbsolute
+ 000003CE  FF 36			push dword ptr [esi]	
+ 000003D0  E8 00000000 E		call SetConsoleWindowInfo
+ 000003D5  59				pop ecx
+ 000003D6  59				pop ecx
+					;	
+ 000003D7  5F				pop edi
+ 000003D8  5E				pop esi
+ 000003D9  5B				pop ebx
+					
+ 000003DA  8B E5			mov esp, ebp
+ 000003DC  5D				pop ebp
+ 000003DD  C2 0010			ret 10h
+ 000003E0			Console_MoveWindow ENDP
+
+				;// F I L E   H A N D L I N G   A P I 
+
+				;HANDLE CreateFile(
+				;  LPCTSTR lpFileName,
+				;  DWORD dwDesiredAccess,
+				;  DWORD dwShareMode,
+				;  LPSECURITY_ATTRIBUTES lpSecurityAttributes,
+				;  DWORD dwCreationDisposition,
+				;  DWORD dwFlagsAndAttributes,
+				;  HANDLE hTemplateFile
+				;);
+
+ 000003E0			File_Open PROC
+								;string filePath,		+8
+								;FileMode mode,			+0Ch
+								;FileAccess access,		+10h
+								;FileSharing sharing	+14h
+
+ 000003E0  55				push ebp
+ 000003E1  8B EC			mov ebp, esp
+ 000003E3  53				push ebx
+ 000003E4  56				push esi
+ 000003E5  57				push edi
+					;
+					
+ 000003E6  6A 00			push 0						;hTemplateFile
+ 000003E8  68 00000080			push FILE_ATTRIBUTE_NORMAL	;dwFlagsAndAttributes
+ 000003ED  FF 75 0C			push dword ptr [ebp+0Ch]	;dwCreationDisposition
+ 000003F0  6A 00			push 0						;lpSecurityAttributes
+ 000003F2  FF 75 14			push dword ptr [ebp+14h]	;dwShareMode
+ 000003F5  FF 75 10			push dword ptr [ebp+10h]	;dwDesiredAccess
+ 000003F8  FF 75 08			push dword ptr [ebp+8]		;lpFileName
+ 000003FB  E8 00000000 E		call CreateFile;
+					;
+ 00000400  5F				pop edi
+ 00000401  5E				pop esi
+ 00000402  5B				pop ebx
+ 00000403  8B E5			mov esp, ebp
+ 00000405  5D				pop ebp
+ 00000406  C2 0010			retn	010h
+ 00000409			File_Open ENDP
+
+ 00000409			File_Close PROC
+ 00000409  8B 44 24 04			mov eax, dword ptr [esp+4]
+ 0000040D  50				push eax
+ 0000040E  E8 00000000 E		call CloseHandle;
+ 00000413  C2 0004			retn 4
+ 00000416			File_Close ENDP
+
+				;BOOL ReadFile(
+				;  HANDLE hFile,
+				;  LPVOID lpBuffer,
+				;  DWORD nNumberOfBytesToRead,
+				;  LPDWORD lpNumberOfBytesRead,
+				;  LPOVERLAPPED lpOverlapped
+				;);
+
+ 00000416			File_Read PROC
+							;FileHandle handle,		+8
+							;char buffer[],			+0Ch
+							;long nBytesToRead		+010h
+					;
+ 00000416  55				push ebp
+ 00000417  8B EC			mov ebp, esp	
+ 00000419  6A 00			push 0
+ 0000041B  53				push ebx
+ 0000041C  56				push esi
+ 0000041D  57				push edi
+					;	
+ 0000041E  8D 4D FC			lea ecx, dword ptr [ebp-4]
+ 00000421  6A 00			push 0						;lpOverlapped
+ 00000423  51				push ecx					;lpNumberOfBytesRead
+ 00000424  FF 75 10			push dword ptr [ebp+010h]	;nNumberOfBytesToRead
+ 00000427  FF 75 0C			push dword ptr [ebp+0Ch]	;lpBuffer
+ 0000042A  FF 75 08			push dword ptr [ebp+8]		;hFile
+ 0000042D  E8 00000000 E		call ReadFile;
+					;
+ 00000432  8B 45 FC			mov eax, dword ptr [ebp-4]	
+ 00000435  5F				pop edi
+ 00000436  5E				pop esi
+ 00000437  5B				pop ebx
+ 00000438  8B E5			mov esp, ebp
+ 0000043A  5D				pop ebp
+ 0000043B  C2 000C			retn	0Ch			
+ 0000043E			File_Read ENDP
+
+				;BOOL WriteFile(
+				;  HANDLE hFile,
+				;  LPCVOID lpBuffer,
+				;  DWORD nNumberOfBytesToWrite,
+				;  LPDWORD lpNumberOfBytesWritten,
+				;  LPOVERLAPPED lpOverlapped
+				;);
+
+ 0000043E			File_Write PROC
+							;FileHandle handle,		+8
+							;char buffer[],			+0Ch
+							;long nBytesToWrite		+10h
+ 0000043E  55				push ebp
+ 0000043F  8B EC			mov ebp, esp	
+ 00000441  6A 00			push 0
+ 00000443  53				push ebx
+ 00000444  56				push esi
+ 00000445  57				push edi
+					;
+ 00000446  8D 45 FC			lea eax, dword ptr [ebp-4]
+ 00000449  6A 00			push 0						;lpOverlapped
+ 0000044B  50				push eax					;lpNumberOfBytesWritten
+ 0000044C  FF 75 10			push dword ptr [ebp+10h]	;nNumberOfBytesToWrite
+ 0000044F  FF 75 0C			push dword ptr [ebp+0Ch]	;lpBuffer
+ 00000452  FF 75 08			push dword ptr [ebp+8]		;hFile
+ 00000455  E8 00000000 E		call WriteFile;
+					;
+ 0000045A  8B 45 FC			mov eax, dword ptr [ebp-4]				
+ 0000045D  5F				pop edi
+ 0000045E  5E				pop esi
+ 0000045F  5B				pop ebx
+ 00000460  8B E5			mov esp, ebp
+ 00000462  5D				pop ebp
+ 00000463  C2 000C			retn	0Ch			
+ 00000466			File_Write ENDP
+
+				;DWORD SetFilePointer(
+				;  HANDLE hFile,
+				;  LONG lDistanceToMove,
+				;  PLONG lpDistanceToMoveHigh,
+				;  DWORD dwMoveMethod
+				;);
+
+ 00000466			File_Seek PROC
+							;FileHandle handle,		+8
+							;SeekType moveType,		+0Ch
+							;long offset			+10h
+ 00000466  55				push ebp
+ 00000467  8B EC			mov ebp, esp	
+ 00000469  6A 00			push 0
+ 0000046B  53				push ebx
+ 0000046C  56				push esi
+ 0000046D  57				push edi		
+					
+ 0000046E  FF 75 0C			push dword ptr [ebp+0Ch]	;dwMoveMethod
+ 00000471  6A 00			push 0						;lpDistanceToMoveHigh (0 for the first version)
+ 00000473  FF 75 10			push dword ptr [ebp+10h]	;lDistanceToMove
+ 00000476  FF 75 08			push dword ptr [ebp+8]		;hFile
+ 00000479  E8 00000000 E		call SetFilePointer;
+					;	
+ 0000047E  5F				pop edi
+ 0000047F  5E				pop esi
+ 00000480  5B				pop ebx
+ 00000481  8B E5			mov esp, ebp
+ 00000483  5D				pop ebp
+ 00000484  C2 000C			retn	0Ch;	
+ 00000487			File_Seek ENDP
+
+				;DWORD GetFileSize(
+				;  HANDLE hFile,
+				;  LPDWORD lpFileSizeHigh
+				;);
+
+ 00000487			File_FileSize PROC
+ 00000487  6A 00			push 0
+ 00000489  8D 04 24			lea eax, dword ptr [esp]	
+ 0000048C  8B 54 24 08			mov edx, dword ptr [esp+8]	;hFile
+ 00000490  50				push eax				;lpFileSizeHigh
+ 00000491  52				push edx				;hFile
+ 00000492  E8 00000000 E		call GetFileSize;
+ 00000497  59				pop ecx	
+ 00000498  C2 0004			retn 4
+ 0000049B			File_FileSize ENDP
+
+
+ 0000049B			System_Exit PROC
+ 0000049B  8B 44 24 04			mov eax, dword ptr [esp+4]
+ 0000049F  50				push eax
+ 000004A0  E8 00000000 E		call ExitProcess;
+ 000004A5  C2 0004			retn 4
+ 000004A8			System_Exit ENDP
+
+ 000004A8			System_LastError PROC
+ 000004A8  E8 00000000 E		call GetLastError;
+ 000004AD  C3				ret
+ 000004AE			System_LastError ENDP
+
+ 000004AE			System_CommandLineArgs PROC
+ 000004AE  E8 00000000 E		call GetCommandLine;
+ 000004B3  C3				ret
+ 000004B4			System_CommandLineArgs ENDP
+
+ 000004B4			System_Execute PROC
+ 000004B4  8B 4C 24 08			mov ecx, dword ptr [esp+8]	;show how?
+ 000004B8  8B 44 24 04			mov eax, dword ptr [esp+4]	;cmd	
+ 000004BC  51				push ecx
+ 000004BD  50				push eax
+ 000004BE  E8 00000000 E		call WinExec;
+ 000004C3  C2 0008			ret 8
+ 000004C6			System_Execute ENDP
+
+ 000004C6			System_GetTickCount PROC
+ 000004C6  E8 00000000 E		call GetTickCount;
+ 000004CB  C3				ret;
+ 000004CC			System_GetTickCount ENDP
+
+ 000004CC			System_Sleep PROC
+ 000004CC  8B 54 24 04			mov edx, dword ptr [esp+4]
+ 000004D0  52				push edx
+ 000004D1  E8 00000000 E		call Sleep
+ 000004D6  C2 0004			ret 4
+ 000004D9			System_Sleep ENDP
+
+ 000004D9			System_Debug_OutputString PROC
+ 000004D9  FF 74 24 04			push dword ptr [esp+4]
+ 000004DD  E8 00000000 E		call OutputDebugString;
+ 000004E2  C2 0004			retn 4
+ 000004E5			System_Debug_OutputString ENDP
+
+ 000004E5			System_BreakPoint PROC
+ 000004E5  C3				ret	;the compiler will emit int 3 when a call to this function is made
+ 000004E6			System_BreakPoint ENDP
+
+ 000004E6			System_IsDebuggerPresent PROC
+ 000004E6  E8 00000000 E		call IsDebuggerPresent;
+ 000004EB  C3				ret
+ 000004EC			System_IsDebuggerPresent ENDP
+
+ 000004EC			Math_Init PROC
+ 000004EC  DB E3			fninit
+ 000004EE  C3				ret
+ 000004EF			Math_Init ENDP
+
+ 000004EF			Math_Abs PROC
+ 000004EF  9B DB E2			fclex
+						;EDX:EAX --> high:low
+ 000004F2  DD 44 24 04			fld qword ptr [esp+4]
+ 000004F6  D9 E1			fabs
+ 000004F8  83 EC 08			sub esp, 8
+ 000004FB  DD 1C 24			fstp qword ptr [esp]
+ 000004FE  5A				pop edx		;high
+ 000004FF  58				pop eax		;low
+ 00000500  C2 0008			retn 8	
+ 00000503			Math_Abs ENDP
+
+ 00000503			Math_ChangeSign PROC
+ 00000503  9B DB E2			fclex
+ 00000506  DD 44 24 04			fld qword ptr [esp+4]
+ 0000050A  D9 E0			fchs
+ 0000050C  83 EC 08			sub esp, 8
+ 0000050F  DD 1C 24			fstp qword ptr [esp]
+ 00000512  5A				pop edx		;high
+ 00000513  58				pop eax		;low
+ 00000514  C2 0008			retn 8
+ 00000517			Math_ChangeSign ENDP
+
+ 00000517			Math_Sqrt PROC	
+ 00000517  9B DB E2			fclex
+ 0000051A  DD 44 24 04			fld qword ptr [esp+4]
+ 0000051E  D9 FA			fsqrt			; y = sqrt(x);
+ 00000520  83 EC 08			sub esp, 8
+ 00000523  DD 1C 24			fstp qword ptr [esp]
+ 00000526  5A				pop edx		;high
+ 00000527  58				pop eax		;low
+ 00000528  C2 0008			retn 8
+ 0000052B			Math_Sqrt ENDP
+
+ 0000052B			Math_Sqr PROC
+ 0000052B  9B DB E2			fclex
+ 0000052E  DD 44 24 04			fld qword ptr [esp+4]
+ 00000532  DC 4C 24 04			fmul qword ptr [esp+4]	; y = x * x;
+ 00000536  83 EC 08			sub esp, 8
+ 00000539  DD 1C 24			fstp qword ptr [esp]
+ 0000053C  5A				pop edx		;high
+ 0000053D  58				pop eax		;low
+ 0000053E  C2 0008			retn 8
+ 00000541			Math_Sqr ENDP
+
+ 00000541			Math_Sin PROC		;source operand must be given in radians and must be within the range -2^63 to +2^63
+ 00000541  9B DB E2			fclex
+ 00000544  DD 44 24 04			fld qword ptr [esp+4]
+ 00000548  D9 FE			fsin		;sin(x);
+ 0000054A  83 EC 08			sub esp, 8
+ 0000054D  DD 1C 24			fstp qword ptr [esp]
+ 00000550  5A				pop edx		;high
+ 00000551  58				pop eax		;low
+ 00000552  C2 0008			retn 8	
+ 00000555			Math_Sin ENDP
+
+ 00000555			Math_Cos PROC		;source operand must be given in radians and must be within the range -2^63 to +2^63
+ 00000555  9B DB E2			fclex
+ 00000558  DD 44 24 04			fld qword ptr [esp+4]
+ 0000055C  D9 FF			fcos		;cos(x);
+ 0000055E  83 EC 08			sub esp, 8
+ 00000561  DD 1C 24			fstp qword ptr [esp]
+ 00000564  5A				pop edx		;high
+ 00000565  58				pop eax		;low
+ 00000566  C2 0008			retn 8	
+ 00000569			Math_Cos ENDP
+
+ 00000569			Math_Tan PROC		;source operand must be given in radians and must be within the range -2^63 to +2^63
+ 00000569  9B DB E2			fclex
+ 0000056C  DD 44 24 04			fld qword ptr [esp+4]
+ 00000570  D9 F2			fptan		;tan(x);
+ 00000572  83 EC 08			sub esp, 8
+ 00000575  DD 1C 24			fstp qword ptr [esp]	;take out the +1.0
+ 00000578  DD 1C 24			fstp qword ptr [esp]	;tan(x)
+ 0000057B  5A				pop edx		;high
+ 0000057C  58				pop eax		;low
+ 0000057D  C2 0008			retn 8	
+ 00000580			Math_Tan ENDP
+
+ 00000580			Math_ArcTan PROC	;ArcTan(double X, double Y);	
+ 00000580  9B DB E2			fclex
+ 00000583  DD 44 24 0C			fld qword ptr [esp+0Ch] ; Y	-->st(1)
+ 00000587  DD 44 24 04			fld qword ptr [esp+4]	; X	-->st
+ 0000058B  D9 F3			fpatan			;ArcTan(X, Y); //arctan(Y/X) | arctan(st(1)/st);
+ 0000058D  83 EC 08			sub esp, 8	
+ 00000590  DD 1C 24			fstp qword ptr [esp]
+ 00000593  5A				pop edx		;high
+ 00000594  58				pop eax		;low
+ 00000595  C2 0010			retn 010h
+ 00000598			Math_ArcTan ENDP
+
+ 00000598			Math_Round PROC	;FRNDINT—Round to Integer if(EAX==0 && EDX !=0) result is Int32 else Int64
+ 00000598  9B DB E2			fclex
+ 0000059B  DD 44 24 04			fld qword ptr [esp+4]
+ 0000059F  D9 FC			frndint
+ 000005A1  83 EC 08			sub esp, 8
+ 000005A4  DF 3C 24			fistp qword ptr [esp]
+ 000005A7  5A				pop edx		;high
+ 000005A8  58				pop eax		;low
+ 000005A9  85 C0			test eax,eax
+ 000005AB  74 02			jz __UpdateLowPart;	
+ 000005AD  EB 04			jmp __EndConv64;	
+ 000005AF			__UpdateLowPart:
+ 000005AF  8B C2			mov eax, edx
+ 000005B1  33 D2			xor edx, edx
+ 000005B3			__EndConv64:	
+ 000005B3  C2 0008			retn 8
+ 000005B6			Math_Round ENDP
+
+ 000005B6			Math_Round64 PROC
+ 000005B6  8B 54 24 04			mov edx, dword ptr [esp+4]
+ 000005BA  FF 74 24 08			push dword ptr [esp+8]
+ 000005BE  52				push edx
+ 000005BF  E8 FFFFFFD4			call Math_Round;	
+ 000005C4			Math_Round64 ENDP
+
+ 000005C4			Math_pi PROC
+ 000005C4  D9 EB			fldpi
+ 000005C6  83 EC 08			sub esp, 8
+ 000005C9  DD 1C 24			fstp qword ptr [esp]
+ 000005CC  5A				pop edx		;high
+ 000005CD  58				pop eax		;low
+ 000005CE  C3				ret	
+ 000005CF			Math_pi ENDP
+
+ 000005CF			Math_log_10_base2 PROC
+ 000005CF  D9 E9			fldl2t
+ 000005D1  83 EC 08			sub esp, 8
+ 000005D4  DD 1C 24			fstp qword ptr [esp]
+ 000005D7  5A				pop edx		;high
+ 000005D8  58				pop eax		;low
+ 000005D9  C3				ret	
+ 000005DA			Math_log_10_base2 ENDP
+
+ 000005DA			Math_log_e_base2 PROC
+ 000005DA  D9 EA			fldl2e
+ 000005DC  83 EC 08			sub esp, 8
+ 000005DF  DD 1C 24			fstp qword ptr [esp]
+ 000005E2  5A				pop edx		;high
+ 000005E3  58				pop eax		;low
+ 000005E4  C3				ret	
+ 000005E5			Math_log_e_base2 ENDP
+
+ 000005E5			Math_log_2_base10 PROC
+ 000005E5  D9 EC			fldlg2
+ 000005E7  83 EC 08			sub esp, 8
+ 000005EA  DD 1C 24			fstp qword ptr [esp]
+ 000005ED  5A				pop edx		;high
+ 000005EE  58				pop eax		;low
+ 000005EF  C3				ret	
+ 000005F0			Math_log_2_base10 ENDP
+
+ 000005F0			Math_log_2_base_e PROC
+ 000005F0  D9 ED			fldln2
+ 000005F2  83 EC 08			sub esp, 8
+ 000005F5  DD 1C 24			fstp qword ptr [esp]
+ 000005F8  5A				pop edx		;high
+ 000005F9  58				pop eax		;low
+ 000005FA  C3				ret	
+ 000005FB			Math_log_2_base_e ENDP
+
+ 000005FB			Math_Modulus PROC		;FPREM—Partial Remainder
+ 000005FB  9B DB E2			fclex
+ 000005FE  DD 44 24 0C			fld qword ptr [esp+0Ch]	;Divisor
+ 00000602  DD 44 24 04			fld qword ptr [esp+4]	;Dividend
+ 00000606  D9 F8			fprem	
+ 00000608  83 EC 08			sub esp, 8
+ 0000060B  DD 1C 24			fstp qword ptr [esp]
+ 0000060E  5A				pop edx		;high
+ 0000060F  58				pop eax		;low
+ 00000610  C2 0010			retn 010h
+ 00000613			Math_Modulus ENDP
+
+ 00000613			Math_IEEEModulus PROC	;FPREM—Partial Remainder : computes the remainder specified in IEEE Standard 754.
+ 00000613  9B DB E2			fclex
+ 00000616  DD 44 24 0C			fld qword ptr [esp+0Ch]	;Divisor
+ 0000061A  DD 44 24 04			fld qword ptr [esp+4]	;Dividend
+ 0000061E  D9 F5			fprem1	
+ 00000620  83 EC 08			sub esp, 8
+ 00000623  DD 1C 24			fstp qword ptr [esp]
+ 00000626  5A				pop edx		;high
+ 00000627  58				pop eax		;low
+ 00000628  C2 0010			retn 010h	
+ 0000062B			Math_IEEEModulus ENDP
+
+ 0000062B			Math_ModulusTruncateDivisor PROC	; is more clear, but get an overhead in performance!
+ 0000062B  55				push ebp
+ 0000062C  8B EC			mov ebp, esp
+ 0000062E  FF 75 14			push dword ptr [ebp+014h]
+ 00000631  FF 75 10			push dword ptr [ebp+010h]	
+ 00000634  FF 75 0C			push dword ptr [ebp+0Ch]
+ 00000637  FF 75 08			push dword ptr [ebp+8]
+ 0000063A  E8 FFFFFFD4			call Math_IEEEModulus
+ 0000063F  5D				pop ebp
+ 00000640  C2 0010			retn 010h
+ 00000643			Math_ModulusTruncateDivisor ENDP
+
+ 00000643			Math_Ln PROC
+ 00000643  9B DB E2			fclex			;log_b(x) <-- (log_2(b))^–1 * log_2(x)
+ 00000646  D9 EA			fldl2e			;log_2(e);
+ 00000648  D9 E8			fld1
+ 0000064A  DD 44 24 04			fld qword ptr [esp+4]
+ 0000064E  D9 F1			fyl2x
+ 00000650  D8 F1			fdiv st, st(1)
+ 00000652  83 EC 08			sub esp, 8
+ 00000655  DD 1C 24			fstp qword ptr [esp]
+ 00000658  5A				pop edx		;high
+ 00000659  58				pop eax		;low
+ 0000065A  C2 0008			retn 8
+ 0000065D			Math_Ln ENDP
+
+ 0000065D			Math_log2 PROC
+ 0000065D  9B DB E2			fclex
+									;log_b(x) <-- (log_2(b))^–1 * log_2(x)
+ 00000660  D9 E8			fld1
+ 00000662  DD 44 24 04			fld qword ptr [esp+4]
+ 00000666  D9 F1			fyl2x			;log_2(x);
+ 00000668  83 EC 08			sub esp, 8
+ 0000066B  DD 1C 24			fstp qword ptr [esp]
+ 0000066E  5A				pop edx		;high
+ 0000066F  58				pop eax		;low
+ 00000670  C2 0008			retn 8
+ 00000673			Math_log2 ENDP
+
+ 00000673			Math_log10 PROC
+ 00000673  9B DB E2			fclex			;log_b(x) <-- (log_2(b))^–1 * log_2(x)	
+ 00000676  D9 E9			fldl2t			;log_2(10);
+ 00000678  D9 E8			fld1
+ 0000067A  DD 44 24 04			fld qword ptr [esp+4]
+ 0000067E  D9 F1			fyl2x
+ 00000680  D8 F1			fdiv st, st(1)
+ 00000682  83 EC 08			sub esp, 8
+ 00000685  DD 1C 24			fstp qword ptr [esp]
+ 00000688  5A				pop edx		;high
+ 00000689  58				pop eax		;low
+ 0000068A  C2 0008			retn 8	
+ 0000068D			Math_log10 ENDP
+
+ 0000068D			Math_Pow PROC	;double x, double y	E: power = x^y
+ 0000068D  9B DB E3			finit						; STAT = 0000
+ 00000690  DD 44 24 0C			fld qword ptr [esp+4*3]		;y
+ 00000694  DD 44 24 04			fld qword ptr [esp+4]		;x
+ 00000698  D9 F1			fyl2x						; st = y * log_2(x)
+ 0000069A  D9 C0			fld st						; st(1) = st = y * log_2(x)
+ 0000069C  D9 FC			frndint						; st = int(st) | int(y * log_2(x)),  st(1) = y * log_2(x)
+ 0000069E  DC E9			fsub st(1), st				; st(1) = fraction(y * log_2(x))
+ 000006A0  D9 C9			fxch						; swap st, st(1); now st = fraction(y * log_2(x)), st(1) = int(y * log_2(x))
+ 000006A2  D9 F0			f2xm1						; st = 2^fraction(y * log_2(x)) - 1, st(1) = int(y * log_2(x))
+ 000006A4  D9 E8			fld1
+ 000006A6  DE C1			faddp st(1), st				; st = 2^fraction(y * log_2(x)), st(1) = int(y * log_2(x))
+ 000006A8  D9 FD			fscale						; st = 2^fraction(y * log_2(x)) * 2^int(y * log_2(x)) ; x^y = mantissa * 2^exp
+ 000006AA  DD C1			ffree st(1)					; 
+ 000006AC  51				push ecx
+ 000006AD  51				push ecx
+ 000006AE  DD 1C 24			fstp qword ptr [esp]
+ 000006B1  5A				pop edx
+ 000006B2  58				pop eax
+ 000006B3  C2 0010			retn 010h
+ 000006B6			Math_Pow ENDP
+
+ 000006B6			Math_Exp PROC
+ 000006B6  9B DB E2			fclex
+ 000006B9  8B 54 24 04			mov edx, dword ptr [esp+4]
+ 000006BD  FF 74 24 08			push dword ptr [esp+8]
+ 000006C1  52				push edx		
+					;'e' constant	== 2.718282
+ 000006C2  68 4005BF0A			push        4005BF0Ah
+ 000006C7  68 A21A719B			push        0A21A719Bh	;64 bits binary form for 'e'
+ 000006CC  E8 FFFFFFBC			call Math_Pow
+ 000006D1  C2 0008			retn 8
+ 000006D4			Math_Exp ENDP
+
+ 000006D4			Math_MantissaOf PROC	;FXTRACT—Extract Exponent and Significand
+ 000006D4  9B DB E2			fclex
+ 000006D7  DD 44 24 04			fld qword ptr [esp+4]	;number
+ 000006DB  53				push ebx
+ 000006DC  D9 F4			fxtract
+ 000006DE  83 EC 08			sub esp, 8
+ 000006E1  DD 1C 24			fstp qword ptr [esp]	; the mantissa
+ 000006E4  8B 14 24			mov edx, dword ptr [esp]
+ 000006E7  8B 44 24 04			mov eax, dword ptr [esp+4]
+ 000006EB  DF 3C 24			fistp qword ptr [esp]	;the exponent	
+ 000006EE  8B 0C 24			mov ecx, dword ptr [esp] ; in the low part
+ 000006F1  83 C4 08			add esp, 8
+ 000006F4  8B 5C 24 10			mov ebx, dword ptr [esp+0Ch+4]
+ 000006F8  89 0B			mov dword ptr [ebx], ecx
+ 000006FA  5B				pop ebx
+ 000006FB  C2 000C			retn 0Ch
+ 000006FE			Math_MantissaOf ENDP
+
+ 000006FE			Math_GetNumberFrom PROC
+ 000006FE  9B DB E2			fclex
+ 00000701  DB 44 24 0C			fild dword ptr [esp+0Ch]	;exponent
+ 00000705  DD 44 24 04			fld qword ptr [esp+4]		;mantissa
+ 00000709  D9 FD			fscale
+ 0000070B  DD D9			fstp st(1)
+ 0000070D  83 EC 08			sub esp, 8
+ 00000710  DD 1C 24			fstp qword ptr [esp]
+ 00000713  5A				pop edx		;high
+ 00000714  58				pop eax		;low
+ 00000715  C2 000C			retn 0Ch
+ 00000718			Math_GetNumberFrom ENDP
+
+ 00000718			Math_LogN_base PROC
+ 00000718  9B DB E2			fclex
+ 0000071B  8B 54 24 04			mov edx, dword ptr [esp+4]
+ 0000071F  FF 74 24 08			push dword ptr [esp+8]
+ 00000723  52				push edx						;X
+ 00000724  E8 FFFFFF1A			call Math_Ln;					; Ln(X)	
+					;
+ 00000729  8B 4C 24 0C			mov ecx, dword ptr [esp+0Ch]	;b
+ 0000072D  83 EC 08			sub esp, 8
+ 00000730  89 14 24			mov dword ptr [esp], edx
+ 00000733  89 44 24 04			mov dword ptr [esp+4], eax
+ 00000737  51				push ecx
+ 00000738  DB 04 24			fild dword ptr [esp]
+ 0000073B  51				push ecx
+ 0000073C  DD 1C 24			fstp qword ptr [esp]			; b floating-point
+ 0000073F  E8 FFFFFEFF			call Math_Ln;					; Ln(b)
+					;
+ 00000744  DD 04 24			fld qword ptr [esp]				; st == Ln(X);
+ 00000747  89 14 24			mov dword ptr [esp], edx
+ 0000074A  89 44 24 04			mov dword ptr [esp+4], eax	
+					;	
+ 0000074E  DD 04 24			fld qword ptr [esp]				; st == Ln(b);
+													; st(1) == Ln(X);
+ 00000751  DE F9			fdivp st(1), st
+ 00000753  DD 1C 24			fstp qword ptr [esp]			; LogN_base(X);	
+ 00000756  5A				pop edx		;high
+ 00000757  58				pop eax		;low
+ 00000758  C2 000C			retn 0Ch
+ 0000075B			Math_LogN_base ENDP
+
+				;BEGIN - N O N - I N T R I N S I C   M A T H   F U N C T I O N S 
+
+ 0000075B			Math_Cotan PROC		;source operand must be given in radians and must be within the range -2^63 to +2^63
+ 0000075B  9B DB E3			finit
+ 0000075E  DD 44 24 04			fld qword ptr [esp+4]
+ 00000762  D9 F2			fptan		;tan(x);
+ 00000764  DE F1			fdivrp	st(1), st	; y = 1/tan(x);
+ 00000766  83 EC 08			sub esp, 8	
+ 00000769  DD 1C 24			fstp qword ptr [esp]
+ 0000076C  5A				pop edx		;high
+ 0000076D  58				pop eax		;low
+ 0000076E  C2 0008			retn 8	
+ 00000771			Math_Cotan ENDP
+
+ 00000771			Math_Sec PROC	;Sec(X) = 1 / Cos(X) 
+ 00000771  9B DB E3			finit
+ 00000774  8B 54 24 04			mov edx, dword ptr [esp+4]
+ 00000778  FF 74 24 08			push dword ptr [esp+8]
+ 0000077C  52				push edx
+ 0000077D  E8 FFFFFDD3			call Math_Cos
+ 00000782  50				push eax
+ 00000783  52				push edx
+ 00000784  DD 04 24			fld qword ptr [esp]
+ 00000787  D9 E8			fld1
+ 00000789  D8 F1			fdiv st, st(1)
+ 0000078B  DD 1C 24			fstp qword ptr [esp]
+ 0000078E  5A				pop edx		;high
+ 0000078F  58				pop eax		;low
+ 00000790  C2 0008			retn 8
+ 00000793			Math_Sec ENDP
+
+ 00000793			Math_Cosec PROC	;Cosec(X) = 1 / Sin(X)
+ 00000793  9B DB E3			finit
+ 00000796  8B 54 24 04			mov edx, dword ptr [esp+4]
+ 0000079A  FF 74 24 08			push dword ptr [esp+8]
+ 0000079E  52				push edx
+ 0000079F  E8 FFFFFD9D			call Math_Sin
+ 000007A4  50				push eax
+ 000007A5  52				push edx
+ 000007A6  DD 04 24			fld qword ptr [esp]
+ 000007A9  D9 E8			fld1
+ 000007AB  D8 F1			fdiv st, st(1)
+ 000007AD  DD 1C 24			fstp qword ptr [esp]
+ 000007B0  5A				pop edx		;high
+ 000007B1  58				pop eax		;low
+ 000007B2  C2 0008			retn 8
+ 000007B5			Math_Cosec ENDP
+
+ 000007B5			Math_Inverse_Arcsin PROC ;Arcsin(X) = Atn(X / Sqr(-X * X + 1))
+ 000007B5  9B DB E3			finit
+ 000007B8  DD 44 24 04			fld qword ptr [esp+4]	; X
+ 000007BC  DC 4C 24 04			fmul qword ptr [esp+4]	; X * X
+ 000007C0  D9 E8			fld1
+ 000007C2  D9 E0			fchs					;-1		
+ 000007C4  DE C9			fmulp st(1),st			;-1 * (X^2)	
+ 000007C6  D9 E8			fld1
+ 000007C8  D8 C1			fadd st, st(1)			; -X^2 + 1
+ 000007CA  D9 E1			fabs					; |-X'| == |X'| == X'
+ 000007CC  D9 FA			fsqrt					; sqrt(-X * X + 1)	
+ 000007CE  DD 44 24 04			fld qword ptr [esp+4]	; X	--> st(0)
+ 000007D2  D8 F1			fdiv st, st(1)
+ 000007D4  83 EC 08			sub esp, 8
+ 000007D7  DD 1C 24			fstp qword ptr [esp]	; X / sqrt(-X * X + 1)
+ 000007DA  51				push ecx
+ 000007DB  51				push ecx
+ 000007DC  D9 E8			fld1
+ 000007DE  DD 1C 24			fstp qword ptr [esp]
+ 000007E1  E8 FFFFFD9A			call Math_ArcTan;
+ 000007E6  C2 0008			retn 8
+ 000007E9			Math_Inverse_Arcsin ENDP
+
+ 000007E9			Math_Inverse_Arccos PROC ;Arccos(X) = Atn(-X / Sqr(-X * X + 1)) + 2 * Atn(1) 
+ 000007E9  9B DB E3			finit
+ 000007EC  DD 44 24 04			fld qword ptr [esp+4]	; X
+ 000007F0  DC 4C 24 04			fmul qword ptr [esp+4]	; X * X
+ 000007F4  D9 E8			fld1
+ 000007F6  D9 E0			fchs					;-1		
+ 000007F8  DE C9			fmulp st(1),st			;-1 * (X^2)	
+ 000007FA  D9 E8			fld1
+ 000007FC  D8 C1			fadd st, st(1)			; -X^2 + 1
+ 000007FE  D9 E1			fabs					; |-X'| == |X'| == X'
+ 00000800  D9 FA			fsqrt					; sqrt(-X * X + 1)	
+ 00000802  DD 44 24 04			fld qword ptr [esp+4]	; X	--> st(0)
+ 00000806  D9 E0			fchs					; -X
+ 00000808  D8 F1			fdiv st, st(1)
+ 0000080A  83 EC 08			sub esp, 8
+ 0000080D  DD 1C 24			fstp qword ptr [esp]	; Y = -X / sqrt(-X * X + 1)
+ 00000810  51				push ecx
+ 00000811  51				push ecx
+ 00000812  D9 E8			fld1
+ 00000814  DD 1C 24			fstp qword ptr [esp]	; X	--> ArcTan(Y/X) == ArcTan(Y)
+ 00000817  E8 FFFFFD64			call Math_ArcTan;
+ 0000081C  50				push eax
+ 0000081D  52				push edx				;save the result on the CPU stack
+					;
+ 0000081E  D9 E8			fld1
+ 00000820  D9 E8			fld1
+ 00000822  D9 F3			fpatan		;ArcTan(1);
+ 00000824  68 40000000			push		40000000h	
+ 00000829  6A 00			push		0		
+ 0000082B  DC 0C 24			fmul qword ptr [esp]		; 2.0 * ArcTan(1)
+ 0000082E  83 C4 08			add esp, 8
+ 00000831  DC 04 24			fadd qword ptr [esp]		; Atn(Y) + 2 * Atn(1)
+					;
+ 00000834  DD 1C 24			fstp qword ptr [esp]		; result
+ 00000837  5A				pop edx		;high
+ 00000838  58				pop eax		;low
+ 00000839  C2 0008			retn 8
+ 0000083C			Math_Inverse_Arccos ENDP
+
+ 0000083C			Math_Inverse_Arcsec PROC ;Arcsec(X) = Atn(X / Sqr(X * X - 1)) + Sgn((X) -1) * (2 * Atn(1)) 
+ 0000083C  9B DB E3			finit
+ 0000083F  D9 E8			fld1
+ 00000841  DD 44 24 04			fld qword ptr [esp+4]	; X
+ 00000845  DC 4C 24 04			fmul qword ptr [esp+4]	; X * X	
+ 00000849  D8 E1			fsub st, st(1)			; st = X^2 - 1
+ 0000084B  D9 E1			fabs					; |-X'| == |X'| == X'
+ 0000084D  D9 FA			fsqrt					; sqrt(X * X - 1)	
+ 0000084F  DD 44 24 04			fld qword ptr [esp+4]	; X	--> st(0)
+ 00000853  D8 F1			fdiv st, st(1)
+ 00000855  83 EC 08			sub esp, 8
+ 00000858  DD 1C 24			fstp qword ptr [esp]	; Y = X / sqrt(X * X - 1)
+ 0000085B  51				push ecx
+ 0000085C  51				push ecx
+ 0000085D  D9 E8			fld1
+ 0000085F  DD 1C 24			fstp qword ptr [esp]	; X	--> ArcTan(Y/X) == ArcTan(Y)
+ 00000862  E8 FFFFFD19			call Math_ArcTan;		
+ 00000867  50				push eax
+ 00000868  52				push edx				; esp = Atn(*);
+					
+ 00000869  D9 E8			fld1	
+ 0000086B  DD 44 24 0C			fld qword ptr [esp+4*3] ; X
+ 0000086F  D8 E1			fsub st, st(1)			; X-1
+ 00000871  83 EC 08			sub esp, 8
+ 00000874  DD 1C 24			fstp qword ptr [esp]
+ 00000877  E8 0000015F			call Math_Sign;			;Sign(X - 1)
+ 0000087C  50				push eax
+ 0000087D  52				push edx				; esp = Sign(*)
+					
+ 0000087E  D9 E8			fld1
+ 00000880  D9 E8			fld1
+ 00000882  D9 F3			fpatan		;ArcTan(1);
+ 00000884  68 40000000			push		40000000h	
+ 00000889  6A 00			push		0		
+ 0000088B  DC 0C 24			fmul qword ptr [esp]		; st = 2.0 * ArcTan(1)
+ 0000088E  83 C4 08			add esp, 8
+					
+ 00000891  DC 0C 24			fmul qword ptr [esp]		; st = st * Sign(*)
+ 00000894  59				pop ecx
+ 00000895  59				pop ecx
+						
+ 00000896  DC 04 24			fadd qword ptr [esp]		; st = st + Atn(*);
+ 00000899  DD 1C 24			fstp qword ptr [esp]	; result = Atn(*) + Sign(*) * (2 * Atn(1));	
+ 0000089C  5A				pop edx
+ 0000089D  58				pop eax	
+					
+ 0000089E  C2 0008			retn 8
+ 000008A1			Math_Inverse_Arcsec ENDP
+
+ 000008A1			Math_Inverse_Arccosec PROC ;Arccosec(X) = Atn(X / Sqr(X * X - 1)) + (Sgn(X) - 1) * (2 * Atn(1)) 
+ 000008A1  9B DB E3			finit
+ 000008A4  D9 E8			fld1
+ 000008A6  DD 44 24 04			fld qword ptr [esp+4]	; X
+ 000008AA  DC 4C 24 04			fmul qword ptr [esp+4]	; X * X	
+ 000008AE  D8 E1			fsub st, st(1)			; X^2 - 1
+ 000008B0  D9 E1			fabs					; |-X'| == |X'| == X'
+ 000008B2  D9 FA			fsqrt					; sqrt(X * X - 1)	
+ 000008B4  DD 44 24 04			fld qword ptr [esp+4]	; X	--> st(0)
+ 000008B8  D8 F1			fdiv st, st(1)
+ 000008BA  83 EC 08			sub esp, 8
+ 000008BD  DD 1C 24			fstp qword ptr [esp]	; Y = X / sqrt(X * X - 1)
+ 000008C0  51				push ecx
+ 000008C1  51				push ecx
+ 000008C2  D9 E8			fld1
+ 000008C4  DD 1C 24			fstp qword ptr [esp]	; X	--> ArcTan(Y/X) == ArcTan(Y)
+ 000008C7  E8 FFFFFCB4			call Math_ArcTan;		
+ 000008CC  50				push eax
+ 000008CD  52				push edx				; esp = Atn(*);
+						
+ 000008CE  DD 44 24 0C			fld qword ptr [esp+4*3] ; X
+ 000008D2  51				push ecx
+ 000008D3  51				push ecx
+ 000008D4  DD 1C 24			fstp qword ptr [esp]
+ 000008D7  E8 000000FF			call Math_Sign;			;Sign(X)
+ 000008DC  50				push eax
+ 000008DD  52				push edx				
+ 000008DE  D9 E8			fld1
+ 000008E0  DD 04 24			fld qword ptr [esp]		; st = Sign(X)
+ 000008E3  D8 E1			fsub st, st(1)			; st = Sign(X) - 1
+ 000008E5  DD 1C 24			fstp qword ptr [esp]
+					
+ 000008E8  D9 E8			fld1
+ 000008EA  D9 E8			fld1
+ 000008EC  D9 F3			fpatan		;ArcTan(1);
+ 000008EE  68 40000000			push		40000000h	
+ 000008F3  6A 00			push		0		
+ 000008F5  DC 0C 24			fmul qword ptr [esp]		; st = 2.0 * ArcTan(1)
+ 000008F8  83 C4 08			add esp, 8
+ 000008FB  DC 0C 24			fmul qword ptr [esp]		; st = st * (Sign(X)- 1)
+ 000008FE  59				pop ecx
+ 000008FF  59				pop ecx
+						
+ 00000900  DC 04 24			fadd qword ptr [esp]		; st = st + Atn(*);
+ 00000903  DD 1C 24			fstp qword ptr [esp]	; result = Atn(*) + (Sign(X) - 1) * (2 * Atn(1));	
+ 00000906  5A				pop edx
+ 00000907  58				pop eax	
+					
+ 00000908  C2 0008			retn 8
+ 0000090B			Math_Inverse_Arccosec ENDP
+
+
+ 0000090B			Math_Inverse_Arccotan PROC ;Arccotan(X) = Atn(X) + 2 * Atn(1) 
+ 0000090B  9B DB E3			finit
+ 0000090E  8B 54 24 04			mov edx, dword ptr [esp+4]
+ 00000912  FF 74 24 08			push dword ptr [esp+8]		;Y==X
+ 00000916  52				push edx
+ 00000917  83 EC 08			sub esp, 8
+ 0000091A  D9 E8			fld1
+ 0000091C  DD 1C 24			fstp qword ptr [esp]		;X==X'==1	
+ 0000091F  E8 FFFFFC5C			call Math_ArcTan;	;arctan(Y/X)
+ 00000924  83 EC 08			sub esp, 8
+ 00000927  89 14 24			mov dword ptr [esp], edx
+ 0000092A  89 44 24 04			mov dword ptr [esp+4], eax
+ 0000092E  D9 E8			fld1
+ 00000930  D9 E8			fld1
+ 00000932  D9 F3			fpatan		;ArcTan(1)
+ 00000934  68 40000000			push		40000000h	
+ 00000939  6A 00			push		0		
+ 0000093B  DC 0C 24			fmul qword ptr [esp]		; 2.0 * ArcTan(1)
+ 0000093E  83 C4 08			add esp, 8
+ 00000941  DC 04 24			fadd qword ptr [esp]		; Atn(X) + 2 * Atn(1)
+ 00000944  DD 1C 24			fstp qword ptr [esp]		; result
+ 00000947  5A				pop edx		;high
+ 00000948  58				pop eax		;low
+ 00000949  C2 0008			retn 8	
+ 0000094C			Math_Inverse_Arccotan ENDP
+
+
+				;END - N O N - I N T R I N S I C   M A T H   F U N C T I O N S 
+
+ 0000094C			FloatingPoint_Compare PROC
+ 0000094C  9B DB E3			finit
+ 0000094F  DD 44 24 04			fld qword ptr [esp+4] ;st==X
+ 00000953  DC 5C 24 0C			fcomp qword ptr [esp+0Ch]; comp(x,y)
+ 00000957  9B DF E0			fstsw ax
+ 0000095A  9E				sahf	; ah now in EFLAGS
+ 0000095B  7A 16			jp __Compare_Error;	PF==1
+ 0000095D  72 09			jc __Less;	
+ 0000095F  74 0E			jz __Equals;
+					;is greater otherwise!
+ 00000961  B8 00000001			mov eax, 1
+ 00000966  EB 10			jmp __End_Compare;
+ 00000968			__Less:
+ 00000968  B8 FFFFFFFF			mov eax, 0FFFFFFFFh; -1 when X < Y
+ 0000096D  EB 09			jmp __End_Compare;
+ 0000096F			__Equals:
+ 0000096F  33 C0			xor eax, eax
+ 00000971  EB 05			jmp __End_Compare;
+ 00000973			__Compare_Error:
+ 00000973  B8 FFFFFFFB			mov eax, 0FFFFFFFBh; -5, flags an error for a param of type NaNs
+ 00000978			__End_Compare:		
+ 00000978  C2 0010			retn 010h
+ 0000097B			FloatingPoint_Compare ENDP
+
+ 0000097B			Math_Max PROC
+ 0000097B  55				push ebp
+ 0000097C  8B EC			mov ebp, esp
+					;
+ 0000097E  FF 75 14			push dword ptr [ebp+014h]	;Y
+ 00000981  FF 75 10			push dword ptr [ebp+010h]
+ 00000984  FF 75 0C			push dword ptr [ebp+0Ch]	;X
+ 00000987  FF 75 08			push dword ptr [ebp+8]
+ 0000098A  E8 FFFFFFBD			call FloatingPoint_Compare;
+ 0000098F  85 C0			test eax, eax
+ 00000991  74 0C			jz __Max_Or_Equals;
+ 00000993  78 02			js __Greater;
+ 00000995  EB 08			jmp __Max_Or_Equals;
+					;
+ 00000997			__Greater:		;return the Greater
+ 00000997  8B 55 10			mov edx, dword ptr [ebp+010h]
+ 0000099A  8B 45 14			mov eax, dword ptr [ebp+014h]	
+ 0000099D  EB 06			jmp __End;
+ 0000099F			__Max_Or_Equals:
+ 0000099F  8B 55 08			mov edx, dword ptr [ebp+8]
+ 000009A2  8B 45 0C			mov eax, dword ptr [ebp+0Ch]
+					;
+ 000009A5			__End:
+ 000009A5  8B E5			mov esp, ebp
+ 000009A7  5D				pop ebp
+ 000009A8  C2 0010			retn 010h
+ 000009AB			Math_Max ENDP
+
+ 000009AB			Math_Min PROC
+ 000009AB  55				push ebp
+ 000009AC  8B EC			mov ebp, esp
+					;
+ 000009AE  FF 75 14			push dword ptr [ebp+014h]	;Y
+ 000009B1  FF 75 10			push dword ptr [ebp+010h]
+ 000009B4  FF 75 0C			push dword ptr [ebp+0Ch]	;X
+ 000009B7  FF 75 08			push dword ptr [ebp+8]
+ 000009BA  E8 FFFFFF8D			call FloatingPoint_Compare;
+ 000009BF  85 C0			test eax, eax
+ 000009C1  74 0C			jz __Min_Or_Equals;
+ 000009C3  79 02			jns __Less;
+ 000009C5  EB 08			jmp __Min_Or_Equals;
+					;
+ 000009C7			__Less:		;return the min/lesser one
+ 000009C7  8B 55 10			mov edx, dword ptr [ebp+010h]
+ 000009CA  8B 45 14			mov eax, dword ptr [ebp+014h]	
+ 000009CD  EB 06			jmp __End;
+ 000009CF			__Min_Or_Equals:
+ 000009CF  8B 55 08			mov edx, dword ptr [ebp+8]
+ 000009D2  8B 45 0C			mov eax, dword ptr [ebp+0Ch]
+					;
+ 000009D5			__End:
+ 000009D5  8B E5			mov esp, ebp
+ 000009D7  5D				pop ebp
+ 000009D8  C2 0010			retn 010h
+ 000009DB			Math_Min ENDP
+
+ 000009DB			Math_Sign PROC
+ 000009DB  9B DB E2			fclex
+ 000009DE  DD 44 24 04			fld qword ptr [esp+4]
+ 000009E2  D9 E4			ftst
+ 000009E4  9B DF E0			fstsw ax
+ 000009E7  9E				sahf	; ah now in EFLAGS
+ 000009E8  7A 16			jp __Compare_Error;	PF==1
+ 000009EA  72 09			jc __Less;	
+ 000009EC  74 0E			jz __Equals;
+					;is greater otherwise!
+ 000009EE  B8 00000001			mov eax, 1
+ 000009F3  EB 10			jmp __End_Compare;
+ 000009F5			__Less:
+ 000009F5  B8 FFFFFFFF			mov eax, 0FFFFFFFFh; -1 when X < Y
+ 000009FA  EB 09			jmp __End_Compare;
+ 000009FC			__Equals:
+ 000009FC  33 C0			xor eax, eax
+ 000009FE  EB 05			jmp __End_Compare;
+ 00000A00			__Compare_Error:
+ 00000A00  B8 FFFFFFFB			mov eax, 0FFFFFFFBh; -5, flags an error for a param of type NaNs
+ 00000A05			__End_Compare:			
+ 00000A05  C2 0008			retn 8
+ 00000A08			Math_Sign ENDP
+
+ 00000A08			FloatingPoint_CompareToInteger PROC
+ 00000A08  9B DB E2			fclex
+ 00000A0B  DD 44 24 04			fld qword ptr [esp+4]		; double X
+ 00000A0F  DA 5C 24 0C			ficomp dword ptr [esp+0Ch]	; int Y
+ 00000A13  9B DF E0			fstsw ax
+ 00000A16  9E				sahf	; ah now in EFLAGS
+ 00000A17  7A 16			jp __Compare_Error;	PF==1
+ 00000A19  72 09			jc __Less;	
+ 00000A1B  74 0E			jz __Equals;
+					;is greater otherwise!
+ 00000A1D  B8 00000001			mov eax, 1
+ 00000A22  EB 10			jmp __End_Compare;
+ 00000A24			__Less:
+ 00000A24  B8 FFFFFFFF			mov eax, 0FFFFFFFFh; -1 when X < Y
+ 00000A29  EB 09			jmp __End_Compare;
+ 00000A2B			__Equals:
+ 00000A2B  33 C0			xor eax, eax
+ 00000A2D  EB 05			jmp __End_Compare;
+ 00000A2F			__Compare_Error:
+ 00000A2F  B8 FFFFFFFB			mov eax, 0FFFFFFFBh; -5, flags an error for a param of type NaNs
+ 00000A34			__End_Compare:			
+ 00000A34  C2 000C			retn 0Ch;
+ 00000A37			FloatingPoint_CompareToInteger ENDP
+
+ 00000A37			FloatingPoint_ToInt PROC ;
+ 00000A37  DD 44 24 04			fld qword ptr [esp+4]
+ 00000A3B  51				push ecx
+ 00000A3C  DB 1C 24			fistp dword ptr [esp]	;as int32
+ 00000A3F  58				pop eax
+ 00000A40  C2 0008			retn 8
+ 00000A43			FloatingPoint_ToInt ENDP
+
+ 00000A43			FloatingPoint_ToInt64 PROC ;
+ 00000A43  DD 44 24 04			fld qword ptr [esp+4]
+ 00000A47  51				push ecx
+ 00000A48  51				push ecx
+ 00000A49  DF 3C 24			fistp qword ptr [esp]	;as int64
+ 00000A4C  58				pop eax		;low
+ 00000A4D  5A				pop edx		;high	
+				;	test eax,eax
+				;	jz __UpdateLowPart;	
+				;	jmp __EndConv64;	
+				;__UpdateLowPart:
+				;	mov eax, edx
+				;	xor edx, edx
+				;__EndConv64:
+ 00000A4E  C2 0008			retn 8
+ 00000A51			FloatingPoint_ToInt64 ENDP
+
+ 00000A51			FloatingPoint_FromInt PROC
+ 00000A51  DB 44 24 04			fild dword ptr [esp+4]
+ 00000A55  83 EC 08			sub esp, 8
+ 00000A58  DD 1C 24			fstp qword ptr [esp]
+ 00000A5B  5A				pop edx		;high
+ 00000A5C  58				pop eax		;low
+ 00000A5D  C2 0004			retn 4;
+ 00000A60			FloatingPoint_FromInt ENDP
+
+ 00000A60			FloatingPoint_FromInt64 PROC
+ 00000A60  DF 6C 24 04			fild qword ptr [esp+4]
+ 00000A64  83 EC 08			sub esp, 8
+ 00000A67  DD 1C 24			fstp qword ptr [esp]
+ 00000A6A  5A				pop edx		;high
+ 00000A6B  58				pop eax		;low
+ 00000A6C  C2 0008			retn 8;
+ 00000A6F			FloatingPoint_FromInt64 ENDP
+
+ 00000A6F			Math_Pow2 PROC	; Recursive Power with Integer Exponent
+					;double expr, int n = exp
+					; following this equation:
+					;---------------------------------------
+					;E:	x^n == ...
+					; { 1					n = 0,
+					; { x^2		[n%2==0]	n > 0, n is even
+					; { x(x^2)	[n%2!=0]	n > 0, n is odd.
+					;---------------------------------------
+ 00000A6F  83 7C 24 0C 00		cmp dword ptr [esp+0Ch], 0
+ 00000A74  74 47			jz __ret1;
+					;
+ 00000A76  33 D2			xor edx, edx	
+ 00000A78  8B 44 24 0C			mov eax, dword ptr [esp+0Ch]
+ 00000A7C  B9 00000002			mov ecx, 2
+ 00000A81  F7 F9			idiv ecx
+ 00000A83  50				push eax				; n / 2
+ 00000A84  85 D2			test edx, edx
+ 00000A86  75 15			jnz __odd_block;
+					;even
+ 00000A88  DD 44 24 08			fld qword ptr [esp+4*2]	
+ 00000A8C  DC 4C 24 08			fmul qword ptr [esp+4*2] ; pow2(x*x, n/2)
+ 00000A90  51				push ecx
+ 00000A91  51				push ecx
+ 00000A92  DD 1C 24			fstp qword ptr [esp]
+ 00000A95  E8 FFFFFFD5			call Math_Pow2;
+ 00000A9A  C2 000C			retn 0Ch
+ 00000A9D			__odd_block:
+ 00000A9D  DD 44 24 08			fld qword ptr [esp+4*2]	
+ 00000AA1  DC 4C 24 08			fmul qword ptr [esp+4*2] ; x*x
+ 00000AA5  51				push ecx
+ 00000AA6  51				push ecx
+ 00000AA7  DD 1C 24			fstp qword ptr [esp]
+ 00000AAA  E8 FFFFFFC0			call Math_Pow2;
+ 00000AAF  DD 44 24 04			fld qword ptr [esp+4]
+ 00000AB3  50				push eax
+ 00000AB4  52				push edx
+ 00000AB5  DC 0C 24			fmul qword ptr [esp]	; x * pow2(x*x, n/2)
+ 00000AB8  DD 1C 24			fstp qword ptr [esp]
+ 00000ABB  EB 07			jmp __ret_Pow
+ 00000ABD			__ret1:
+ 00000ABD  D9 E8			fld1
+ 00000ABF  51				push ecx
+ 00000AC0  51				push ecx
+ 00000AC1  DD 1C 24			fstp qword ptr [esp]
+ 00000AC4			__ret_Pow:
+ 00000AC4  5A				pop edx
+ 00000AC5  58				pop eax	
+ 00000AC6  C2 000C			retn 0Ch
+ 00000AC9			Math_Pow2 ENDP
+
+ 00000AC9			Math_Odd	PROC    
+ 00000AC9  B9 00000002			mov ecx, 2
+ 00000ACE  33 D2			xor edx, edx
+ 00000AD0  8B 44 24 04			mov eax, dword ptr [esp+4]
+ 00000AD4  F7 F9			idiv ecx
+ 00000AD6  85 D2			test edx, edx
+ 00000AD8  0F 95 C0			setnz al
+ 00000ADB  C2 0004			retn 4
+ 00000ADE			Math_Odd	ENDP
+
+ 00000ADE			Math_Even	PROC    
+ 00000ADE  B9 00000002			mov ecx, 2
+ 00000AE3  33 D2			xor edx, edx
+ 00000AE5  8B 44 24 04			mov eax, dword ptr [esp+4]
+ 00000AE9  F7 F9			idiv ecx
+ 00000AEB  85 D2			test edx, edx
+ 00000AED  0F 94 C0			setz al
+ 00000AF0  C2 0004			retn 4
+ 00000AF3			Math_Even	ENDP
+
+ 00000AF3			Math_Trunc PROC
+ 00000AF3  DD 44 24 04			fld qword ptr [esp+4]
+ 00000AF7  D9 FC			frndint
+ 00000AF9  83 EC 08			sub esp, 8
+ 00000AFC  DD 1C 24			fstp qword ptr [esp]
+ 00000AFF  5A				pop edx
+ 00000B00  58				pop eax
+ 00000B01  C2 0008			retn 8
+ 00000B04			Math_Trunc ENDP
+
+
+ 00000B04			StringHandling_StringLength2 PROC
+ 00000B04  55				push ebp
+ 00000B05  8B EC			mov ebp, esp
+ 00000B07  6A 00			push 0
+ 00000B09  53				push ebx
+ 00000B0A  56				push esi
+ 00000B0B  57				push edi
+ 00000B0C  33 C0			xor eax, eax
+ 00000B0E  8B 55 08			mov edx, dword ptr [ebp+8]
+ 00000B11			_Calc_Length:	
+ 00000B11  80 3A 00			cmp byte ptr [edx], 0
+ 00000B14  74 04			jz _Return;
+ 00000B16  40				inc eax
+ 00000B17  42				inc edx
+ 00000B18  EB F7			jmp _Calc_Length;
+ 00000B1A			_Return:	
+ 00000B1A  5F				pop edi
+ 00000B1B  5E				pop esi
+ 00000B1C  5B				pop ebx
+ 00000B1D  59				pop ecx
+ 00000B1E  5D				pop ebp
+ 00000B1F  C2 0004			ret 4
+ 00000B22			StringHandling_StringLength2 ENDP
+
+ 00000B22			StringHandling_StringLength PROC
+ 00000B22  56				push esi
+ 00000B23  57				push edi
+ 00000B24  53				push ebx
+					;
+ 00000B25  33 C0			xor eax, eax
+ 00000B27  8B 7C 24 10			mov edi, dword ptr [esp+4+3*4]
+ 00000B2B  B9 FFFFFFFF			mov ecx, 0FFFFFFFFh		;max number of chars we can check
+ 00000B30  F2/ AE			repne scasb				;while ecx > 0 or found
+ 00000B32  85 C9			test ecx, ecx			;is not a null terminated C string
+ 00000B34  74 07			je __NotNullTerminated;
+					;
+ 00000B36  F7 D1			not ecx					;turn from negative to positive
+ 00000B38  49				dec ecx					;(length + 1 for null char) - 1 to skip the null char in the count
+ 00000B39  8B C1			mov eax, ecx			;return the count
+ 00000B3B  EB 05			jmp _StringLengthOk;
+ 00000B3D			__NotNullTerminated:
+ 00000B3D  B8 FFFFFFFF			mov eax, 0FFFFFFFFh		; -1 for not currently determine the string length	
+ 00000B42			_StringLengthOk:
+ 00000B42  5B				pop ebx
+ 00000B43  5F				pop edi
+ 00000B44  5E				pop esi
+ 00000B45  C2 0004			retn 4	
+ 00000B48			StringHandling_StringLength ENDP
+
+ 00000B48			StringHandling_StringCopy PROC	;string ref target, string source, int length
+ 00000B48  55				push ebp
+ 00000B49  8B EC			mov ebp, esp
+ 00000B4B  56				push esi
+ 00000B4C  57				push edi
+ 00000B4D  53				push ebx
+					;
+ 00000B4E  8B 75 0C			mov esi, dword ptr [ebp+0Ch]
+ 00000B51  85 F6			test esi, esi
+ 00000B53  74 13			je __EndCopy;
+ 00000B55  8B 7D 08			mov edi, dword ptr [ebp+8]
+ 00000B58  85 FF			test edi, edi
+ 00000B5A  74 0C			je __EndCopy;
+ 00000B5C  8B 4D 10			mov ecx, dword ptr [ebp+010h]
+ 00000B5F  85 C9			test ecx, ecx
+ 00000B61  74 05			je __EndCopy;
+					;do copy
+ 00000B63  F3/ A4			rep movsb	;copy(dest, src);
+ 00000B65  C6 07 00			mov byte ptr [edi], 0 ; the null character finishes this string copy
+					;
+ 00000B68			__EndCopy:
+ 00000B68  5B				pop ebx
+ 00000B69  5F				pop edi
+ 00000B6A  5E				pop esi
+ 00000B6B  5D				pop ebp
+ 00000B6C  C2 0008			retn 8
+ 00000B6F			StringHandling_StringCopy ENDP
+
+ 00000B6F			StringHandling_StringCompare PROC	; string target, string source, int length
+ 00000B6F  56				push esi
+ 00000B70  57				push edi
+ 00000B71  53				push ebx
+					;
+ 00000B72  8B 74 24 14			mov esi, dword ptr [esp+8+3*4]
+ 00000B76  8B 7C 24 10			mov edi, dword ptr [esp+4+3*4]
+ 00000B7A  8B 4C 24 18			mov ecx, dword ptr [esp+0Ch+3*4]	;length
+ 00000B7E  F3/ A6			repe cmpsb		;compare(dest, src);
+					;now, we can use EFLAGS to determine which is less, greater or both equals
+					;  a <= b == !(b < a)
+ 00000B80  7C 06			jl __SrcIsLess;		Dest > Src
+ 00000B82  7F 0B			jg __SrcIsGreater;
+ 00000B84  33 C0			xor eax, eax
+ 00000B86  EB 0C			jmp __EndCompare;
+ 00000B88			__SrcIsLess:
+ 00000B88  B8 00000001			mov eax, 1
+ 00000B8D  EB 05			jmp __EndCompare;
+ 00000B8F			__SrcIsGreater:
+ 00000B8F  B8 FFFFFFFF			mov eax, 0FFFFFFFFh
+ 00000B94			__EndCompare:
+ 00000B94  5B				pop ebx
+ 00000B95  5F				pop edi
+ 00000B96  5E				pop esi
+ 00000B97  C2 000C			retn 0Ch	
+ 00000B9A			StringHandling_StringCompare ENDP
+
+ 00000B9A			StringHandling_StringUCase PROC	;string ref source, int length
+ 00000B9A  56				push esi
+ 00000B9B  57				push edi
+ 00000B9C  53				push ebx
+					;
+ 00000B9D  8B 7C 24 10			mov edi, dword ptr [esp+4+3*4]
+ 00000BA1  8B 4C 24 14			mov ecx, dword ptr [esp+8+3*4]
+ 00000BA5  85 FF			test edi, edi
+ 00000BA7  74 10			jz __EndUCase;
+ 00000BA9  85 C9			test ecx, ecx
+ 00000BAB  74 0C			jz __EndUCase;
+ 00000BAD			__LoopChangeCase:
+ 00000BAD  83 27 20			and dword ptr [edi], 20h
+ 00000BB0  74 03			jz offset __skip_upper_char;
+ 00000BB2  83 37 20			xor dword ptr [edi], 20h
+ 00000BB5			__skip_upper_char:
+ 00000BB5  47				inc edi
+ 00000BB6  49				dec ecx		
+ 00000BB7  75 F4			jne __LoopChangeCase;
+					;
+ 00000BB9			__EndUCase:
+ 00000BB9  5B				pop ebx
+ 00000BBA  5F				pop edi
+ 00000BBB  5E				pop esi
+ 00000BBC  C2 0004			retn 4
+ 00000BBF			StringHandling_StringUCase ENDP
+
+ 00000BBF			StringHandling_StringLCase PROC	;string ref source, int length
+ 00000BBF  56				push esi
+ 00000BC0  57				push edi
+ 00000BC1  53				push ebx
+					;
+ 00000BC2  8B 7C 24 10			mov edi, dword ptr [esp+4+3*4]
+ 00000BC6  8B 4C 24 14			mov ecx, dword ptr [esp+8+3*4]
+ 00000BCA  85 FF			test edi, edi
+ 00000BCC  74 0B			jz __EndUCase;
+ 00000BCE  85 C9			test ecx, ecx
+ 00000BD0  74 07			jz __EndUCase;
+ 00000BD2			__LoopChangeCase:
+ 00000BD2  83 0F 20			or dword ptr [edi], 20h
+ 00000BD5  47				inc edi
+ 00000BD6  49				dec ecx		
+ 00000BD7  75 F9			jne __LoopChangeCase;
+					;
+ 00000BD9			__EndUCase:
+ 00000BD9  5B				pop ebx
+ 00000BDA  5F				pop edi
+ 00000BDB  5E				pop esi
+ 00000BDC  C2 0004			retn 4
+ 00000BDF			StringHandling_StringLCase ENDP
+
+ 00000BDF			Math_Gcd PROC
+ 00000BDF  55				push ebp
+ 00000BE0  8B EC			mov ebp, esp
+ 00000BE2  83 EC 04			sub esp, 4
+ 00000BE5  53				push ebx
+ 00000BE6  56				push esi
+ 00000BE7  57				push edi
+					;
+ 00000BE8			_doWhile:
+ 00000BE8  8B 45 08			mov eax, dword ptr [ebp+8]; x
+ 00000BEB  8B 4D 0C			mov ecx, dword ptr [ebp+0Ch]; y
+ 00000BEE  99			    cdq
+ 00000BEF  F7 F1			div ecx; n == edx = x%y;
+ 00000BF1  8B 4D 0C			mov ecx, dword ptr [ebp+0Ch]
+ 00000BF4  89 4D 08			mov dword ptr [ebp+8], ecx; x = y;
+ 00000BF7  89 55 0C			mov dword ptr [ebp+0Ch], edx; y = n;
+ 00000BFA  85 D2			test edx,edx
+ 00000BFC  75 EA			jnz OFFSET _doWhile;
+ 00000BFE  8B C1			mov eax, ecx; return x;
+ 00000C00			_ret_end:
+ 00000C00  5F				pop edi
+ 00000C01  5E				pop esi
+ 00000C02  5B				pop ebx
+ 00000C03  8B E5			mov esp, ebp
+ 00000C05  5D				pop ebp
+ 00000C06  C2 0008			retn 8
+ 00000C09			Math_Gcd ENDP
+
+ 00000C09			Integer_toStringEx PROC ;toStringEx(Int32 expr, short radix, char [] result)
+ 00000C09  57			     push	edi
+ 00000C0A  56			     push	esi
+ 00000C0B  53			     push	ebx
+ 00000C0C  8B 5C 24 14		     mov ebx, dword ptr [esp+8+3*4]		;radix
+ 00000C10  8B 44 24 10		     mov eax, dword ptr [esp+4+3*4]		;integer value     
+ 00000C14  8B 7C 24 18		     mov edi, dword ptr [esp+0Ch+3*4]	;we expect a minimum buffer with at least 20h bytes
+ 00000C18  33 C9		     xor	ecx, ecx				;digit counter
+ 00000C1A  85 C0		     test eax, eax
+ 00000C1C  7D 0C		     jnl __setup;
+ 00000C1E  83 FB 0A		     cmp ebx, 0Ah			;compare to decimal radix
+ 00000C21  75 07		     jnz __setup;
+ 00000C23  F7 D8		     neg eax				;we make it positive for the conversion
+ 00000C25  B9 00000001		     mov ecx, 1
+ 00000C2A			     __setup:
+ 00000C2A  83 FB 02		     cmp   	ebx,2			;EBX must be between
+ 00000C2D  72 39		     jb		__unsupported_radix           ; 2 and 16.
+ 00000C2F  83 FB 10		     cmp   	ebx, 010h
+ 00000C32  77 34		     ja		__unsupported_radix		 
+ 00000C34  83 EC 20		     sub esp, 20h			;use a local array
+ 00000C37  8D 34 24		     lea esi, [esp]
+ 00000C3A  83 C6 1F		     add	esi, 1Fh				;we expect a minimum buffer with at least 20h bytes
+ 00000C3D  83 26 00		     and dword ptr [esi], 0			;set the null char          
+ 00000C40  51				 push	ecx						;to keep track of sign
+ 00000C41			__get_char_digit:  
+ 00000C41  33 D2		     xor 	edx, edx         		; clear dividend to zero
+ 00000C43  F7 F3		     div 	ebx           			; divide EAX by the radix (EAX / EBX)
+
+ 00000C45  92			     xchg  	eax, edx       			; exchange quotient, remainder
+ 00000C46  53			     push  	ebx  	  				;save the radix            
+ 00000C47  BB 0000015A R	     mov   	ebx, offset __xtable	;translate table
+ 00000C4C  D7			     xlat							;look up ASCII digit
+ 00000C4D  5B			     pop   	ebx                   
+ 00000C4E  4E			     dec	esi              		; back up in buffer; the first time, we save the null character to terminate the string
+ 00000C4F  88 06		     mov   	byte ptr [esi], al		; move digit into buffer
+ 00000C51  92			     xchg  	eax,edx           		; swap quotient into EAX
+
+ 00000C52  41			     inc   	ecx              		; increment digit count
+ 00000C53  85 C0		     test	eax, eax           		; quotient = 0?
+ 00000C55  75 EA		     jnz   	__get_char_digit		; no: divide again
+
+ 00000C57  5A				 pop	edx						;ask for the sign
+ 00000C58  84 D2			 test	dl, dl
+ 00000C5A  74 05			 jz __return_now;
+ 00000C5C  4E				 dec	esi
+ 00000C5D  41				 inc	ecx
+ 00000C5E  C6 06 2D			 mov   	byte ptr [esi], '-'
+ 00000C61			__return_now:
+				     ; returns the number of digits from ECX
+ 00000C61  8B C1		     mov eax, ecx
+				     ;now, copy the result to user buffer
+ 00000C63  F3/ A4		     rep movsb
+ 00000C65  83 C4 20		     add esp, 20h					;destroy locals
+ 00000C68			__unsupported_radix:
+ 00000C68  5B			     pop ebx
+ 00000C69  5E			     pop esi
+ 00000C6A  5F			     pop edi
+ 00000C6B  C2 000C		     ret 0Ch
+ 00000C6E			Integer_toStringEx ENDP
+
+ 00000C6E			Integer_toString PROC
+ 00000C6E  57			    push edi
+ 00000C6F  56			    push esi
+ 00000C70  8B 74 24 0C		    mov esi, dword ptr [esp+4*3]
+ 00000C74  6A 20			push 20h
+ 00000C76  E8 000004BC			call System_Memory_New;
+ 00000C7B  8B F8			mov edi, eax
+ 00000C7D  57				push edi
+ 00000C7E  6A 0A			push 0Ah
+ 00000C80  56				push esi
+ 00000C81  E8 FFFFFF83			call Integer_toStringEx;
+ 00000C86			__end_conversion:
+ 00000C86  8B C7			mov eax, edi
+ 00000C88  5E				pop esi
+ 00000C89  5F				pop edi
+ 00000C8A  C2 0004			retn 4
+ 00000C8D			Integer_toString ENDP
+
+ 00000C8D			Integer_fromString PROC		;fromString(string value); ; ecx = ch - '0' + ecx * 0Ah    
+ 00000C8D  56				push esi
+ 00000C8E  8B 74 24 08			mov esi, dword ptr [esp+8]
+ 00000C92  33 C9			xor ecx, ecx	
+ 00000C94  51				push ecx
+ 00000C95			__remove_blanks:
+ 00000C95  8A 06			mov al, byte ptr [esi]
+ 00000C97  3C 20			cmp al, 20h		;' '
+ 00000C99  75 03			jnz __if_sign;
+ 00000C9B  46				inc esi
+ 00000C9C  EB F7			jmp __remove_blanks;
+ 00000C9E			__if_sign:
+ 00000C9E  84 C9			test cl, cl
+ 00000CA0  75 0F			jnz __add_byte;
+ 00000CA2  8A 06			mov al, byte ptr [esi]
+ 00000CA4  3C 2D			cmp al, 2Dh		;'-'
+ 00000CA6  75 09			jnz __add_byte;
+ 00000CA8  B1 01			mov cl, 1
+ 00000CAA  46				inc esi					;skip the sign
+ 00000CAB  8A 06			mov al, byte ptr [esi]
+ 00000CAD  3C 20			cmp al, 20h		;' '
+ 00000CAF  74 E4			jz __remove_blanks;
+ 00000CB1			__add_byte:
+ 00000CB1  33 C0			xor eax, eax
+ 00000CB3  8A 06			mov al, byte ptr [esi]
+ 00000CB5  3C 30			cmp al, 30h
+ 00000CB7  7C 18			jl __end_read;
+ 00000CB9  3C 39			cmp al, 39h
+ 00000CBB  7F 14			jg __end_read;
+ 00000CBD  2C 30			sub al, 30h
+ 00000CBF  8B D8			mov ebx, eax
+ 00000CC1  B8 0000000A			mov eax, 0Ah
+ 00000CC6  F7 2C 24			imul dword ptr [esp]
+ 00000CC9  03 C3			add eax, ebx
+ 00000CCB  89 04 24			mov dword ptr [esp], eax
+ 00000CCE  46				inc esi
+ 00000CCF  EB E0			jmp __add_byte
+ 00000CD1			__end_read:
+ 00000CD1  58				pop eax
+ 00000CD2  84 C9		    test cl, cl
+ 00000CD4  74 02		    jz __return;    
+ 00000CD6  F7 D8		    neg eax;
+ 00000CD8			    __return:	
+ 00000CD8  5E				pop esi
+ 00000CD9  C2 0004			retn 4
+ 00000CDC			Integer_fromString ENDP
+
+ 00000CDC			FloatingPoint_toString PROC	
+ 00000CDC  57				push edi
+ 00000CDD  6A 40			push 40h
+ 00000CDF  E8 00000453			call System_Memory_New
+ 00000CE4  8B F8			mov edi, eax
+ 00000CE6  50				push eax
+ 00000CE7  8B 54 24 0C			mov edx, dword ptr [esp+4+4*2]
+ 00000CEB  FF 74 24 10			push dword ptr [esp+8+4*2]
+ 00000CEF  52				push edx
+ 00000CF0  E8 00000004			call FloatingPoint_toStringEx;	
+ 00000CF5  5F				pop edi
+ 00000CF6  C2 0008			retn 8
+ 00000CF9			FloatingPoint_toString ENDP
+
+
+ 00000CF9			FloatingPoint_toStringEx PROC ;toStringEx(double expr, char [] result)
+ 00000CF9  55				push ebp
+ 00000CFA  8B EC			mov ebp, esp
+ 00000CFC  83 EC 14			sub esp, 14h			;to hold the fraction part
+ 00000CFF  33 C9			xor ecx, ecx
+ 00000D01  51				push ecx				;flag for the sign
+ 00000D02  51				push ecx				;flag for fp with integer part only											
+ 00000D03  57				push edi
+ 00000D04  56				push esi		
+ 00000D05  8B 7D 10			mov edi, dword ptr [ebp+10h]
+ 00000D08  9B DB E3			finit
+ 00000D0B			_number_analysis0:	
+ 00000D0B  DD 45 08			fld qword ptr [ebp+8]
+ 00000D0E  D9 E4			ftst				; is zero ?
+ 00000D10  9B DF E0			fstsw ax
+ 00000D13  9E				sahf
+ 00000D14  0F 84 0000017D		jz __is_zero;
+ 00000D1A  73 06			jnc _number_analysis; st > 0 ?
+ 00000D1C  D9 E1			fabs				; st = |st|
+ 00000D1E  C6 45 E8 01			mov byte ptr [ebp-18h], 1	;st < 0 ? save sign info	
+ 00000D22			_number_analysis:	
+ 00000D22  D9 C0			fld st(0)			;duplicate the number
+ 00000D24  D9 FC			frndint				; round it		
+ 00000D26  9B DB E2			fclex						
+ 00000D29  D8 D9			fcomp 				;now, compare between numbers : st == st(1) ? compare and pop st
+ 00000D2B  DF E0			fnstsw ax
+ 00000D2D  9E				sahf	
+ 00000D2E  0F 8A 00000171		jp __end_analysis_NaN	;for NaNs
+ 00000D34  74 44			jz __bcd_conversion;
+ 00000D36			_determine_max:
+ 00000D36  9B DB E2			fclex	
+ 00000D39  DD C1			ffree st(1)
+ 00000D3B  DD C0			ffree st
+					;
+ 00000D3D  8D 14 CD			lea edx, [__FP_MAX_RANGE+ecx*8]
+	   0000021A R
+ 00000D44  DD 02			fld qword ptr [edx]
+ 00000D46  DD 45 08			fld qword ptr [ebp+8]	;st = theNumber
+ 00000D49  D9 E1			fabs					; st = fabs(st)
+ 00000D4B  D8 D1			fcom
+ 00000D4D  9B DF E0			fstsw ax	
+ 00000D50  9E				sahf					; st <= st(1) ?	
+ 00000D51  0F 8A 0000014E		jp __end_analysis_NaN	;for NaNs
+ 00000D57  72 0E			jc __raise_power_10;	
+ 00000D59  74 0C			jz __raise_power_10;
+ 00000D5B  41				inc ecx;
+ 00000D5C  83 F9 08			cmp ecx, 8
+ 00000D5F  74 02			jz __too_big;
+ 00000D61  EB D3			jmp _determine_max;
+ 00000D63			__too_big:
+ 00000D63  33 C9			xor ecx, ecx
+ 00000D65  EB 13			jmp __bcd_conversion;
+ 00000D67			__raise_power_10:	
+ 00000D67  8D 1C CD			lea ebx, [__FP_MAX_POWER_10+ecx*8]
+	   0000025A R
+ 00000D6E  DD 03			fld qword ptr [ebx]
+ 00000D70  DE C9			fmulp st(1), st			; st = st(1) * st
+ 00000D72  D9 FC			frndint				; round it	
+ 00000D74  8A 89 0000029A R		mov cl, byte ptr [__FP_MAX_EXPONENT+ecx]
+ 00000D7A			__bcd_conversion:
+ 00000D7A  83 EC 0A			sub esp, 0Ah		; up to 18-digits
+ 00000D7D  DF 34 24			fbstp [esp]			; convert to packed BCD		
+ 00000D80  33 DB			xor ebx, ebx		; offset to the next BCD byte
+					;
+ 00000D82  85 C9			test ecx, ecx		; ecx == 0? this is an integer value; so process it as is
+ 00000D84  75 0E			jnz __fraction_part0;
+ 00000D86  C7 45 E4			mov dword ptr [ebp-1Ch], 1	;has integer part only
+	   00000001
+ 00000D8D  B9 00000009			mov ecx, 9			; we mean, read the 18 digits
+ 00000D92  EB 78			jmp __first_not_zero;
+ 00000D94			__fraction_part0:
+ 00000D94  8B C1			mov eax, ecx
+ 00000D96  33 D2			xor edx, edx
+ 00000D98  B9 00000002			mov ecx, 2
+ 00000D9D  F7 F9			idiv ecx	
+ 00000D9F  8B C8			mov ecx, eax		; set counter		
+ 00000DA1  33 F6			xor esi, esi		
+ 00000DA3			__remove_zeroes:
+ 00000DA3  8A 04 1C			mov al, byte ptr [esp+ebx]
+ 00000DA6  84 C0			test al, al
+ 00000DA8  75 0B			jnz __fraction_part;
+ 00000DAA  43				inc ebx
+ 00000DAB  E2 F6			loop __remove_zeroes;
+ 00000DAD  85 C9			test ecx, ecx			;ecx==0 ? the number is too small
+ 00000DAF  0F 84 000000DF		jz __failed_conv_then_zero;
+ 00000DB5			__fraction_part:	
+ 00000DB5  8A 04 1C			mov al, byte ptr [esp+ebx]
+ 00000DB8  24 0F			and al, 0Fh			;low nibble
+ 00000DBA  04 30			add al, 030h		;ASCII char	
+ 00000DBC  88 44 2E EC			mov byte ptr [ebp-14h+esi], al		; from right-to-left every digit
+ 00000DC0  8A 04 1C			mov al, byte ptr [esp+ebx]	
+ 00000DC3  C0 E8 04			shr al, 4			; high nibble	
+ 00000DC6  04 30			add al, 030h		;ASCII char
+ 00000DC8  46				inc esi
+ 00000DC9  88 44 2E EC			mov byte ptr [ebp-14h+esi], al
+ 00000DCD  46				inc esi
+ 00000DCE  43				inc ebx				;number of bytes of fraction read
+ 00000DCF  E2 E4			loop __fraction_part;
+					;
+					;if edx % 2 ==1 then we must read the current byte and set the period '.' and then the next digit
+ 00000DD1  85 D2			test edx, edx
+ 00000DD3  74 22			jz __integer_part0;
+ 00000DD5  8A 04 1C			mov al, byte ptr [esp+ebx]
+ 00000DD8  24 0F			and al, 0Fh			;low nibble
+ 00000DDA  04 30			add al, 030h		;ASCII char
+ 00000DDC  88 44 2E EC			mov byte ptr [ebp-14h+esi], al	; write fraction from end-to-start
+ 00000DE0  46				inc esi
+ 00000DE1  C6 44 2E EC 2E		mov byte ptr [ebp-14h+esi], 02Eh	; '.fraction'	
+ 00000DE6  8A 04 1C			mov al, byte ptr [esp+ebx]
+ 00000DE9  C0 E8 04			shr al, 4			; high nibble
+ 00000DEC  04 30			add al, 030h		;ASCII char	
+ 00000DEE  46				inc esi
+ 00000DEF  43				inc ebx				;add to number of bytes of fraction read
+ 00000DF0  88 44 2E EC			mov byte ptr [ebp-14h+esi], al		; 'd.fraction'		
+ 00000DF4  46				inc esi
+ 00000DF5  EB 06			jmp __integer_part;
+ 00000DF7			__integer_part0:
+ 00000DF7  C6 44 2E EC 2E		mov byte ptr [ebp-14h+esi], 02Eh	; '.fraction'
+ 00000DFC  46				inc esi
+ 00000DFD			__integer_part:
+ 00000DFD  B8 00000009			mov eax, 9							; 9 bytes = 18 digits
+ 00000E02  2B C3			sub eax, ebx						; x = (9-ebx) * 2 == explore up to x digits
+ 00000E04  8B C8			mov ecx, eax						; used in the next loop
+ 00000E06  33 DB			xor ebx, ebx			
+ 00000E08  85 C9			test ecx, ecx						;if ecx is zero, just copy the fraction part
+ 00000E0A  74 1C			jz __assign_zero;
+ 00000E0C			__first_not_zero:						
+					;determine the first byte with a non-zero nibble
+ 00000E0C  8D 43 F8			lea eax, [ebx-8]
+ 00000E0F  F7 D8			neg eax
+ 00000E11  8A 04 04			mov al, byte ptr [esp+eax]
+ 00000E14  84 C0			test al, al
+ 00000E16  75 1A			jnz __read_int_part0;	
+ 00000E18  43				inc ebx
+ 00000E19  E2 F1			loop __first_not_zero;
+					;	
+ 00000E1B  8B 7D 10			mov edi, dword ptr [ebp+10h]		;if we got here, we just set the sequence to | '-', | '0', '.'
+ 00000E1E  80 7D E8 01			cmp byte ptr [ebp-18h], 1
+ 00000E22  75 04			jnz __assign_zero;					;first, determine the sign flag	
+ 00000E24  C6 07 2D			mov byte ptr [edi], 02Dh			; '-'
+ 00000E27  47				inc edi	
+ 00000E28			__assign_zero:
+ 00000E28  85 D2			test edx, edx
+ 00000E2A  75 4A			jnz __complete_number;
+ 00000E2C  C6 07 30			mov byte ptr [edi], 030h
+ 00000E2F  47				inc edi
+ 00000E30  EB 44			jmp __complete_number;
+					;
+ 00000E32			__read_int_part0:
+ 00000E32  8B 7D 10			mov edi, dword ptr [ebp+10h]	;target buffer
+ 00000E35  80 7D E8 01			cmp byte ptr [ebp-18h], 1
+ 00000E39  75 04			jnz __no_sign;
+ 00000E3B  C6 07 2D			mov byte ptr [edi], 02Dh	; '-'
+ 00000E3E  47				inc edi		
+ 00000E3F			__no_sign:
+ 00000E3F  8D 43 F8			lea eax, [ebx-8]
+ 00000E42  F7 D8			neg eax
+ 00000E44  8A 04 04			mov al, byte ptr [esp+eax]		;decompose the current byte
+ 00000E47  C0 E8 04			shr al, 4			; high nibble first
+ 00000E4A  84 C0			test al, al
+ 00000E4C  74 10			jz __read_int_low_part;
+ 00000E4E			__read_int_high_part:
+ 00000E4E  8D 43 F8			lea eax, [ebx-8]
+ 00000E51  F7 D8			neg eax
+ 00000E53  8A 04 04			mov al, byte ptr [esp+eax]		;decompose the current byte
+ 00000E56  C0 E8 04			shr al, 4			; high nibble first
+ 00000E59  04 30			add al, 30h
+ 00000E5B  88 07			mov byte ptr [edi], al
+ 00000E5D  47				inc edi
+ 00000E5E			__read_int_low_part:
+ 00000E5E  8D 43 F8			lea eax, [ebx-8]
+ 00000E61  F7 D8			neg eax
+ 00000E63  8A 04 04			mov al, byte ptr [esp+eax]		;decompose the current byte
+ 00000E66  24 0F			and al, 0Fh			; low nibble	
+ 00000E68  04 30			add al, 30h
+ 00000E6A  88 07			mov byte ptr [edi], al
+ 00000E6C  47				inc edi	
+ 00000E6D  43				inc ebx
+ 00000E6E  E2 DE			loop __read_int_high_part;
+					;
+ 00000E70  83 7D E4 01			cmp dword ptr [ebp-1Ch], 1
+ 00000E74  74 13			jz __end_conversion;			;if has int part only, just end
+ 00000E76			__complete_number:
+ 00000E76  8D 55 EC			lea edx, [ebp-14h]
+ 00000E79  8D 44 16 FF			lea eax, [edx+esi-1]			;to begin reading from the correct byte and others
+ 00000E7D  8A 00			mov al, byte ptr [eax]
+ 00000E7F  88 07			mov byte ptr [edi], al
+ 00000E81  47				inc edi
+ 00000E82  4E				dec esi
+ 00000E83  85 F6			test esi, esi
+ 00000E85  75 EF			jnz __complete_number;
+ 00000E87  EB 00			jmp __end_conversion;
+					;
+ 00000E89			__end_conversion:
+ 00000E89  83 C4 0A			add esp, 0Ah		;restore stack
+ 00000E8C  83 7D E4 01			cmp dword ptr [ebp-1Ch], 1
+ 00000E90  74 09			jz __dot_zero;			;if has int part only, just end	
+ 00000E92  EB 1D			jmp __end_analysis;
+ 00000E94			__failed_conv_then_zero:
+ 00000E94  83 C4 0A			add esp, 0Ah			; if we get here, we couldn't convert this number; the reason: too long, or too small
+ 00000E97			__is_zero:					; "0.0"	
+ 00000E97  C6 07 30			mov byte ptr [edi], 30h
+ 00000E9A  47				inc edi
+ 00000E9B			__dot_zero:
+ 00000E9B  C6 07 2E			mov byte ptr [edi], 2Eh
+ 00000E9E  47				inc edi
+ 00000E9F  C6 07 30			mov byte ptr [edi], 30h
+ 00000EA2  47				inc edi
+ 00000EA3  EB 0C			jmp __end_analysis;
+ 00000EA5			__end_analysis_NaN:
+ 00000EA5  C6 07 4E			mov byte ptr [edi], 4Eh
+ 00000EA8  47				inc edi
+ 00000EA9  C6 07 61			mov byte ptr [edi], 61h
+ 00000EAC  47				inc edi
+ 00000EAD  C6 07 4E			mov byte ptr [edi], 4Eh
+ 00000EB0  47				inc edi	
+ 00000EB1			__end_analysis:
+ 00000EB1  9B DB E2			fclex
+ 00000EB4  C6 07 00			mov byte ptr [edi], 0
+ 00000EB7  5E				pop esi
+ 00000EB8  5F				pop edi
+ 00000EB9  8B 45 10			mov eax, dword ptr [ebp+10h]
+ 00000EBC  C9				leave
+ 00000EBD  C2 000C			retn 0Ch
+ 00000EC0			FloatingPoint_toStringEx ENDP
+
+				;
+				;The function __AccumValue_Number, is used exclusively by : FloatingPoint_fromString
+				;
+ 00000EC0			__AccumValue_Number PROC	; (char [] buffer, double ref value, Int32 ref digitCount, ErrorCode error, bool ref errTooManyDigits);
+ 00000EC0  55				push ebp
+ 00000EC1  8B EC			mov ebp, esp
+ 00000EC3  6A 0A			push 0Ah				; to raise the number to a power of base 10^iterations
+					;
+ 00000EC5  57				push edi
+ 00000EC6  8B 75 08			mov esi, dword ptr [ebp+8]	
+ 00000EC9  8B 7D 0C			mov edi, dword ptr [ebp+0Ch]
+					;
+ 00000ECC  8A 06			mov al, byte ptr [esi]
+ 00000ECE  3C 30			cmp al, 30h
+ 00000ED0  7C 48			jl __number_error;
+ 00000ED2  3C 39			cmp al, 39h
+ 00000ED4  7F 44			jg __number_error
+					;	
+ 00000ED6			__accumulate:	;Accumulate the value as long as the total allowable number of digits has not been exceeded.
+ 00000ED6  8B 55 10			mov edx, dword ptr [ebp+10h]
+ 00000ED9  83 02 01			add dword ptr [edx], 1		; ++digitCount
+ 00000EDC  8B 02			mov eax, dword ptr [edx]	; digitCount
+ 00000EDE  83 F8 20			cmp eax, MAX_DIGITS_COUNT
+ 00000EE1  7F 2F			jg __eTooManyDigits;
+					;
+ 00000EE3  9B DB E2			fclex
+ 00000EE6  8B 55 0C			mov edx, dword ptr [ebp+0Ch]	;value
+ 00000EE9  DD 02			fld qword ptr [edx]
+ 00000EEB  DA 4D FC			fimul dword ptr [ebp-4]			; st = st * 0Ah
+ 00000EEE  33 DB			xor ebx, ebx
+ 00000EF0  8A 1E			mov bl, byte ptr [esi]
+ 00000EF2  80 EB 30			sub bl, 030h
+ 00000EF5  53				push ebx
+ 00000EF6  DB 04 24			fild dword ptr [esp]
+ 00000EF9  DE C1			faddp st(1), st
+ 00000EFB  DD 1A			fstp qword ptr [edx]			; v = v * 0Ah + digit
+ 00000EFD  5B				pop ebx
+					;
+ 00000EFE			__next_char:
+ 00000EFE  46				inc esi
+ 00000EFF  8A 06			mov al, byte ptr [esi]
+ 00000F01  3C 30			cmp al, 30h
+ 00000F03  7C 06			jl __end_accum_true;
+ 00000F05  3C 39			cmp al, 39h
+ 00000F07  7F 02			jg __end_accum_true;	
+ 00000F09  EB CB			jmp __accumulate;
+					;	
+ 00000F0B			__end_accum_true:
+ 00000F0B  B8 00000001			mov eax, 1			;true	
+ 00000F10  EB 41			jmp __end_accumulate;
+ 00000F12			__eTooManyDigits:
+ 00000F12  8B 55 18			mov edx, dword ptr [ebp+18h]
+ 00000F15  C6 02 01			mov byte ptr [edx], 1
+ 00000F18  EB E4			jmp __next_char;
+ 00000F1A			__number_error:
+ 00000F1A  33 C0			xor eax, eax		;false
+ 00000F1C  83 7D 14 0A			cmp dword ptr [ebp+14h]	, INVALID_NUMBER	;Invalid Number
+ 00000F20  74 0C			jz __enumber;
+ 00000F22  83 7D 14 0C			cmp dword ptr [ebp+14h]	, INVALID_FRACTION	;Invalid Fraction
+ 00000F26  74 0F			jz __efraction;
+ 00000F28  83 7D 14 0F			cmp dword ptr [ebp+14h]	, INVALID_EXPONENT	;Invalid Exponent
+ 00000F2C  74 12			jz __eexponent;
+ 00000F2E			__enumber:
+ 00000F2E  6A 10			push SIZEOF __msg_enumber
+ 00000F30  68 000001B2 R		push OFFSET __msg_enumber;
+ 00000F35  EB 12			jmp __error;
+ 00000F37			__efraction:
+ 00000F37  6A 12			push SIZEOF __msg_efraction
+ 00000F39  68 000001C2 R		push OFFSET __msg_efraction;
+ 00000F3E  EB 09			jmp __error;
+ 00000F40			__eexponent:
+ 00000F40  6A 12			push SIZEOF __msg_eexponent
+ 00000F42  68 000001D4 R		push OFFSET __msg_eexponent;
+ 00000F47  EB 00			jmp __error;
+ 00000F49			__error:
+ 00000F49  E8 FFFFF225			call Console_WriteString;
+ 00000F4E  E8 FFFFF268			call Console_WriteCrLf;
+ 00000F53			__end_accumulate:
+ 00000F53  5F				pop edi	
+ 00000F54  C9				leave
+ 00000F55  C2 0014			retn 14h
+ 00000F58			__AccumValue_Number ENDP
+
+
+ 00000F58			FloatingPoint_fromString PROC ;fromString(string value);
+ 00000F58  55				push ebp
+ 00000F59  8B EC			mov ebp, esp
+ 00000F5B  83 EC 2C			sub esp, 2Ch
+ 00000F5E  57				push edi
+ 00000F5F  56				push esi	
+ 00000F60  33 C0			xor eax, eax
+ 00000F62  B9 0000000B			mov ecx, 0Bh
+ 00000F67  8D 7D D4			lea edi, dword ptr [ebp-2Ch]
+ 00000F6A  F3/ AB			rep stosd	
+ 00000F6C  8B 75 08			mov esi, dword ptr [ebp+8]
+ 00000F6F			__remove_blanks:
+ 00000F6F  8A 06			mov al, byte ptr [esi]
+ 00000F71  3C 20			cmp al, 20h		;' '
+ 00000F73  75 03			jnz __if_sign;
+ 00000F75  46				inc esi
+ 00000F76  EB F7			jmp __remove_blanks;
+ 00000F78			__if_sign:
+ 00000F78  8A 06			mov al, byte ptr [esi]
+ 00000F7A  3C 2D			cmp al, 2Dh		;'-'
+ 00000F7C  75 08			jnz __accumulate;
+ 00000F7E  C7 45 D4			mov dword ptr [ebp-2Ch], 1		; this number has sign
+	   00000001
+ 00000F85  46				inc esi
+ 00000F86			__accumulate:
+										;__AccumValue_Number(char [] buffer, double ref value, Int32 ref digitCount, ErrorCode error, bool ref errTooManyDigits);
+ 00000F86  8D 55 E0			lea edx, dword ptr [ebp-20h]	;flag errTooManyDigits
+ 00000F89  52				push edx
+ 00000F8A  6A 0A			push INVALID_NUMBER
+ 00000F8C  8D 45 FC			lea eax, dword ptr [ebp-4]		; digitCount
+ 00000F8F  50				push eax
+ 00000F90  8D 5D F4			lea ebx, dword ptr [ebp-0Ch]	; theNumber
+ 00000F93  53				push ebx
+ 00000F94  56				push esi						; buffer
+ 00000F95  E8 FFFFFF26			call __AccumValue_Number;
+ 00000F9A  33 D2			xor edx, edx
+ 00000F9C  85 C0			test eax, eax	
+ 00000F9E  0F 84 0000012A		jz __end_convert				; this may be an error
+					;
+ 00000FA4  8B 45 FC			mov eax, dword ptr [ebp-4]
+ 00000FA7  89 45 F0			mov dword ptr [ebp-10h], eax	; wholePlaces = digitCount	
+ 00000FAA  8A 1E			mov bl, byte ptr [esi]
+ 00000FAC  80 FB 2E			cmp bl, 2Eh						; found a fraction?;
+ 00000FAF  75 28			jnz __process_exponent0;
+ 00000FB1  46				inc esi							;skip the '.'
+					;we have a fraction part; so let's acumulate it in the double variable
+										;__AccumValue_Number(char [] buffer, double ref value, Int32 ref digitCount, ErrorCode error, bool ref errTooManyDigits);
+ 00000FB2  8D 55 E0			lea edx, dword ptr [ebp-20h]	;flag errTooManyDigits
+ 00000FB5  52				push edx
+ 00000FB6  6A 0C			push INVALID_FRACTION
+ 00000FB8  8D 45 FC			lea eax, dword ptr [ebp-4]		; digitCount
+ 00000FBB  50				push eax
+ 00000FBC  8D 5D F4			lea ebx, dword ptr [ebp-0Ch]	; theNumber
+ 00000FBF  53				push ebx
+ 00000FC0  56				push esi						; buffer
+ 00000FC1  E8 FFFFFEFA			call __AccumValue_Number;		
+ 00000FC6  33 D2			xor edx, edx
+ 00000FC8  85 C0			test eax, eax	
+ 00000FCA  0F 84 000000FE		jz __end_convert				; this may be an error
+					;keep track of the decimal places from the point
+ 00000FD0  8B 45 FC			mov eax, dword ptr [ebp-4]		;digitCount	
+ 00000FD3  2B 45 F0			sub eax, dword ptr [ebp-10h]	
+ 00000FD6  89 45 EC			mov dword ptr [ebp-14h], eax	; decimals = digitCount - wholePlaces	
+					;
+ 00000FD9			__process_exponent0:
+ 00000FD9  8A 1E			mov bl, byte ptr [esi]
+ 00000FDB  80 FB 45			cmp bl, 45h						; 'E'
+ 00000FDE  74 07			jz __process_exponent;
+ 00000FE0  80 FB 65			cmp bl, 65h						; 'e'
+ 00000FE3  74 02			jz __process_exponent;
+ 00000FE5  EB 47			jmp __complete_number;
+ 00000FE7			__process_exponent:
+ 00000FE7  C6 45 E8 2B			mov byte ptr [ebp-18h],	2Bh		; '+' the default sign for the exponent
+ 00000FEB  46				inc esi;						; skip it
+					;compare the current sign
+ 00000FEC  8A 1E			mov bl, byte ptr [esi]
+ 00000FEE  80 FB 2B			cmp bl, 2Bh						; '+'
+ 00000FF1  74 07			jz __skip_exp_sign
+ 00000FF3  80 FB 2D			cmp bl, 2Dh						; '-'
+ 00000FF6  74 02			jz __skip_exp_sign
+ 00000FF8  EB 04			jmp __getExponent;
+ 00000FFA			__skip_exp_sign:
+ 00000FFA  88 5D E8			mov byte ptr [ebp-18h],	bl;
+ 00000FFD  46				inc esi
+ 00000FFE			__getExponent:
+ 00000FFE  83 65 FC 00			and dword ptr [ebp-4], 0
+										;__AccumValue_Number(char [] buffer, double ref value, Int32 ref digitCount, ErrorCode error, bool ref errTooManyDigits);
+ 00001002  8D 55 E0			lea edx, dword ptr [ebp-20h]	;flag errTooManyDigits
+ 00001005  52				push edx
+ 00001006  6A 0F			push INVALID_EXPONENT;
+ 00001008  8D 45 FC			lea eax, dword ptr [ebp-4]		; digitCount
+ 0000100B  50				push eax	
+ 0000100C  8D 55 D8			lea edx, dword ptr [ebp-28h]	; exp_value
+ 0000100F  52				push edx
+ 00001010  56				push esi
+ 00001011  E8 FFFFFEAA			call __AccumValue_Number;		
+ 00001016  33 D2			xor edx, edx
+ 00001018  85 C0			test eax, eax	
+ 0000101A  0F 84 000000AE		jz __end_convert				; this may be an error
+ 00001020  80 7D E8 2D			cmp byte ptr [ebp-18h], 2Dh		; if exp is negative: i.e: 999.999e-999
+ 00001024  75 08			jnz __complete_number
+ 00001026  DD 45 D8			fld qword ptr [ebp-28h]			; st = the exponent
+ 00001029  D9 E0			fchs	
+ 0000102B  DD 5D D8			fstp qword ptr [ebp-28h]		; exp = -exp;
+ 0000102E			__complete_number:
+					;
+ 0000102E  80 7D E0 01			cmp byte ptr [ebp-20h], 1		;flag errTooManyDigits 
+ 00001032  0F 84 00000081		jz __err_too_many_digits;
+					;
+ 00001038  DD 45 D8			fld qword ptr [ebp-28h]			; st = the exponent
+ 0000103B  51				push ecx						; now, determine the final exponent
+ 0000103C  DB 1C 24			fistp dword ptr [esp]			; exp = -exp;
+ 0000103F  8B 04 24			mov eax, dword ptr [esp]
+ 00001042  2B 45 EC			sub eax, dword ptr [ebp-14h]	;
+ 00001045  89 04 24			mov dword ptr [esp], eax		; esp = exp - decimalPlaces
+ 00001048  03 45 F0			add eax, dword ptr [ebp-10h]	
+ 0000104B  3D 00000134			cmp eax, MAX_EXPONENT_VALUE		; exp + wholePlaces > MAX_EXPONENT_VALUE
+ 00001050  7F 5D			jg __err_out_of_range;
+ 00001052  3D FFFFFECC			cmp eax, -MAX_EXPONENT_VALUE	; exp + wholePlaces < -MAX_EXPONENT_VALUE
+ 00001057  7C 56			jl __err_out_of_range;
+					;
+ 00001059  8B 04 24			mov eax, dword ptr [esp]
+ 0000105C  85 C0			test eax, eax
+ 0000105E  74 35			jz __finish_number000;
+ 00001060  9B DB E2	fclex
+ 00001063  DB 04 24			fild dword ptr [esp]			; st = to_float(int_exp)
+ 00001066  83 EC 0C			sub esp, 0Ch
+ 00001069  DD 5C 24 04			fstp qword ptr [esp+4]			; esp = st
+ 0000106D  6A 0A			push 0Ah
+ 0000106F  DB 04 24			fild dword ptr [esp]			; st = 10.0
+ 00001072  DD 1C 24			fstp qword ptr [esp]			; esp = st
+ 00001075  E8 FFFFF613			call Math_Pow;
+ 0000107A  50				push eax
+ 0000107B  52				push edx
+ 0000107C  DD 04 24			fld qword ptr [esp]	
+ 0000107F  DD 45 F4			fld qword ptr [ebp-0Ch]			; theNumber
+ 00001082  D9 FC			frndint							; st = round(theNumber)
+ 00001084  DE C9			fmulp st(1), st
+ 00001086  83 7D D4 01			cmp dword ptr [ebp-2Ch], 1
+ 0000108A  75 02			jnz __get_mult_result;	
+ 0000108C  D9 E0			fchs							; -result = -(theNumber *= pow(10, exp))
+ 0000108E			__get_mult_result:
+ 0000108E  DD 5D F4			fstp qword ptr [ebp-0Ch]		; +result = theNumber *= pow(10, exp);
+ 00001091  59				pop ecx
+ 00001092  59				pop ecx	
+ 00001093  EB 11			jmp __finish_number;
+ 00001095			__finish_number000:
+ 00001095  83 7D D4 01			cmp dword ptr [ebp-2Ch], 1
+ 00001099  75 0B			jnz __finish_number;
+ 0000109B  9B DB E2			fclex
+ 0000109E  DD 45 F4			fld qword ptr [ebp-0Ch]
+ 000010A1  D9 E0			fchs
+ 000010A3  DD 5D F4			fstp qword ptr [ebp-0Ch]		; theNumber = -theNumber
+ 000010A6			__finish_number:
+ 000010A6  59				pop ecx	
+ 000010A7  8B 55 F4			mov edx, dword ptr [ebp-0Ch]	;high part
+ 000010AA  8B 45 F8			mov eax, dword ptr [ebp-8]		;low part	
+ 000010AD  EB 1F			jmp __end_convert;
+ 000010AF			__err_out_of_range:
+ 000010AF  59				pop ecx
+ 000010B0  6A 23			push SIZEOF __msg_fp_out_of_range;
+ 000010B2  68 000001F7 R		push OFFSET __msg_fp_out_of_range;
+ 000010B7  EB 07			jmp __error;
+ 000010B9			__err_too_many_digits:
+ 000010B9  6A 11			push SIZEOF __msg_too_many_digits;
+ 000010BB  68 000001E6 R		push OFFSET __msg_too_many_digits;
+ 000010C0			__error:
+ 000010C0  E8 FFFFF0AE			call Console_WriteString
+ 000010C5  E8 FFFFF0F1			call Console_WriteCrLf;
+ 000010CA  33 C0			xor eax, eax
+ 000010CC  33 D2			xor edx, edx
+ 000010CE			__end_convert:
+ 000010CE  5E				pop esi
+ 000010CF  5F				pop edi
+ 000010D0  C9				leave
+ 000010D1  C2 0004			retn 4
+ 000010D4			FloatingPoint_fromString ENDP
+
+				; MEMORY SPECIFICS
+
+ 000010D4			System_Memory_GetProcessHeap PROC
+ 000010D4  E8 00000000 E		call GetProcessHeap;
+ 000010D9  C3				retn
+ 000010DA			System_Memory_GetProcessHeap ENDP
+
+ 000010DA			System_Memory_Memset PROC	;Pointer mem_ptr, int nVal, int nBytes
+ 000010DA  56				push esi
+ 000010DB  57				push edi
+ 000010DC  53				push ebx
+ 000010DD  8B 44 24 14			mov eax, dword ptr [esp+8+3*4]	;nVal
+ 000010E1  8B 7C 24 10			mov edi, dword ptr [esp+4+3*4]
+ 000010E5  8B 4C 24 18			mov ecx, dword ptr [esp+0Ch+3*4] ; nBytes	
+ 000010E9  85 FF			test edi, edi
+ 000010EB  74 02			je __EndMemset;
+ 000010ED  F3/ AA			rep stosb
+ 000010EF			__EndMemset:
+ 000010EF  5B				pop ebx
+ 000010F0  5F				pop edi
+ 000010F1  5E				pop esi
+ 000010F2  C2 000C			retn 0Ch
+ 000010F5			System_Memory_Memset ENDP
+
+ 000010F5			System_Memory_Alloc PROC ; Alloc(Handle hHeap, long nBytes);
+ 000010F5  8B 44 24 08			mov eax, dword ptr [esp+8]
+ 000010F9  8B 54 24 04			mov edx, dword ptr [esp+4]	
+ 000010FD  B9 00000008			mov ecx, HEAP_ZERO_MEMORY
+ 00001102  50				push eax	;nBytes
+ 00001103  51				push ecx   ;dwFlags
+ 00001104  52				push edx	;hHeap
+ 00001105  E8 00000000 E		call HeapAlloc;
+ 0000110A  C2 0008			retn 8
+ 0000110D			System_Memory_Alloc ENDP
+
+ 0000110D			System_Memory_Free PROC	; Free(Handle hHeap, Pointer mem_ptr);
+ 0000110D  8B 44 24 08			mov eax, dword ptr [esp+8]
+ 00001111  8B 54 24 04			mov edx, dword ptr [esp+4]	
+ 00001115  33 C9			xor ecx, ecx
+ 00001117  50				push eax	;mem_ptr
+ 00001118  51				push ecx	;dwFlags
+ 00001119  52				push edx	;hHeap	
+ 0000111A  E8 00000000 E		call HeapFree
+ 0000111F  C2 0008			retn 8
+ 00001122			System_Memory_Free ENDP
+
+ 00001122			System_Memory_Size PROC ;Size(Handle hHeap, Pointer mem_ptr);
+ 00001122  8B 44 24 08			mov eax, dword ptr [esp+8]
+ 00001126  8B 54 24 04			mov edx, dword ptr [esp+4]	
+ 0000112A  33 C9			xor ecx, ecx
+ 0000112C  50				push eax	;mem_ptr
+ 0000112D  51				push ecx	;dwFlags
+ 0000112E  52				push edx	;hHeap	
+ 0000112F  E8 00000000 E		call HeapSize;
+ 00001134  C2 0008			retn 8
+ 00001137			System_Memory_Size ENDP
+
+ 00001137			System_Memory_New PROC ;New(long nBytes);
+ 00001137  E8 00000000 E		call GetProcessHeap;
+ 0000113C  8B 54 24 04			mov edx, dword ptr [esp+4]	
+ 00001140  52				push edx ; nBytes
+ 00001141  50				push eax ; hHeap
+ 00001142  E8 FFFFFFAE			call System_Memory_Alloc;
+ 00001147  C2 0004			retn 4
+ 0000114A			System_Memory_New ENDP
+
+ 0000114A			System_Memory_Destroy PROC ;Destroy(Pointer mem_ptr);
+ 0000114A  E8 00000000 E		call GetProcessHeap;
+ 0000114F  8B 54 24 04			mov edx, dword ptr [esp+4]	
+ 00001153  52				push edx ; mem_ptr
+ 00001154  50				push eax ; hHeap
+ 00001155  E8 FFFFFFB3			call System_Memory_Free;
+ 0000115A  C2 0004			retn 4;
+ 0000115D			System_Memory_Destroy ENDP
+
+ 0000115D			System_Memory_SizeFor PROC ;SizeFor(Pointer mem_ptr);
+ 0000115D  E8 00000000 E		call GetProcessHeap;
+ 00001162  8B 54 24 04			mov edx, dword ptr [esp+4]
+ 00001166  52				push edx
+ 00001167  50				push eax
+ 00001168  E8 FFFFFFB5			call System_Memory_Size;
+ 0000116D  C2 0004			retn 4
+ 00001170			System_Memory_SizeFor ENDP
+
+ 00001170			System_ShowMessage PROC	;string message, string title, MessageType type
+ 00001170  8B 4C 24 0C			mov ecx, dword ptr [esp+4*3] ; type
+ 00001174  8B 54 24 08			mov edx, dword ptr [esp+4*2] ; title
+ 00001178  53				push ebx
+ 00001179  33 DB			xor ebx, ebx
+ 0000117B  51				push ecx
+ 0000117C  52				push edx
+ 0000117D  FF 74 24 10			push dword ptr [esp+010h]	; message
+ 00001181  53				push ebx
+ 00001182  E8 00000000 E		call MessageBox;
+ 00001187  5B				pop ebx
+ 00001188  C2 000C			retn 0Ch
+ 0000118B			System_ShowMessage ENDP
+
+ 0000118B			StringHandling_StringSet PROC	;Pointer mem_ptr, int nVal, int nBytes
+ 0000118B  57				push edi
+ 0000118C  8B 7C 24 08			mov edi, dword ptr [esp+8]; mem_ptr
+ 00001190  8B 4C 24 0C			mov ecx, dword ptr [esp+0Ch]; nVal
+ 00001194  FF 74 24 10			push dword ptr [esp+10h]; nBytes
+ 00001198  51				push ecx;
+ 00001199  57				push edi
+ 0000119A  E8 FFFFFF3B			call System_Memory_Memset;
+ 0000119F  8B 44 24 08			mov eax, dword ptr [esp+8];
+ 000011A3  5F				pop edi
+ 000011A4  C2 000C			ret 0Ch
+ 000011A7			StringHandling_StringSet ENDP
+
+ 000011A7			__purecall PROC    
+ 000011A7  6A 48			push LENGTHOF __virtual_abstract_call_msg
+ 000011A9  68 0000016A R		push OFFSET __virtual_abstract_call_msg
+ 000011AE  E8 FFFFEFC0			call Console_WriteString;
+ 000011B3  6A FF			push 0FFFFFFFFh
+ 000011B5  E8 00000000 E		call ExitProcess;
+ 000011BA  C3				retn
+ 000011BB			__purecall ENDP
+
+ 000011BB			System_GetCommandLineArgv PROC ;string[] System::GetCommandLineArgv(int ref argc)
+ 000011BB  55				push ebp
+ 000011BC  8B EC			mov ebp, esp
+ 000011BE  83 EC 10			sub esp, 10h
+ 000011C1  57				push edi
+ 000011C2  56				push esi
+ 000011C3  53				push ebx
+ 000011C4  33 C0			xor eax, eax
+ 000011C6  8B 5D 08			mov ebx, dword ptr [ebp+8]	; Int32 ref argc
+ 000011C9  85 DB			test ebx, ebx
+ 000011CB  0F 84 000000B4		jz offset __end_argv_proc;
+ 000011D1  E8 00000000 E		call GetCommandLine
+ 000011D6  89 45 FC			mov dword ptr [ebp-4], eax ; the full command line
+ 000011D9  50				push eax
+ 000011DA  E8 00000000 E		call lstrlen;
+ 000011DF  83 C0 10			add eax, 10h ;for the extra null chars that will be necessary later
+ 000011E2  89 45 F8			mov dword ptr [ebp-8], eax ; length in chars of the full command line
+ 000011E5  8D 15 00000000 R		lea edx, OFFSET __hargc
+ 000011EB  52				push edx
+ 000011EC  FF 75 FC			push dword ptr [ebp-4]
+ 000011EF  E8 00000000 E		call CommandLineToArgv;	 ;now, we have an UNICODE array of the command line arguments
+ 000011F4  8B F0			mov esi, eax
+ 000011F6  89 75 F0			mov dword ptr [ebp-10h], esi ;later, we must destroy this array calling LocalFree
+ 000011F9  8B 0D 00000000 R		mov ecx, __hargc
+ 000011FF  89 0B			mov dword ptr [ebx], ecx	; the number of arguments
+					;
+ 00001201  8B 45 F8			mov eax, dword ptr [ebp-8];
+ 00001204  8D 0C 8D			lea ecx, [ecx*4+4];
+	   00000004
+ 0000120B  03 C8			add ecx, eax;    addr1, addr2, addr3,...,NULL, str1\0, str2\0, str3\0,....str(n)\0\0
+					;
+ 0000120D  51				push ecx ;the total chars supported in this heap array
+ 0000120E  E8 FFFFFEC1			call System_Memory_GetProcessHeap;
+ 00001213  50				push eax
+ 00001214  E8 FFFFFEDC			call System_Memory_Alloc;
+ 00001219  8B F8			mov edi, eax
+ 0000121B  89 45 F4			mov dword ptr [ebp-0Ch], eax
+					;
+ 0000121E  8B 1D 00000000 R		mov ebx, __hargc;
+ 00001224  8D 0C 9D			lea ecx, [ebx*4]
+	   00000000
+ 0000122B  C7 04 39			mov dword ptr [edi+ecx], 0 ;the null to the pointer array
+	   00000000
+ 00001232  8D 44 39 04			lea eax, [edi+ecx+4]
+ 00001236  89 45 F8			mov dword ptr [ebp-8h], eax; pointer to the first string argument
+ 00001239  C7 45 FC			mov dword ptr [ebp-4h], 0; last length
+	   00000000
+ 00001240			__while_loop:
+					;process the BinaryHeap structure, by copying its content to another BinaryHeap (FROM UNICODE TO ASCII)
+ 00001240  8B 16			mov edx, dword ptr [esi];   szwArg = szwArgList[index];
+ 00001242  52				push edx
+ 00001243  E8 00000000 E		call lstrlen;
+ 00001248  89 45 FC			mov dword ptr [ebp-4h], eax ; last string length
+					;
+ 0000124B  6A 00			push 0
+ 0000124D  6A 00			push 0
+ 0000124F  50				push eax	; size in buffer
+ 00001250  8B 4D F8			mov ecx, dword ptr [ebp-8h]; the output buffer in the binary heap...
+ 00001253  51				push ecx	;LPSTR
+ 00001254  50				push eax
+ 00001255  8B 16			mov edx, dword ptr [esi]
+ 00001257  52				push edx	;LPWSTR
+ 00001258  6A 00			push 0
+ 0000125A  6A 00			push 0		;CP_ACP  default to ANSI code page
+ 0000125C  E8 00000000 E		call WideCharToMultiByte;
+					;TODO: check success for this previous call
+					;
+ 00001261  8B 4D FC			mov ecx, dword ptr [ebp-4h];
+ 00001264  8B 45 F8			mov eax, dword ptr [ebp-8h];
+					;lea edx, [eax+ecx]
+					;mov dword ptr [edx], 0 ; a null char between strings
+					;inc edx;
+ 00001267  8D 54 01 01			lea edx, [eax+ecx+1] ;the string is already null-terminated (the heap memory was zeroed when allocated)
+ 0000126B  89 55 F8			mov dword ptr [ebp-8], edx; next string buffer available...
+ 0000126E  89 07			mov dword ptr [edi], eax;			buff[index] = WtoA(szArgList[index]);  the start of the new string
+					;
+ 00001270  83 C6 04			add esi, 4;
+ 00001273  83 C7 04			add edi, 4;
+					;
+ 00001276  4B				dec ebx;
+ 00001277  75 C7			jnz offset __while_loop;
+					;
+ 00001279  8B 5D F0			mov ebx, dword ptr [ebp-10h];
+ 0000127C  53				push ebx;
+ 0000127D  E8 00000000 E		call LocalFree;
+ 00001282  8B 45 F4			mov eax, dword ptr [ebp-0Ch];the array of null-terminated command arguments
+ 00001285			__end_argv_proc:
+ 00001285  5B				pop ebx
+ 00001286  5E				pop esi	
+ 00001287  5F				pop edi	
+ 00001288  C9				leave
+ 00001289  C2 0004			ret 4
+ 0000128C			System_GetCommandLineArgv ENDP
+
+				END
+Microsoft (R) Macro Assembler Version 6.15.8803		    03/28/13 13:50:54
+stdhpp\hcclib32.asm					     Symbols 2 - 1
+
+
+
+
+Structures and Unions:
+
+                N a m e                  Size
+                                         Offset      Type
+
+CONSOLE_CURSOR_INFO  . . . . . .	 00000008
+  dwSize . . . . . . . . . . . .	 00000000	 DWord
+  bVisible . . . . . . . . . . .	 00000004	 DWord
+CONSOLE_SCREEN_BUFFER_INFO . . .	 00000016
+  dwSize . . . . . . . . . . . .	 00000000	 DWord
+  dwCursorPos  . . . . . . . . .	 00000004	 DWord
+  wAttributes  . . . . . . . . .	 00000008	 Word
+  srWindow . . . . . . . . . . .	 0000000A	 QWord
+  maxWinSize . . . . . . . . . .	 00000012	 DWord
+COORD  . . . . . . . . . . . . .	 00000004
+  X  . . . . . . . . . . . . . .	 00000000	 Word
+  Y  . . . . . . . . . . . . . .	 00000002	 Word
+FILETIME . . . . . . . . . . . .	 00000008
+  loDateTime . . . . . . . . . .	 00000000	 DWord
+  hiDateTime . . . . . . . . . .	 00000004	 DWord
+SMALL_RECT . . . . . . . . . . .	 00000008
+  Left . . . . . . . . . . . . .	 00000000	 Word
+  Top  . . . . . . . . . . . . .	 00000002	 Word
+  Right  . . . . . . . . . . . .	 00000004	 Word
+  Bottom . . . . . . . . . . . .	 00000006	 Word
+SYSTEMTIME . . . . . . . . . . .	 00000010
+  wYear  . . . . . . . . . . . .	 00000000	 Word
+  wMonth . . . . . . . . . . . .	 00000002	 Word
+  wDayOfWeek . . . . . . . . . .	 00000004	 Word
+  wDay . . . . . . . . . . . . .	 00000006	 Word
+  wHour  . . . . . . . . . . . .	 00000008	 Word
+  wMinute  . . . . . . . . . . .	 0000000A	 Word
+  wSecond  . . . . . . . . . . .	 0000000C	 Word
+  wMilliseconds  . . . . . . . .	 0000000E	 Word
+
+
+Segments and Groups:
+
+                N a m e                 Size     Length   Align   Combine Class
+
+FLAT . . . . . . . . . . . . . .	GROUP
+STACK  . . . . . . . . . . . . .	32 Bit	 00100000 DWord	  Stack	  'STACK'	 
+_DATA  . . . . . . . . . . . . .	32 Bit	 000002BC DWord	  Public  'DATA'	
+_TEXT  . . . . . . . . . . . . .	32 Bit	 0000128C DWord	  Public  'CODE'	
+
+
+Procedures,  parameters and locals:
+
+                N a m e                 Type     Value    Attr
+
+CloseHandle  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+CommandLineToArgvW . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Console_ClearScreen  . . . . . .	P Near	 0000003B _TEXT	Length= 00000085 Public STDCALL
+  _EndClrScr . . . . . . . . . .	L Near	 000000B9 _TEXT	
+Console_GetTitle . . . . . . . .	P Near	 0000036D _TEXT	Length= 00000023 Public STDCALL
+Console_MoveWindow . . . . . . .	P Near	 00000390 _TEXT	Length= 00000050 Public STDCALL
+Console_ReadChar . . . . . . . .	P Near	 0000010D _TEXT	Length= 00000066 Public STDCALL
+Console_ReadDouble . . . . . . .	P Near	 00000277 _TEXT	Length= 00000010 Public STDCALL
+Console_ReadInteger  . . . . . .	P Near	 00000208 _TEXT	Length= 0000000C Public STDCALL
+Console_ReadString . . . . . . .	P Near	 000000C0 _TEXT	Length= 0000004D Public STDCALL
+Console_SetConsoleSize . . . . .	P Near	 00000324 _TEXT	Length= 00000032 Public STDCALL
+Console_SetCursorPos . . . . . .	P Near	 000002C5 _TEXT	Length= 00000037 Public STDCALL
+Console_SetTextColor . . . . . .	P Near	 000002FC _TEXT	Length= 00000028 Public STDCALL
+Console_SetTitle . . . . . . . .	P Near	 00000356 _TEXT	Length= 00000017 Public STDCALL
+Console_WriteBinary  . . . . . .	P Near	 0000024A _TEXT	Length= 0000000F Public STDCALL
+Console_WriteBoolean . . . . . .	P Near	 000001E4 _TEXT	Length= 00000024 Public STDCALL
+  __WriteFalse . . . . . . . . .	L Near	 000001F8 _TEXT	
+  __WriteBooleanString . . . . .	L Near	 000001FD _TEXT	
+Console_WriteChar  . . . . . . .	P Near	 000001CF _TEXT	Length= 00000015 Public STDCALL
+Console_WriteCrlf  . . . . . . .	P Near	 000001BB _TEXT	Length= 00000014 Public STDCALL
+Console_WriteDouble  . . . . . .	P Near	 00000287 _TEXT	Length= 00000023 Public STDCALL
+Console_WriteHex . . . . . . . .	P Near	 00000259 _TEXT	Length= 0000000F Public STDCALL
+Console_WriteInteger64 . . . . .	P Near	 000002AA _TEXT	Length= 0000001B Public STDCALL
+Console_WriteIntegerEx . . . . .	P Near	 00000214 _TEXT	Length= 00000027 Public STDCALL
+Console_WriteInteger . . . . . .	P Near	 0000023B _TEXT	Length= 0000000F Public STDCALL
+Console_WriteOctal . . . . . . .	P Near	 00000268 _TEXT	Length= 0000000F Public STDCALL
+Console_WriteString  . . . . . .	P Near	 00000173 _TEXT	Length= 00000048 Public STDCALL
+  __use_char_size  . . . . . . .	L Near	 000001A3 _TEXT	
+CreateConsoleScreenBuffer  . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+CreateDirectory  . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+CreateFileA  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ExitProcess  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+File_Close . . . . . . . . . . .	P Near	 00000409 _TEXT	Length= 0000000D Public STDCALL
+File_FileSize  . . . . . . . . .	P Near	 00000487 _TEXT	Length= 00000014 Public STDCALL
+File_Open  . . . . . . . . . . .	P Near	 000003E0 _TEXT	Length= 00000029 Public STDCALL
+File_Read  . . . . . . . . . . .	P Near	 00000416 _TEXT	Length= 00000028 Public STDCALL
+File_Seek  . . . . . . . . . . .	P Near	 00000466 _TEXT	Length= 00000021 Public STDCALL
+File_Write . . . . . . . . . . .	P Near	 0000043E _TEXT	Length= 00000028 Public STDCALL
+FillConsoleOutputAttribute . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+FillConsoleOutputCharacterA  . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+FloatingPoint_CompareToInteger .	P Near	 00000A08 _TEXT	Length= 0000002F Public STDCALL
+  __Less . . . . . . . . . . . .	L Near	 00000A24 _TEXT	
+  __Equals . . . . . . . . . . .	L Near	 00000A2B _TEXT	
+  __Compare_Error  . . . . . . .	L Near	 00000A2F _TEXT	
+  __End_Compare  . . . . . . . .	L Near	 00000A34 _TEXT	
+FloatingPoint_Compare  . . . . .	P Near	 0000094C _TEXT	Length= 0000002F Public STDCALL
+  __Less . . . . . . . . . . . .	L Near	 00000968 _TEXT	
+  __Equals . . . . . . . . . . .	L Near	 0000096F _TEXT	
+  __Compare_Error  . . . . . . .	L Near	 00000973 _TEXT	
+  __End_Compare  . . . . . . . .	L Near	 00000978 _TEXT	
+FloatingPoint_FromInt64  . . . .	P Near	 00000A60 _TEXT	Length= 0000000F Public STDCALL
+FloatingPoint_FromInt  . . . . .	P Near	 00000A51 _TEXT	Length= 0000000F Public STDCALL
+FloatingPoint_ToInt64  . . . . .	P Near	 00000A43 _TEXT	Length= 0000000E Public STDCALL
+FloatingPoint_ToInt  . . . . . .	P Near	 00000A37 _TEXT	Length= 0000000C Public STDCALL
+FloatingPoint_fromString . . . .	P Near	 00000F58 _TEXT	Length= 0000017C Public STDCALL
+  __remove_blanks  . . . . . . .	L Near	 00000F6F _TEXT	
+  __if_sign  . . . . . . . . . .	L Near	 00000F78 _TEXT	
+  __accumulate . . . . . . . . .	L Near	 00000F86 _TEXT	
+  __process_exponent0  . . . . .	L Near	 00000FD9 _TEXT	
+  __process_exponent . . . . . .	L Near	 00000FE7 _TEXT	
+  __skip_exp_sign  . . . . . . .	L Near	 00000FFA _TEXT	
+  __getExponent  . . . . . . . .	L Near	 00000FFE _TEXT	
+  __complete_number  . . . . . .	L Near	 0000102E _TEXT	
+  __get_mult_result  . . . . . .	L Near	 0000108E _TEXT	
+  __finish_number000 . . . . . .	L Near	 00001095 _TEXT	
+  __finish_number  . . . . . . .	L Near	 000010A6 _TEXT	
+  __err_out_of_range . . . . . .	L Near	 000010AF _TEXT	
+  __err_too_many_digits  . . . .	L Near	 000010B9 _TEXT	
+  __error  . . . . . . . . . . .	L Near	 000010C0 _TEXT	
+  __end_convert  . . . . . . . .	L Near	 000010CE _TEXT	
+FloatingPoint_toStringEx . . . .	P Near	 00000CF9 _TEXT	Length= 000001C7 Public STDCALL
+  _number_analysis0  . . . . . .	L Near	 00000D0B _TEXT	
+  _number_analysis . . . . . . .	L Near	 00000D22 _TEXT	
+  _determine_max . . . . . . . .	L Near	 00000D36 _TEXT	
+  __too_big  . . . . . . . . . .	L Near	 00000D63 _TEXT	
+  __raise_power_10 . . . . . . .	L Near	 00000D67 _TEXT	
+  __bcd_conversion . . . . . . .	L Near	 00000D7A _TEXT	
+  __fraction_part0 . . . . . . .	L Near	 00000D94 _TEXT	
+  __remove_zeroes  . . . . . . .	L Near	 00000DA3 _TEXT	
+  __fraction_part  . . . . . . .	L Near	 00000DB5 _TEXT	
+  __integer_part0  . . . . . . .	L Near	 00000DF7 _TEXT	
+  __integer_part . . . . . . . .	L Near	 00000DFD _TEXT	
+  __first_not_zero . . . . . . .	L Near	 00000E0C _TEXT	
+  __assign_zero  . . . . . . . .	L Near	 00000E28 _TEXT	
+  __read_int_part0 . . . . . . .	L Near	 00000E32 _TEXT	
+  __no_sign  . . . . . . . . . .	L Near	 00000E3F _TEXT	
+  __read_int_high_part . . . . .	L Near	 00000E4E _TEXT	
+  __read_int_low_part  . . . . .	L Near	 00000E5E _TEXT	
+  __complete_number  . . . . . .	L Near	 00000E76 _TEXT	
+  __end_conversion . . . . . . .	L Near	 00000E89 _TEXT	
+  __failed_conv_then_zero  . . .	L Near	 00000E94 _TEXT	
+  __is_zero  . . . . . . . . . .	L Near	 00000E97 _TEXT	
+  __dot_zero . . . . . . . . . .	L Near	 00000E9B _TEXT	
+  __end_analysis_NaN . . . . . .	L Near	 00000EA5 _TEXT	
+  __end_analysis . . . . . . . .	L Near	 00000EB1 _TEXT	
+FloatingPoint_toString . . . . .	P Near	 00000CDC _TEXT	Length= 0000001D Public STDCALL
+FlushConsoleInputBuffer  . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetCommandLineA  . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetCommandLineW  . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetComputerName  . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetConsoleCP . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetConsoleCursorInfo . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetConsoleMode . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetConsoleScreenBufferInfo . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetConsoleTitleA . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetCurrentDirectory  . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetEnvironmentVariable . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetFileSize  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetKeyState  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetLastError . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetLocalTime . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetNumberOfConsoleInputEvents  .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetProcessHeap . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetStdHandle . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetSystemTime  . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetTickCount . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetWindowsDirectory  . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GlobalFree . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+HeapAlloc  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+HeapCreate . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+HeapDestroy  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+HeapFree . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+HeapReAlloc  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+HeapSize . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Integer_fromString . . . . . . .	P Near	 00000C8D _TEXT	Length= 0000004F Public STDCALL
+  __remove_blanks  . . . . . . .	L Near	 00000C95 _TEXT	
+  __if_sign  . . . . . . . . . .	L Near	 00000C9E _TEXT	
+  __add_byte . . . . . . . . . .	L Near	 00000CB1 _TEXT	
+  __end_read . . . . . . . . . .	L Near	 00000CD1 _TEXT	
+  __return . . . . . . . . . . .	L Near	 00000CD8 _TEXT	
+Integer_toStringEx . . . . . . .	P Near	 00000C09 _TEXT	Length= 00000065 Public STDCALL
+  __setup  . . . . . . . . . . .	L Near	 00000C2A _TEXT	
+  __get_char_digit . . . . . . .	L Near	 00000C41 _TEXT	
+  __return_now . . . . . . . . .	L Near	 00000C61 _TEXT	
+  __unsupported_radix  . . . . .	L Near	 00000C68 _TEXT	
+Integer_toString . . . . . . . .	P Near	 00000C6E _TEXT	Length= 0000001F Public STDCALL
+  __end_conversion . . . . . . .	L Near	 00000C86 _TEXT	
+IsDebuggerPresent  . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+LocalFree  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Math_Abs . . . . . . . . . . . .	P Near	 000004EF _TEXT	Length= 00000014 Public STDCALL
+Math_ArcTan  . . . . . . . . . .	P Near	 00000580 _TEXT	Length= 00000018 Public STDCALL
+Math_ChangeSign  . . . . . . . .	P Near	 00000503 _TEXT	Length= 00000014 Public STDCALL
+Math_Cosec . . . . . . . . . . .	P Near	 00000793 _TEXT	Length= 00000022 Public STDCALL
+Math_Cos . . . . . . . . . . . .	P Near	 00000555 _TEXT	Length= 00000014 Public STDCALL
+Math_Cotan . . . . . . . . . . .	P Near	 0000075B _TEXT	Length= 00000016 Public STDCALL
+Math_Even  . . . . . . . . . . .	P Near	 00000ADE _TEXT	Length= 00000015 Public STDCALL
+Math_Exp . . . . . . . . . . . .	P Near	 000006B6 _TEXT	Length= 0000001E Public STDCALL
+Math_Gcd . . . . . . . . . . . .	P Near	 00000BDF _TEXT	Length= 0000002A Public STDCALL
+  _doWhile . . . . . . . . . . .	L Near	 00000BE8 _TEXT	
+  _ret_end . . . . . . . . . . .	L Near	 00000C00 _TEXT	
+Math_GetNumberFrom . . . . . . .	P Near	 000006FE _TEXT	Length= 0000001A Public STDCALL
+Math_IEEEModulus . . . . . . . .	P Near	 00000613 _TEXT	Length= 00000018 Public STDCALL
+Math_Init  . . . . . . . . . . .	P Near	 000004EC _TEXT	Length= 00000003 Public STDCALL
+Math_Inverse_Arccosec  . . . . .	P Near	 000008A1 _TEXT	Length= 0000006A Public STDCALL
+Math_Inverse_Arccos  . . . . . .	P Near	 000007E9 _TEXT	Length= 00000053 Public STDCALL
+Math_Inverse_Arccotan  . . . . .	P Near	 0000090B _TEXT	Length= 00000041 Public STDCALL
+Math_Inverse_Arcsec  . . . . . .	P Near	 0000083C _TEXT	Length= 00000065 Public STDCALL
+Math_Inverse_Arcsin  . . . . . .	P Near	 000007B5 _TEXT	Length= 00000034 Public STDCALL
+Math_Ln  . . . . . . . . . . . .	P Near	 00000643 _TEXT	Length= 0000001A Public STDCALL
+Math_LogN_base . . . . . . . . .	P Near	 00000718 _TEXT	Length= 00000043 Public STDCALL
+Math_MantissaOf  . . . . . . . .	P Near	 000006D4 _TEXT	Length= 0000002A Public STDCALL
+Math_Max . . . . . . . . . . . .	P Near	 0000097B _TEXT	Length= 00000030 Public STDCALL
+  __Greater  . . . . . . . . . .	L Near	 00000997 _TEXT	
+  __Max_Or_Equals  . . . . . . .	L Near	 0000099F _TEXT	
+  __End  . . . . . . . . . . . .	L Near	 000009A5 _TEXT	
+Math_Min . . . . . . . . . . . .	P Near	 000009AB _TEXT	Length= 00000030 Public STDCALL
+  __Less . . . . . . . . . . . .	L Near	 000009C7 _TEXT	
+  __Min_Or_Equals  . . . . . . .	L Near	 000009CF _TEXT	
+  __End  . . . . . . . . . . . .	L Near	 000009D5 _TEXT	
+Math_ModulusTruncateDivisor  . .	P Near	 0000062B _TEXT	Length= 00000018 Public STDCALL
+Math_Modulus . . . . . . . . . .	P Near	 000005FB _TEXT	Length= 00000018 Public STDCALL
+Math_Odd . . . . . . . . . . . .	P Near	 00000AC9 _TEXT	Length= 00000015 Public STDCALL
+Math_Pow2  . . . . . . . . . . .	P Near	 00000A6F _TEXT	Length= 0000005A Public STDCALL
+  __odd_block  . . . . . . . . .	L Near	 00000A9D _TEXT	
+  __ret1 . . . . . . . . . . . .	L Near	 00000ABD _TEXT	
+  __ret_Pow  . . . . . . . . . .	L Near	 00000AC4 _TEXT	
+Math_Pow . . . . . . . . . . . .	P Near	 0000068D _TEXT	Length= 00000029 Public STDCALL
+Math_Round64 . . . . . . . . . .	P Near	 000005B6 _TEXT	Length= 0000000E Public STDCALL
+Math_Round . . . . . . . . . . .	P Near	 00000598 _TEXT	Length= 0000001E Public STDCALL
+  __UpdateLowPart  . . . . . . .	L Near	 000005AF _TEXT	
+  __EndConv64  . . . . . . . . .	L Near	 000005B3 _TEXT	
+Math_Sec . . . . . . . . . . . .	P Near	 00000771 _TEXT	Length= 00000022 Public STDCALL
+Math_Sign  . . . . . . . . . . .	P Near	 000009DB _TEXT	Length= 0000002D Public STDCALL
+  __Less . . . . . . . . . . . .	L Near	 000009F5 _TEXT	
+  __Equals . . . . . . . . . . .	L Near	 000009FC _TEXT	
+  __Compare_Error  . . . . . . .	L Near	 00000A00 _TEXT	
+  __End_Compare  . . . . . . . .	L Near	 00000A05 _TEXT	
+Math_Sin . . . . . . . . . . . .	P Near	 00000541 _TEXT	Length= 00000014 Public STDCALL
+Math_Sqrt  . . . . . . . . . . .	P Near	 00000517 _TEXT	Length= 00000014 Public STDCALL
+Math_Sqr . . . . . . . . . . . .	P Near	 0000052B _TEXT	Length= 00000016 Public STDCALL
+Math_Tan . . . . . . . . . . . .	P Near	 00000569 _TEXT	Length= 00000017 Public STDCALL
+Math_Trunc . . . . . . . . . . .	P Near	 00000AF3 _TEXT	Length= 00000011 Public STDCALL
+Math_log10 . . . . . . . . . . .	P Near	 00000673 _TEXT	Length= 0000001A Public STDCALL
+Math_log2  . . . . . . . . . . .	P Near	 0000065D _TEXT	Length= 00000016 Public STDCALL
+Math_log_10_base2  . . . . . . .	P Near	 000005CF _TEXT	Length= 0000000B Public STDCALL
+Math_log_2_base10  . . . . . . .	P Near	 000005E5 _TEXT	Length= 0000000B Public STDCALL
+Math_log_2_base_e  . . . . . . .	P Near	 000005F0 _TEXT	Length= 0000000B Public STDCALL
+Math_log_e_base2 . . . . . . . .	P Near	 000005DA _TEXT	Length= 0000000B Public STDCALL
+Math_pi  . . . . . . . . . . . .	P Near	 000005C4 _TEXT	Length= 0000000B Public STDCALL
+MessageBoxA  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+OutputDebugStringA . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+PeekConsoleInputA  . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadConsoleA . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadConsoleInputA  . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+ReadFile . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+RemoveDirectory  . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetConsoleActiveScreenBuffer . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetConsoleCursorInfo . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetConsoleCursorPosition . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetConsoleMode . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetConsoleScreenBufferSize . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetConsoleTextAttribute  . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetConsoleTitleA . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetConsoleWindowInfo . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetFilePointer . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+SetLocalTime . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Sleep  . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+StringHandling_StringCompare . .	P Near	 00000B6F _TEXT	Length= 0000002B Public STDCALL
+  __SrcIsLess  . . . . . . . . .	L Near	 00000B88 _TEXT	
+  __SrcIsGreater . . . . . . . .	L Near	 00000B8F _TEXT	
+  __EndCompare . . . . . . . . .	L Near	 00000B94 _TEXT	
+StringHandling_StringCopy  . . .	P Near	 00000B48 _TEXT	Length= 00000027 Public STDCALL
+  __EndCopy  . . . . . . . . . .	L Near	 00000B68 _TEXT	
+StringHandling_StringLCase . . .	P Near	 00000BBF _TEXT	Length= 00000020 Public STDCALL
+  __LoopChangeCase . . . . . . .	L Near	 00000BD2 _TEXT	
+  __EndUCase . . . . . . . . . .	L Near	 00000BD9 _TEXT	
+StringHandling_StringLength2 . .	P Near	 00000B04 _TEXT	Length= 0000001E Public STDCALL
+  _Calc_Length . . . . . . . . .	L Near	 00000B11 _TEXT	
+  _Return  . . . . . . . . . . .	L Near	 00000B1A _TEXT	
+StringHandling_StringLength  . .	P Near	 00000B22 _TEXT	Length= 00000026 Public STDCALL
+  __NotNullTerminated  . . . . .	L Near	 00000B3D _TEXT	
+  _StringLengthOk  . . . . . . .	L Near	 00000B42 _TEXT	
+StringHandling_StringSet . . . .	P Near	 0000118B _TEXT	Length= 0000001C Public STDCALL
+StringHandling_StringUCase . . .	P Near	 00000B9A _TEXT	Length= 00000025 Public STDCALL
+  __LoopChangeCase . . . . . . .	L Near	 00000BAD _TEXT	
+  __skip_upper_char  . . . . . .	L Near	 00000BB5 _TEXT	
+  __EndUCase . . . . . . . . . .	L Near	 00000BB9 _TEXT	
+SystemTimeToFileTime . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+System_BreakPoint  . . . . . . .	P Near	 000004E5 _TEXT	Length= 00000001 Public STDCALL
+System_CommandLineArgs . . . . .	P Near	 000004AE _TEXT	Length= 00000006 Public STDCALL
+System_Debug_OutputString  . . .	P Near	 000004D9 _TEXT	Length= 0000000C Public STDCALL
+System_Execute . . . . . . . . .	P Near	 000004B4 _TEXT	Length= 00000012 Public STDCALL
+System_Exit  . . . . . . . . . .	P Near	 0000049B _TEXT	Length= 0000000D Public STDCALL
+System_GetCommandLineArgv  . . .	P Near	 000011BB _TEXT	Length= 000000D1 Public STDCALL
+  __while_loop . . . . . . . . .	L Near	 00001240 _TEXT	
+  __end_argv_proc  . . . . . . .	L Near	 00001285 _TEXT	
+System_GetTickCount  . . . . . .	P Near	 000004C6 _TEXT	Length= 00000006 Public STDCALL
+System_IsDebuggerPresent . . . .	P Near	 000004E6 _TEXT	Length= 00000006 Public STDCALL
+System_LastError . . . . . . . .	P Near	 000004A8 _TEXT	Length= 00000006 Public STDCALL
+System_Memory_Alloc  . . . . . .	P Near	 000010F5 _TEXT	Length= 00000018 Public STDCALL
+System_Memory_Destroy  . . . . .	P Near	 0000114A _TEXT	Length= 00000013 Public STDCALL
+System_Memory_Free . . . . . . .	P Near	 0000110D _TEXT	Length= 00000015 Public STDCALL
+System_Memory_GetProcessHeap . .	P Near	 000010D4 _TEXT	Length= 00000006 Public STDCALL
+System_Memory_Memset . . . . . .	P Near	 000010DA _TEXT	Length= 0000001B Public STDCALL
+  __EndMemset  . . . . . . . . .	L Near	 000010EF _TEXT	
+System_Memory_New  . . . . . . .	P Near	 00001137 _TEXT	Length= 00000013 Public STDCALL
+System_Memory_SizeFor  . . . . .	P Near	 0000115D _TEXT	Length= 00000013 Public STDCALL
+System_Memory_Size . . . . . . .	P Near	 00001122 _TEXT	Length= 00000015 Public STDCALL
+System_ShowMessage . . . . . . .	P Near	 00001170 _TEXT	Length= 0000001B Public STDCALL
+System_Sleep . . . . . . . . . .	P Near	 000004CC _TEXT	Length= 0000000D Public STDCALL
+WideCharToMultiByte  . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WinExec  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteConsoleA  . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteConsoleOutputAttribute  . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteConsoleOutputCharacterA . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+WriteFile  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+__AccumValue_Number  . . . . . .	P Near	 00000EC0 _TEXT	Length= 00000098 Public STDCALL
+  __accumulate . . . . . . . . .	L Near	 00000ED6 _TEXT	
+  __next_char  . . . . . . . . .	L Near	 00000EFE _TEXT	
+  __end_accum_true . . . . . . .	L Near	 00000F0B _TEXT	
+  __eTooManyDigits . . . . . . .	L Near	 00000F12 _TEXT	
+  __number_error . . . . . . . .	L Near	 00000F1A _TEXT	
+  __enumber  . . . . . . . . . .	L Near	 00000F2E _TEXT	
+  __efraction  . . . . . . . . .	L Near	 00000F37 _TEXT	
+  __eexponent  . . . . . . . . .	L Near	 00000F40 _TEXT	
+  __error  . . . . . . . . . . .	L Near	 00000F49 _TEXT	
+  __end_accumulate . . . . . . .	L Near	 00000F53 _TEXT	
+__Internal_ConsoleIO_LX  . . . .	P Near	 00000000 _TEXT	Length= 00000031 Public STDCALL
+  __InputConsole . . . . . . . .	L Near	 0000001D _TEXT	
+__Internal_ConsoleIO_L . . . . .	P Near	 00000031 _TEXT	Length= 0000000A Public STDCALL
+__purecall . . . . . . . . . . .	P Near	 000011A7 _TEXT	Length= 00000014 Public STDCALL
+lstrlenW . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+
+
+Symbols:
+
+                N a m e                 Type     Value    Attr
+
+@CodeSize  . . . . . . . . . . .	Number	 00000000h   
+@DataSize  . . . . . . . . . . .	Number	 00000000h   
+@Interface . . . . . . . . . . .	Number	 00000003h   
+@Model . . . . . . . . . . . . .	Number	 00000007h   
+@code  . . . . . . . . . . . . .	Text   	 _TEXT
+@data  . . . . . . . . . . . . .	Text   	 FLAT
+@fardata?  . . . . . . . . . . .	Text   	 FLAT
+@fardata . . . . . . . . . . . .	Text   	 FLAT
+@stack . . . . . . . . . . . . .	Text   	 FLAT
+CREATE_ALWAYS  . . . . . . . . .	Number	 00000002h   
+CREATE_NEW . . . . . . . . . . .	Number	 00000001h   
+CRLF . . . . . . . . . . . . . .	Byte	 00000058 _DATA	
+CommandLineToArgv  . . . . . . .	Text   	 CommandLineToArgvW
+ConsoleBuffer  . . . . . . . . .	Byte	 00000008 _DATA	Public STDCALL
+ConsoleHandle  . . . . . . . . .	DWord	 00000004 _DATA	Public STDCALL
+ConsoleTitle . . . . . . . . . .	Byte	 0000005A _DATA	Public STDCALL
+CreateFile . . . . . . . . . . .	Text   	 CreateFileA
+ENABLE_ECHO_INPUT  . . . . . . .	Number	 00000004h   
+ENABLE_LINE_INPUT  . . . . . . .	Number	 00000002h   
+ENABLE_MOUSE_INPUT . . . . . . .	Number	 00000010h   
+ENABLE_PROCESSED_INPUT . . . . .	Number	 00000001h   
+ENABLE_PROCESSED_OUTPUT  . . . .	Number	 00000001h   
+ENABLE_WINDOW_INPUT  . . . . . .	Number	 00000008h   
+ENABLE_WRAP_AT_EOL_OUTPUT  . . .	Number	 00000002h   
+FILE_APPEND_DATA . . . . . . . .	Number	 00000004h   
+FILE_ATTRIBUTE_ARCHIVE . . . . .	Number	 00000020h   
+FILE_ATTRIBUTE_COMPRESSED  . . .	Number	 00000800h   
+FILE_ATTRIBUTE_DEVICE  . . . . .	Number	 00000040h   
+FILE_ATTRIBUTE_DIRECTORY . . . .	Number	 00000010h   
+FILE_ATTRIBUTE_ENCRYPTED . . . .	Number	 00004000h   
+FILE_ATTRIBUTE_HIDDEN  . . . . .	Number	 00000002h   
+FILE_ATTRIBUTE_NORMAL  . . . . .	Number	 00000080h   
+FILE_ATTRIBUTE_NOT_CONTENT_INDEXED .	Number	 00002000h   
+FILE_ATTRIBUTE_OFFLINE . . . . .	Number	 00001000h   
+FILE_ATTRIBUTE_READONLY  . . . .	Number	 00000001h   
+FILE_ATTRIBUTE_REPARSE_POINT . .	Number	 00000400h   
+FILE_ATTRIBUTE_SPARSE_FILE . . .	Number	 00000200h   
+FILE_ATTRIBUTE_SYSTEM  . . . . .	Number	 00000004h   
+FILE_ATTRIBUTE_TEMPORARY . . . .	Number	 00000100h   
+FILE_BEGIN . . . . . . . . . . .	Number	 00000000h   
+FILE_CURRENT . . . . . . . . . .	Number	 00000001h   
+FILE_DELETE_CHILD  . . . . . . .	Number	 00000040h   
+FILE_END . . . . . . . . . . . .	Number	 00000002h   
+FILE_READ_DATA . . . . . . . . .	Number	 00000001h   
+FILE_SHARE_DELETE  . . . . . . .	Number	 00000004h   
+FILE_SHARE_READ  . . . . . . . .	Number	 00000001h   
+FILE_SHARE_WRITE . . . . . . . .	Number	 00000002h   
+FILE_WRITE_DATA  . . . . . . . .	Number	 00000002h   
+FOCUS_EVENT  . . . . . . . . . .	Number	 00000010h   
+FillConsoleOutputCharacter . . .	Text   	 FillConsoleOutputCharacterA
+GENERIC_ALL  . . . . . . . . . .	Number	 10000000h   
+GENERIC_EXECUTE  . . . . . . . .	Number	 20000000h   
+GENERIC_READ . . . . . . . . . .	Number	 -80000000h   
+GENERIC_WRITE  . . . . . . . . .	Number	 40000000h   
+GetCommandLine . . . . . . . . .	Text   	 GetCommandLineW
+GetConsoleTitle  . . . . . . . .	Text   	 GetConsoleTitleA
+HEAP_GENERATE_EXCEPTIONS . . . .	Number	 00000004h   
+HEAP_GROWABLE  . . . . . . . . .	Number	 00000002h   
+HEAP_NO_SERIALIZE  . . . . . . .	Number	 00000001h   
+HEAP_REALLOC_IN_PLACE_ONLY . . .	Number	 00000010h   
+HEAP_ZERO_MEMORY . . . . . . . .	Number	 00000008h   
+INVALID_EXPONENT . . . . . . . .	Number	 0000000Fh   
+INVALID_FRACTION . . . . . . . .	Number	 0000000Ch   
+INVALID_HANDLE_VALUE . . . . . .	Number	 -00000001h   
+INVALID_NUMBER . . . . . . . . .	Number	 0000000Ah   
+KEY_EVENT  . . . . . . . . . . .	Number	 00000001h   
+MAX_DIGITS_COUNT . . . . . . . .	Number	 00000020h   
+MAX_EXPONENT_VALUE . . . . . . .	Number	 00000134h   
+MAX_READ_CHARS . . . . . . . . .	Number	 00000050h   
+MENU_EVENT . . . . . . . . . . .	Number	 00000008h   
+MOUSE_EVENT  . . . . . . . . . .	Number	 00000002h   
+MessageBox . . . . . . . . . . .	Text   	 MessageBoxA
+NULL . . . . . . . . . . . . . .	Number	 00000000h   
+OPEN_ALWAYS  . . . . . . . . . .	Number	 00000004h   
+OPEN_EXISTING  . . . . . . . . .	Number	 00000003h   
+OutputDebugString  . . . . . . .	Text   	 OutputDebugStringA
+PeekConsoleInput . . . . . . . .	Text   	 PeekConsoleInputA
+ReadConsoleInput . . . . . . . .	Text   	 ReadConsoleInputA
+ReadConsole  . . . . . . . . . .	Text   	 ReadConsoleA
+STD_INPUT_HANDLE . . . . . . . .	Number	 -0000000Ah   
+STD_OUTPUT_HANDLE  . . . . . . .	Number	 -0000000Bh   
+SetConsoleTitle  . . . . . . . .	Text   	 SetConsoleTitleA
+TRUNCATE_EXISTING  . . . . . . .	Number	 00000005h   
+WINDOW_BUFFER_SIZE_EVENT . . . .	Number	 00000004h   
+WriteConsoleOutputCharacter  . .	Text   	 WriteConsoleOutputCharacterA
+WriteConsole . . . . . . . . . .	Text   	 WriteConsoleA
+_@StringBooleanFalse@@__ . . . .	Byte	 000002A7 _DATA	
+_@StringBooleanTrue@@__  . . . .	Byte	 000002A2 _DATA	
+__@ConInName . . . . . . . . . .	Byte	 000002B5 _DATA	
+__@ConOutName  . . . . . . . . .	Byte	 000002AD _DATA	
+__@FileReadOnly  . . . . . . . .	Number	 -80000000h   
+__@FileWrite . . . . . . . . . .	Number	 40000000h   
+__@OpenExisting  . . . . . . . .	Number	 00000003h   
+__@SharedRead  . . . . . . . . .	Number	 00000001h   
+__@SharedWrite . . . . . . . . .	Number	 00000002h   
+__FP_MAX_EXPONENT  . . . . . . .	Byte	 0000029A _DATA	
+__FP_MAX_POWER_10  . . . . . . .	QWord	 0000025A _DATA	
+__FP_MAX_RANGE . . . . . . . . .	QWord	 0000021A _DATA	
+__Internal_ConsoleIO_Load  . . .	Text   	 __Internal_ConsoleIO_L
+__hargc  . . . . . . . . . . . .	DWord	 00000000 _DATA	
+__msg_eexponent  . . . . . . . .	Byte	 000001D4 _DATA	
+__msg_efraction  . . . . . . . .	Byte	 000001C2 _DATA	
+__msg_enumber  . . . . . . . . .	Byte	 000001B2 _DATA	
+__msg_fp_out_of_range  . . . . .	Byte	 000001F7 _DATA	
+__msg_too_many_digits  . . . . .	Byte	 000001E6 _DATA	
+__virtual_abstract_call_msg  . .	Byte	 0000016A _DATA	
+__xtable . . . . . . . . . . . .	Byte	 0000015A _DATA	
+exit . . . . . . . . . . . . . .	Text   	 INVOKE ExitProcess,0
+lstrlen  . . . . . . . . . . . .	Text   	 lstrlenW
+
+	   0 Warnings
+	   0 Errors

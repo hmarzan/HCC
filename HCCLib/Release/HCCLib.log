@@ -1,0 +1,14 @@
+﻿Build started 3/19/2013 3:10:17 PM.
+     1>Project "C:\HCC\HCC\HCCLib\HCCLib.vcxproj" on node 2 (rebuild target(s)).
+     1>_PrepareForClean:
+         Deleting file ".\Release\HCCLib.lastbuildstate".
+       InitializeBuildStatus:
+         Creating ".\Release\HCCLib.unsuccessfulbuild" because "AlwaysCreate" was specified.
+       FinalizeBuildStatus:
+         Deleting file ".\Release\HCCLib.unsuccessfulbuild".
+         Touching ".\Release\HCCLib.lastbuildstate".
+     1>Done Building Project "C:\HCC\HCC\HCCLib\HCCLib.vcxproj" (rebuild target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:00.03

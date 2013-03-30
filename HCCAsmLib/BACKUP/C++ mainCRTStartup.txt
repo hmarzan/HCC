@@ -1,0 +1,88 @@
+0040F790   push        ebp
+0040F791   mov         ebp,esp
+0040F793   push        0FFh
+0040F795   push        offset string "string != NULL"+14h (00476a30)
+0040F79A   push        offset __except_handler3 (0040de24)
+0040F79F   mov         eax,fs:[00000000]
+0040F7A5   push        eax
+0040F7A6   mov         dword ptr fs:[0],esp
+0040F7AD   add         esp,0FFFFFFF0h		;stack memory variables allocation
+
+			;saving registers following the rule
+0040F7B0   push        ebx
+0040F7B1   push        esi
+0040F7B2   push        edi
+
+0040F7B3   mov         dword ptr [ebp-18h],esp		;saving the current stack pointer in a variable
+		;OS Version
+0040F7B6   call        dword ptr [__imp__GetVersion@0 (004871b0)]
+0040F7BC   mov         [__osver (00484004)],eax		;a global variable has the OS version
+
+		;the minor version
+0040F7C1   mov         eax,[__osver (00484004)]
+0040F7C6   shr         eax,8
+0040F7C9   and         eax,0FFh
+0040F7CE   mov         [__winminor (00484010)],eax	;a global variable
+
+		;the major version
+0040F7D3   mov         ecx,dword ptr [__osver (00484004)]
+0040F7D9   and         ecx,0FFh
+0040F7DF   mov         dword ptr [__winmajor (0048400c)],ecx
+
+		;the Windows version		
+0040F7E5   mov         edx,dword ptr [__winmajor (0048400c)]
+0040F7EB   shl         edx,8
+0040F7EE   add         edx,dword ptr [__winminor (00484010)]
+0040F7F4   mov         dword ptr [__winver (00484008)],edx
+
+0040F7FA   mov         eax,[__osver (00484004)]
+0040F7FF   shr         eax,10h
+0040F802   and         eax,0FFFFh
+0040F807   mov         [__osver (00484004)],eax
+
+
+0040F80C   push        0
+0040F80E   call        _heap_init (00413920)		;dynamic memory initialization
+0040F813   add         esp,4
+0040F816   test        eax,eax
+0040F818   jne         mainCRTStartup+94h (0040f824)
+
+0040F81A   push        1Ch
+0040F81C   call        fast_error_exit (0040f8f0)	;exit process cdecl wrapper
+0040F821   add         esp,4
+
+
+0040F824   mov         dword ptr [ebp-4],0
+0040F82B   call        _ioinit (00417760)
+
+0040F830   call        dword ptr [__imp__GetCommandLineA@0 (004871ac)]
+
+0040F836   mov         [__acmdln (00486094)],eax
+
+0040F83B   call        __crtGetEnvironmentStringsA (00417540)
+0040F840   mov         [__aenvptr (00484048)],eax
+
+0040F845   call        _setargv (00417030)
+0040F84A   call        _setenvp (00416ee0)
+0040F84F   call        _cinit (0040f5c0)
+
+0040F854   mov         ecx,dword ptr [__environ (00484020)]
+0040F85A   mov         dword ptr [___initenv (00484024)],ecx
+		;environment variables : param 3
+0040F860   mov         edx,dword ptr [__environ (00484020)]
+0040F866   push        edx
+		;arg values : param 2
+0040F867   mov         eax,[___argv (00484018)]
+0040F86C   push        eax
+		;arg count : param 1
+0040F86D   mov         ecx,dword ptr [___argc (00484014)]
+0040F873   push        ecx
+		;a call to the user main function (cdecl calling convention)
+0040F874   call        @ILT+880(_main) (00401375)
+0040F879   add         esp,0Ch
+		;the result value is put in a local variable		
+0040F87C   mov         dword ptr [mainret],eax
+0040F87F   mov         edx,dword ptr [mainret]
+		;the exit result
+0040F882   push        edx
+0040F883   call        exit (0040f600)		;terminate the process

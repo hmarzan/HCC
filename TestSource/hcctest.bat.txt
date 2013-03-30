@@ -1,0 +1,4 @@
+@echo off
+TestSource/hcc TestSource/UnitTesting1.hpp /c /w /GH /GZ /A
+echo.
+pause

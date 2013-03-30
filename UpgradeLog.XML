@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet type='text/xsl' href='_UpgradeReport_Files/UpgradeReport.xslt'?><UpgradeLog>
+<Properties><Property Name="Solution" Value="HCC">
+</Property><Property Name="Solution File" Value="C:\HCC\HCC\HCC.sln">
+</Property><Property Name="User Options File" Value="C:\HCC\HCC\HCC.suo">
+</Property><Property Name="Date" Value="jueves, 24 de septiembre de 2009">
+</Property><Property Name="Time" Value="20:54 p.m.">
+</Property></Properties><Event ErrorLevel="0" Project="" Source="HCC.sln" Description="File successfully backed up as C:\HCC\HCC\HCC.sln.old">
+</Event><Event ErrorLevel="0" Project="" Source="HCC.suo" Description="File successfully backed up as C:\HCC\HCC\HCC.suo.old">
+</Event><Event ErrorLevel="0" Project="HCC" Source="HCC.vcproj" Description="Web deployment to the local IIS server is no longer supported. The Web Deployment build tool has been removed from your project settings.">
+</Event><Event ErrorLevel="1" Project="HCC" Source="HCC.vcproj" Description="This application has been updated to include settings related to the User Account Control (UAC) feature of Windows Vista. By default, when run on Windows Vista with UAC enabled, this application is marked to run with the same privileges as the process that launched it. This marking also disables the application from running with virtualization. You can change UAC related settings from the Property Pages of the project.">
+</Event><Event ErrorLevel="0" Project="HCC" Source="HCC.vcproj" Description="Project file successfully backed up as 'C:\HCC\HCC\HCC.vcproj.8.00.old'.">
+</Event><Event ErrorLevel="0" Project="HCC" Source="HCC.vcproj" Description="Project upgraded successfully.">
+</Event><Event ErrorLevel="3" Project="HCC" Source="HCC.vcproj" Description="Converted">
+</Event><Event ErrorLevel="1" Project="HCCLib" Source="HCCLib\HCCLib.vcproj" Description="This application has been updated to include settings related to the User Account Control (UAC) feature of Windows Vista. By default, when run on Windows Vista with UAC enabled, this application is marked to run with the same privileges as the process that launched it. This marking also disables the application from running with virtualization. You can change UAC related settings from the Property Pages of the project.">
+</Event><Event ErrorLevel="0" Project="HCCLib" Source="HCCLib\HCCLib.vcproj" Description="Project file successfully backed up as 'C:\HCC\HCC\HCCLib\HCCLib.vcproj.8.00.old'.">
+</Event><Event ErrorLevel="0" Project="HCCLib" Source="HCCLib\HCCLib.vcproj" Description="Project upgraded successfully.">
+</Event><Event ErrorLevel="3" Project="HCCLib" Source="HCCLib\HCCLib.vcproj" Description="Converted">
+</Event><Event ErrorLevel="0" Project="" Source="HCC.sln" Description="Solution converted successfully">
+</Event><Event ErrorLevel="3" Project="" Source="HCC.sln" Description="Converted">
+</Event></UpgradeLog>
