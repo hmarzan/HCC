@@ -7,6 +7,27 @@ Is a language created just for fun, and is pretty similar to C/C++, Java or C# (
 This is a native non-optimizing compiler, written in the old-school style, that generates 
 assembler x86.
 
+H++ is an Object-Oriented Programming Language which supports the following features:
+
+* Single Inheritance
+* Abstract members and Polymorphism (Abstract and Concrete Classes)
+* Object Properties (getters, setters)
+* Dynamic casts (like in C++)
+* Virtual destructor (like in C++)
+* Basic Exception Handling
+* Static members
+* Namespaces (like in C++/C#)
+* Aliases (like in C++)
+
+The H++ Standard Library includes the following:
+
+* Console library
+* File I/O library
+* String Handling library
+* Integer Handling library
+* Floating Point Handling library
+* Math library
+
 After compiling the H++ compiler, using Visual C++ 2008 or later, you'll need to download the MASM 6.5, 
 because H++ relies on ML and LINK32 to compile a full native binary to run on a x86 32 bits computer.
 
@@ -118,7 +139,7 @@ This is a typical compilation of unittesting1.hpp:
 
 ### H++ Currently Supported Options
 
-This are the actual supported options in the H++ compiler:
+These are the actual supported options in the H++ compiler:
 
         \HCC\HCC\TestSource>hcc /?
         H++ Compiler (R) by Harold L. Marzan Version 1.0.0.2074 (Beta)
